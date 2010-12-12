@@ -23,6 +23,15 @@ pmap::~pmap(){
 
 }
 
-boost::any& pmap::operator[] (const std::string element){
-	return param_map[element];
+void pmap::read_params(const std::string fname, int ac, char** av){
+
+	(*this).map["ConfigFile"] = fname;
+	//anyMap retMap;
+    std::cout << "hello" <<std::endl;
+	params_in(ac, av, (*this).map);
+    std::cout << "hello" <<std::endl;
+	//(*this).map = retMap;
+
 }
+
+

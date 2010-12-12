@@ -56,6 +56,6 @@ link_libraries(${LIBS} -lpthread)
 
 add_definitions(-DCHUNKSIZE=10)
 add_definitions(-DTESTING)
-add_executable (cpp-class main.cpp params.cpp)
+add_executable (cpp-class main.cpp params.cpp input_func.cpp)
 #target_link_libraries(cpp-molion vtkHybrid vtkWidgets ${Boost_PROGRAM_OPTIONS_LIBRARY})
 target_link_libraries(cpp-class ${Boost_PROGRAM_OPTIONS_LIBRARY})

@@ -9,17 +9,32 @@
 
 using boost::any_cast;
 
-//typedef std::map<std::string,boost::any> pmap;
 
 BOOST_AUTO_TEST_SUITE(params)
 
 BOOST_AUTO_TEST_CASE(initparams)
 {
 
-    pmap params();
-    params["test"]=1;
+    pmap params;
+    params.map["test"]=1;
     int j=1;
-    BOOST_REQUIRE_EQUAL(any_cast<int>(params["test"]),j);
+    BOOST_REQUIRE_EQUAL(any_cast<int>(params.map["test"]),j);
+
+
+}
+
+BOOST_AUTO_TEST_CASE(retparams)
+{
+	int a=1;
+
+	std::string str="test_config.cfg";
+	char *writable = "hello!";
+
+    pmap params;
+    params.read_params(str,a,&writable);
+
+    int j=1;
+    BOOST_REQUIRE_EQUAL(any_cast<int>(params.map["nthreads"]),j);
 
 }
 

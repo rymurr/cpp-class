@@ -16,34 +16,39 @@
 #ifndef PARAMS_H_
 #define PARAMS_H_
 
+#include <map>
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <iterator>
-#include <boost/program_options.hpp>
-#include <boost/assign/list_inserter.hpp>
-#include <boost/assert.hpp>
-#include <boost/foreach.hpp>
+
+
+//#include <boost/assign/list_inserter.hpp>
+//#include <boost/assert.hpp>
+//#include <boost/foreach.hpp>
 #include <boost/any.hpp>
-///defines foreach iterating function from boost
-#define foreach     BOOST_FOREACH
 
-using boost::any_cast;
+#include "input_func.hpp"
 
+
+
+
+//using boost::any_cast;
+
+typedef std::map<std::string,boost::any> anyMap;
 //this namespace brings boost::program options into scope as po
-namespace po = boost::program_options;
 
-class pmap: public std::map<std::string,boost::any> {
 
-    private:
-        std::map<std::string,boost::any> param_map;
+class pmap {
 
     public:
         pmap();
         
+        anyMap map;
+
         virtual ~pmap();
         
-        boost::any& operator[] (const std::string);
+        void read_params(const std::string, int, char**);
 
 };
 

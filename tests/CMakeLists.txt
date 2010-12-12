@@ -38,6 +38,12 @@ IF("${CMAKE_SYSTEM}" MATCHES "Linux")
    set(LIBS ${LIBS} ${BLAS_LIBRARIES} ) 
 ENDIF ("${CMAKE_SYSTEM}" MATCHES "Linux")
 
+SET(Boost_USE_MULTITHREADED "OFF")
+SET(Boost_ADDITIONAL_VERSIONS "0.99" "0.99.0" "1.78" "1.78.0" "1.41.0" "1.40.0" "1.42.0" "1.36.0" "1.45.0")
+find_package(Boost 1.45.0 COMPONENTS program_options REQUIRED)
+link_directories ( ${Boost_LIBRARY_DIRS} )
+include_directories ( ${Boost_INCLUDE_DIRS} )
+
 #FIND_PACKAGE(VTK REQUIRED)
 #link_directories ( ${VTK_LIBRARY_DIRS} )
 #include_directories ( ${VTK_INCLUDE_DIRS} )
@@ -45,8 +51,8 @@ add_definitions(-DCHUNKSIZE=10)
 add_definitions(-DTESTING)
 
 
-link_libraries(boost_unit_test_framework gsl blas ${LIBS})
-SET(COMMON ../src/params.cpp)
+link_libraries(boost_unit_test_framework gsl blas ${LIBS} ${Boost_PROGRAM_OPTIONS_LIBRARY})
+SET(COMMON ../src/params.cpp ../src/input_func.cpp)
 add_executable(params_tests ${COMMON} params_tests.cpp)
 #TARGET_LINK_LIBRARIES(twodwf_tests vtkHybrid vtkWidgets)
 #add_executable(wf_tests ${COMMON} wf_tests.cpp)
