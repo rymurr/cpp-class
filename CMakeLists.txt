@@ -1,0 +1,6 @@
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+cmake_minimum_required( VERSION 2.6 FATAL_ERROR )
+project(cpp-nlevel)
+add_subdirectory(src)
+add_subdirectory(tests)
+enable_testing()

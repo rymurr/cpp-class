@@ -1,0 +1,57 @@
+include_directories (. ../src/)
+
+if (CMAKE_COMPILER_IS_GNUCXX)
+    set ( CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -pg -p")
+    set ( CMAKE_CXX_FLAGS_RELEASE  "" )
+else ()
+    set ( CMAKE_CXX_FLAGS_DEBUG "-C -g -O0  -traceback -debug all")
+    set ( CMAKE_CXX_FLAGS_RELEASE  "-warn -axP -ipo -O3 -no-prec-div -complex_limited_range" )
+    set ( CMAKE_CXX_FLAGS_PARALLEL "-DPARALLEL -DBOOST_DISABLE_ASSERTS -axSSE4.1,SSE3 -ipo -O3 -no-prec-div -complex_limited_range -openmp -parallel -xSSE4.1 -unroll-aggressive" )
+endif ()
+
+find_package(GSL REQUIRED)
+include_directories(${GSL_INCLUDE_DIR})
+set(LIBS ${LIBS} ${GSL_LIBRARIES} ) 
+
+find_package(FFTW REQUIRED)
+include_directories(${FFTW_INCLUDE_DIR})
+set (LIBS ${LIBS} ${FFTW_LIBRARIES} ${FFTW_LIBRARIES_THREADED})
+
+link_libraries(${LIBS} -lpthread)
+
+
+IF(APPLE)
+   #SET(GUI_TYPE MACOSX_BUNDLE)
+   #INCLUDE_DIRECTORIES ( /Developer/Headers/FlatCarbon )
+   #FIND_LIBRARY(CARBON_LIBRARY Carbon)
+   #FIND_LIBRARY(QUICKTIME_LIBRARY QuickTime )
+   #FIND_LIBRARY(APP_SERVICES_LIBRARY ApplicationServices )
+   FIND_LIBRARY(ACCELERATE_LIBRARY Accelerate)
+   MARK_AS_ADVANCED (ACCELERATE_LIBRART Accelerate)
+   SET(EXTRA_LIBS ${ACCELERATE_LIBRARY})
+ENDIF (APPLE)
+
+IF("${CMAKE_SYSTEM}" MATCHES "Linux")
+   set(BLA_VENDOR "Intel10_64lp")
+   find_package(BLAS REQUIRED)
+   include_directories(${BLAS_INCLUDE_DIRS})
+   set(LIBS ${LIBS} ${BLAS_LIBRARIES} ) 
+ENDIF ("${CMAKE_SYSTEM}" MATCHES "Linux")
+
+#FIND_PACKAGE(VTK REQUIRED)
+#link_directories ( ${VTK_LIBRARY_DIRS} )
+#include_directories ( ${VTK_INCLUDE_DIRS} )
+add_definitions(-DCHUNKSIZE=10)
+add_definitions(-DTESTING)
+
+
+link_libraries(boost_unit_test_framework gsl blas ${LIBS})
+SET(COMMON ../src/params.cpp)
+add_executable(params_tests ${COMMON} params_tests.cpp)
+#TARGET_LINK_LIBRARIES(twodwf_tests vtkHybrid vtkWidgets)
+#add_executable(wf_tests ${COMMON} wf_tests.cpp)
+##TARGET_LINK_LIBRARIES(interp_tests vtkHybrid vtkWidgets)
+ENABLE_TESTING()
+ADD_TEST(params_tests params_tests)
+#ADD_TEST(splitop_tests splitop_tests)
+#ADD_TEST(wf_tests wf_tests)
