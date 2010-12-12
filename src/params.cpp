@@ -15,4 +15,14 @@
 #include "params.hpp"
 
 
-pmap
+pmap::pmap(){
+
+}
+
+pmap::~pmap(){
+
+}
+
+boost::any& pmap::operator[] (const std::string element){
+	return param_map[element];
+}

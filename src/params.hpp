@@ -43,7 +43,7 @@ class pmap: public std::map<std::string,boost::any> {
         
         virtual ~pmap();
         
-        boost::any& operator[] (std::string);
+        boost::any& operator[] (const std::string);
 
 };
 
