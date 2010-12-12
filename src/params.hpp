@@ -35,6 +35,15 @@ namespace po = boost::program_options;
 
 class pmap: public std::map<std::string,boost::any> {
 
+    private:
+        std::map<std::string,boost::any> param_map;
+
+    public:
+        pmap();
+        
+        virtual ~pmap();
+        
+        boost::any& operator[] (std::string);
 
 };
 
