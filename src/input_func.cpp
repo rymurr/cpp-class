@@ -50,10 +50,8 @@ void params_in(int ac, char** av, anyMap &retMap){
         return;
     }
 
-	typedef std::pair<std::string,boost::any> mpair;
-	foreach(mpair m, retMap)
-    {
-    	retMap[m.first] = m.second;
+    for (po::variables_map::iterator iter = vm.begin(); iter != vm.end(); ++iter){
+        retMap[iter->first.c_str()] = iter->second.value();
     }
 
 }
