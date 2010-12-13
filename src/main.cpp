@@ -19,6 +19,8 @@
 
 int main(int argc, char **argv)
 {
-    std::cout << "hello" << std::endl;
+    pmap params;
+    params.read_params("run_params.cfg", argc, argv);
+    params.print();
 }
 

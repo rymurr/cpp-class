@@ -54,6 +54,7 @@ class pmap {
 
         void print();
 
+        void validate_map();
 };
 
 

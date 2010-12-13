@@ -9,7 +9,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
     set ( CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -pg -p --enable-fully-dynamic-string")
     set ( CMAKE_CXX_FLAGS_RELEASE  "" )
 else ()
-    set ( CMAKE_CXX_FLAGS_DEBUG "-C -g -O0  -debug all")
+    set ( CMAKE_CXX_FLAGS_DEBUG "-C -g -O0  -debug all -traceback")
     set ( CMAKE_CXX_FLAGS_RELEASE  "-warn -axP -ipo -O3 -no-prec-div -complex_limited_range" )
     set ( CMAKE_CXX_FLAGS_PARALLEL "-DPARALLEL -DBOOST_DISABLE_ASSERTS -axSSE4.2 -ipo -O3 -no-prec-div -complex_limited_range -openmp " )
 endif ()
@@ -54,8 +54,15 @@ set (LIBS ${LIBS} ${FFTW_LIBRARIES} ${FFTW_LIBRARIES_THREADED})
 
 link_libraries(${LIBS} -lpthread)
 
+
 add_definitions(-DCHUNKSIZE=10)
 add_definitions(-DTESTING)
-add_executable (cpp-class main.cpp params.cpp input_func.cpp)
+
+set(classical_lib_src params.cpp input_func.cpp)
+add_library(classical SHARED ${classical_lib_src})
+
+add_executable (cpp-class main.cpp)
+#add_executable (cpp-class main.cpp ${classical_lib_src})
 #target_link_libraries(cpp-molion vtkHybrid vtkWidgets ${Boost_PROGRAM_OPTIONS_LIBRARY})
-target_link_libraries(cpp-class ${Boost_LIBRARIES})
+target_link_libraries(cpp-class classical ${Boost_LIBRARIES})
+#target_link_libraries(cpp-class ${Boost_LIBRARIES})
