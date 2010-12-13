@@ -25,15 +25,16 @@ BOOST_AUTO_TEST_CASE(initparams)
 
 BOOST_AUTO_TEST_CASE(retparams)
 {
-	int a=1;
+	int a=2;
 
 	std::string str="test_config.cfg";
-	char *writable = "hello!";
+	char *writable = "hello --printwf 1";
 
     pmap params;
     params.read_params(str,a,&writable);
 
     int j=1;
+    BOOST_REQUIRE_EQUAL(any_cast<int>(params.map["printwf"]),j);
     BOOST_REQUIRE_EQUAL(any_cast<int>(params.map["nthreads"]),j);
 
 }

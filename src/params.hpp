@@ -25,15 +25,15 @@
 
 //#include <boost/assign/list_inserter.hpp>
 //#include <boost/assert.hpp>
-//#include <boost/foreach.hpp>
+#include <boost/foreach.hpp>
 #include <boost/any.hpp>
 
 #include "input_func.hpp"
 
 
+#define foreach     BOOST_FOREACH
 
-
-//using boost::any_cast;
+using boost::any_cast;
 
 typedef std::map<std::string,boost::any> anyMap;
 //this namespace brings boost::program options into scope as po
@@ -49,6 +49,10 @@ class pmap {
         virtual ~pmap();
         
         void read_params(const std::string, int, char**);
+
+        void print(std::string);
+
+        void print();
 
 };
 

@@ -14,6 +14,7 @@ void params_in(int ac, char** av, anyMap &retMap){
 	        ("help", "displays help message")
 	        ("nthreads", po::value<int>()->default_value(1),"The number of fftw threads to be used")
 	        ("printwf", po::value<int>()->default_value(1),"which wf to print for results \n 1. print psix final \n 2. psix initial \n 3. psip initial \n 4. psip final")
+	        ("ndim", po::value<int>()->default_value(2),"The Number of dimensions to be used in the calculation")
 	        ;
 
     po::options_description timepos("Time and Space Grids");
@@ -37,13 +38,9 @@ void params_in(int ac, char** av, anyMap &retMap){
 
     std::string fname = any_cast<std::string>(retMap["ConfigFile"]);
 
-
     std::ifstream ifs(fname.c_str());
-
-        store(parse_config_file(ifs, config), vm);
-        std::cout << fname.c_str() <<std::endl;
-        notify(vm);
-
+    store(parse_config_file(ifs, config), vm);
+    notify(vm);
 
     if (vm.count("help")){
         std::cerr << visible << "\n";
@@ -55,3 +52,70 @@ void params_in(int ac, char** av, anyMap &retMap){
     }
 
 }
+
+
+void print_cfg(std::string, const anyMap retMap){
+	std::ofstream fp_out;
+	try{
+		fp_out.open("run_params.cfg");
+	}
+	catch(std::ofstream::failure e){
+		std::cerr << "could not open the file" << std::endl;
+		return;
+	}
+
+	ptime now = second_clock::local_time();
+    fp_out << "#This is the set of parameters used in the previous run, performed at: "
+        << to_simple_string(now)
+        << std::endl;
+    foreach(pairm m, retMap)
+    {
+        fp_out << m.first << " = " ;
+        try
+        {
+            fp_out << any_cast<double>(m.second) <<"\n";
+        }
+        catch(boost::bad_any_cast & e)
+        {
+            try
+            {
+                fp_out << any_cast<int>(m.second) <<"\n";
+            }
+            catch(boost::bad_any_cast & e)
+            {
+                fp_out << any_cast<std::string>(m.second) <<"\n";
+            }
+        }
+    }
+    fp_out << std::endl;
+    fp_out.close();
+}
+
+void print_cli(const anyMap retMap){
+
+	ptime now = second_clock::local_time();
+    std::cout << "This is the set of parameters being used in the current run, performed at: "
+        << to_simple_string(now)
+        << std::endl;
+    foreach(pairm m, retMap)
+    {
+        std::cout << "The value of " << m.first << " is: " ;
+        try
+        {
+             std::cout << any_cast<double>(m.second) <<"\n";
+        }
+        catch(boost::bad_any_cast & e)
+        {
+            try
+            {
+                std::cout << any_cast<int>(m.second) <<"\n";
+            }
+            catch(boost::bad_any_cast & e)
+            {
+                std::cout << any_cast<std::string>(m.second) <<"\n";
+            }
+        }
+    }
+    std::cout << std::endl;
+}
+

@@ -27,11 +27,15 @@ void pmap::read_params(const std::string fname, int ac, char** av){
 
 	(*this).map["ConfigFile"] = fname;
 	//anyMap retMap;
-    std::cout << "hello" <<std::endl;
 	params_in(ac, av, (*this).map);
-    std::cout << "hello" <<std::endl;
 	//(*this).map = retMap;
 
 }
 
+void pmap::print(){
+	print_cli((*this).map);
+}
 
+void pmap::print(std::string outFile){
+	print_cfg(outFile,(*this).map);
+}
