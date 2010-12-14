@@ -1,6 +1,7 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE Params
 #include <boost/test/unit_test.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/any.hpp>
 #include <string>
 #include <map>
@@ -37,6 +38,18 @@ BOOST_AUTO_TEST_CASE(retparams)
     BOOST_REQUIRE_EQUAL(any_cast<int>(params.map["ndim"]),i);
     BOOST_REQUIRE_EQUAL(any_cast<int>(params.map["nthreads"]),j);
     params.print();
+
+}
+
+BOOST_AUTO_TEST_CASE(strSplit)
+{
+
+    boost::shared_ptr<std::vector<int> > dims(new std::vector<int>);
+    parse_string("1,1", 2, "dims",  dims); 
+
+    BOOST_REQUIRE_EQUAL((*dims)[0],1);
+    BOOST_REQUIRE_EQUAL((*dims)[1],1);
+
 
 }
 

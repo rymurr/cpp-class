@@ -15,13 +15,13 @@ void params_in(int ac, char** av, anyMap &retMap){
 	        ("ndim,n", po::value<int>()->default_value(2),"The Number of dimensions to be used in the calculation")
 	        ("dims", po::value<std::string>()->default_value("1,1"),"The number of trajectories in each dimension. comma separated list.")
 	        ("dist-type", po::value<int>()->default_value(1),"Type of distribution:\n 1. monte-carlo \n 2. linear \n 3. staged-linear")
-            ("id-stages", po::value<int>()->default_value(1), "Number of stages for staged-linear distribution")
+            ("id-stages", po::value<int>()->default_value(1), "Number of stages for staged-linear distribution(not implemented)")
             ("traj-type,t", po::value<int>()->default_value(2), "Type of trajectory run, choices: \n 1. frozen gaussian(not implemented) \n 2. classical \n 3. FGA and classical(not implemented) ")
 
             ("run-type,r", po::value<int>()->default_value(5), "Type of run, choices: \n 1. read params only \n 2. build ICs only \n 3. run trajectories only \n 4. run binning only \n 5. everything \n 6. combinations to be defined later, currently we only run the whole wad.")
 	        ;
 
-    po::options_description timepos("Time and Space Grids");
+    po::options_description timepos("Time Grid");
 	    timepos.add_options()
             
             ("tinitial", po::value<double>()->default_value(0), "Start time of the simulation, can be negative")
@@ -132,7 +132,13 @@ void print_cfg(std::string runParams, const anyMap retMap){
             }
             catch(boost::bad_any_cast & e)
             {
-                fp_out << any_cast<std::string>(m.second) <<"\n";
+                try{
+                    fp_out << any_cast<std::string>(m.second) <<"\n";
+                }
+                catch(boost::bad_any_cast & e) {
+//TODO: must fix this to print out vectors!
+                    fp_out << "n/a\n";
+                }   
             }
         }
     }
@@ -161,7 +167,13 @@ void print_cli(const anyMap retMap){
             }
             catch(boost::bad_any_cast & e)
             {
-                std::cout << any_cast<std::string>(m.second) <<"\n";
+                try{
+                    std::cout << any_cast<std::string>(m.second) <<"\n";
+                }
+                catch(boost::bad_any_cast & e) {
+//TODO: must fix this to print out vectors!
+                    std::cout << "n/a\n";
+                }   
             }
         }
     }

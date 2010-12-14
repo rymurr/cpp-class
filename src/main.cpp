@@ -21,6 +21,7 @@ int main(int argc, char **argv)
 {
     pmap params;
     params.read_params("run_params.cfg", argc, argv);
+    params.validate_map();
     params.print();
 }
 

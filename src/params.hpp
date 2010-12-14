@@ -27,6 +27,9 @@
 //#include <boost/assert.hpp>
 #include <boost/foreach.hpp>
 #include <boost/any.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include "input_func.hpp"
 
@@ -34,6 +37,8 @@
 #define foreach     BOOST_FOREACH
 
 using boost::any_cast;
+using namespace boost;
+        
 
 typedef std::map<std::string,boost::any> anyMap;
 //this namespace brings boost::program options into scope as po
@@ -55,7 +60,18 @@ class pmap {
         void print();
 
         void validate_map();
+
+
+    private:
+        
+        void generic_options(void);
+        
+        void time_and_space(void);
+    
+        void wfpot(void);
 };
+
+void parse_string(std::string, int size, std::string param, boost::shared_ptr<std::vector<int> >);
 
 
 #endif
