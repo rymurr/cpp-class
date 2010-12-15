@@ -91,7 +91,7 @@ void pmap::time_and_space(void){
     if (dt > abs(tf-ti)) {
         throw std::invalid_argument("dt is larger than the time frame, must be smaller");
     }
-    std::cout << "dt is good.\n"
+    std::cout << "dt is good.\n";
 
 
 }
