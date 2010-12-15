@@ -58,7 +58,7 @@ link_libraries(${LIBS} -lpthread)
 add_definitions(-DCHUNKSIZE=10)
 add_definitions(-DTESTING)
 
-set(classical_lib_src params.cpp input_func.cpp)
+set(classical_lib_src params2.cpp params.cpp)
 add_library(classical SHARED ${classical_lib_src})
 
 add_executable (cpp-class main.cpp)

@@ -5,14 +5,17 @@
  *      Author: ryanmurray
  */
 
-#ifndef PARAMS_H_
-#define PARAMS_H_
+#ifndef PARAMS2_H_
+#define PARAMS2_H_
 
 #include <map>
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <iterator>
+#include <algorithm>
+#include <sstream>
+#include <vector>
 
 
 //#include <boost/assign/list_inserter.hpp>
@@ -22,6 +25,9 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/lambda/lambda.hpp>
+#include <boost/lambda/bind.hpp>
+#include <boost/algorithm/string.hpp>
 //#include <boost/bimap.hpp>
 
 //#include "input_func.hpp"
@@ -29,17 +35,18 @@
 #define foreach     BOOST_FOREACH
 
 using boost::any_cast;
+using namespace boost::lambda;
+using namespace boost;
 
 typedef std::map<std::string,boost::any> anyMap;
 //typedef boost::bimap< int, std::string > bm_type;
 
 template <class T>
 class param {
-	protected:
+	public:
 		std::string description, category, name;
 		T defaultValue;
 
-	public:
 		param(std::string desc, std::string cat, std::string varName, T defVal){
 			description = desc;
 			category = cat;
@@ -52,60 +59,108 @@ class param {
 
 template <class T>
 void param<T>::print(){
-	std::cout << description << category << name << defaultValue <<std::endl;
+    std::cout << description << " " 
+        << category << " " 
+        << name << " " 
+        << defaultValue << std::endl;
 }
 
-class run_param: public param<double> {
-	private:
-		double actual,max,min;
-
+template <class S>
+class run_param: public param<S> {
 	public:
-		run_param(std::string desc, std::string cat, std::string varName, double defVal, double act, double maximum, double minimum): param<double>(desc,cat,varName,defVal){
-			actual = act;
-			max = maximum;
-			min = minimum;
-		}
+		S actual,max,min;
+
+		run_param(std::string desc, std::string cat, std::string varName, S defVal, S act, S maximum, S minimum): param<S>(desc,cat,varName,defVal){
+        actual = act;
+        max = maximum;
+        min = minimum;
+        }
+
+
+        run_param(){};
 
 		void verify(){
-			if (actual >= min && actual <= max){
-				std::cout << name << " is within the allowed range" << std::endl;
-			}
-			else {
-				throw std::invalid_argument(name + " is not in the valid range.\n");
-			}
-		}
+            if (actual >= min && actual <= max){
+                std::cout << (*this).name << " is within the allowed range" << std::endl;
+            }
+            else {
+                throw std::invalid_argument((*this).name + " is not in the valid range.\n");
+            }
+        }
+
 
 		void print(){
-			std::cout << description << category << name << defaultValue << actual << max << min << std::endl;
-		}
+            std::cout << (*this).description << " " 
+                << (*this).category << " " 
+                << (*this).name << " " 
+                << (*this).defaultValue << " " 
+                << actual << " " 
+                << max << " " 
+                << min << std::endl;
+        }
+
+
 };
 
 class state_param: public param<int> {
-	private:
+	public:
 	    std::map<int,std::string> legalVals;
 	    int actual;
 	    std::string ident;
 
-	public:
-		state_param(std::string desc, std::string cat, std::string varName, int defVal, int act, std::map<int,std::string> input): param<int>(desc,cat,varName,defVal){
-			actual = act;
-			legalVals = input;
-		}
+		state_param(std::string, std::string, std::string, int, int, std::map<int,std::string>);
 
-		void verify(){
-			std::map<int,std::string>::iterator it;
-			it = legalVals.find(actual);
-			ident = it->second;
-			if (it != legalVals.end()){
-				std::cout << "For " << name << " option " << actual << " is being used, which is " + ident << std::endl;
-			}
-			else {
-				throw std::invalid_argument(boost::lexical_cast<std::string>(actual) + " does not have a valid meaning.\n");
-			}
-		}
+		void verify();
+
+		void print();
+};
+
+template <class R>
+class list_param: public param<std::string> {
+	public:
+        std::string actual;
+        int size;
+        std::vector<R> pArray;
+
+        list_param(std::string desc, std::string cat, std::string varName, std::string defVal, std::string act, int sz): param<std::string>(desc, cat, varName, defVal){
+            actual = act;
+            size = sz;
+        }
+
+		void verify();
 
 		void print(){
-			std::cout << description << category << name << defaultValue << actual << ident << std::endl;
-		}
+            std::cout << description << " " 
+                << category << " " 
+                << name << " " 
+                << defaultValue << " "
+                << actual << " "
+                << size << " ";
+            foreach(R i, pArray){
+                std::cout << i << " ";
+            }
+            std::cout << std::endl;
+        }
 };
+        
+template <class R>
+void list_param<R>::verify(){
+
+    typedef std::vector< std::string > split_vector_type;
+    split_vector_type splitStr;
+    split(splitStr, actual, is_any_of(","), token_compress_on);
+
+    if (splitStr.size() > size){
+        std::cerr <<  "\n***WARNING! The number of elements for the list given for " + name + " exceeds the number of dimensions given. The list is being truncated to " + boost::lexical_cast<std::string>(size) + ".***\n" << std::endl;
+    }
+    if (splitStr.size() < size){
+        throw std::invalid_argument("The number of elements for the list given for " + name + " is too short, at least " + boost::lexical_cast<std::string>(size) + " are needed.");
+    }
+    for(int i=0; i<size; i++)
+    {
+        pArray.push_back(boost::lexical_cast<R>(splitStr[i]));
+    }
+}
 #endif
+
+
