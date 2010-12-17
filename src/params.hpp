@@ -35,6 +35,7 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/program_options.hpp>
+#include <boost/assign/list_inserter.hpp>
 
 //#include "input_func.hpp"
 #include "params2.hpp"
@@ -49,18 +50,27 @@ namespace po = boost::program_options;
 
  
 typedef std::map<std::string,boost::any> anyMap;
+typedef std::map<int,std::string> defMap;
 typedef std::vector<boost::any> anyVec;
 typedef std::pair<std::string,boost::any> pairm;
 
+typedef boost::shared_ptr<run_param<int> > intRunPtr;
+typedef boost::shared_ptr<run_param<double> > doubleRunPtr;
+typedef boost::shared_ptr<list_param<int> > intListPtr;
+typedef boost::shared_ptr<list_param<double> > doubleListPtr;
+typedef boost::shared_ptr<state_param> statePtr;
 
-pairm validate (pairm);
+typedef run_param<int> intRun;
+typedef run_param<double> doubleRun;
+typedef list_param<int> intList;
+typedef list_param<double> doubleList;
+
+
+pairm validate (pairm&, boost::any);
 
 void gen_param(pairm, po::options_description&);
 
 class pmap {
-
-    private:
-        anyMap general_opts;
 
     public:
         anyMap map;
@@ -71,8 +81,6 @@ class pmap {
 
         void print();
         
-        void validate_map();
-
         void print(std::string);
 
         void read_params(std::string, int, char**);
