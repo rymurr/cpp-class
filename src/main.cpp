@@ -14,13 +14,12 @@
 #include <fstream>
 #include <string>
 
-#include "params.hpp"
+#include "pywrapper.hpp"
 
 
 int main(int argc, char **argv)
 {
-    pmap params;
-    params.read_params("run_params.cfg", argc, argv);
-    params.print();
+    std::string av = *argv;
+    if (!run_main(argc, av, "run_params.cfg")){return 10;};
 }
 

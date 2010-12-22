@@ -40,9 +40,11 @@ ENDIF ("${CMAKE_SYSTEM}" MATCHES "Linux")
 
 SET(Boost_USE_MULTITHREADED "OFF")
 SET(Boost_ADDITIONAL_VERSIONS "0.99" "0.99.0" "1.78" "1.78.0" "1.41.0" "1.40.0" "1.42.0" "1.36.0" "1.45.0")
-find_package(Boost 1.45.0 COMPONENTS program_options date_time REQUIRED)
+find_package(Boost 1.45.0 COMPONENTS program_options date_time python REQUIRED)
 link_directories ( ${Boost_LIBRARY_DIRS} )
 include_directories ( ${Boost_INCLUDE_DIRS} )
+INCLUDE_DIRECTORIES("/usr/include/python2.6")
+LINK_DIRECTORIES("/usr/lib/python2.6")
 
 find_package(GSL REQUIRED)
 include_directories(${GSL_INCLUDE_DIR})
@@ -52,17 +54,29 @@ find_package(FFTW REQUIRED)
 include_directories(${FFTW_INCLUDE_DIR})
 set (LIBS ${LIBS} ${FFTW_LIBRARIES} ${FFTW_LIBRARIES_THREADED})
 
-link_libraries(${LIBS} -lpthread)
+link_libraries(${LIBS} -lpthread -lpython2.6 ${Boost_LIBRARIES})
 
 
 add_definitions(-DCHUNKSIZE=10)
 add_definitions(-DTESTING)
 
-set(classical_lib_src params2.cpp params.cpp)
-add_library(classical SHARED ${classical_lib_src})
+set(classical_lib_src input_param.cpp params.cpp input_funcs.cpp pywrapper.cpp pymodule.cpp)
+add_library(classical SHARED ${classical_lib_src}  )
 
 add_executable (cpp-class main.cpp)
 #add_executable (cpp-class main.cpp ${classical_lib_src})
 #target_link_libraries(cpp-molion vtkHybrid vtkWidgets ${Boost_PROGRAM_OPTIONS_LIBRARY})
-target_link_libraries(cpp-class classical ${Boost_LIBRARIES})
+target_link_libraries(cpp-class classical )
 #target_link_libraries(cpp-class ${Boost_LIBRARIES})
+
+GET_TARGET_PROPERTY(LIB_NAME classical LOCATION)
+GET_TARGET_PROPERTY(Bar_prefix classical PREFIX)
+GET_TARGET_PROPERTY(Bar_suffix classical SUFFIX)
+SET(NEW_LIB_NAME ${Bar_prefix}class${Bar_suffix})
+ 
+ADD_CUSTOM_COMMAND(
+  TARGET classical
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy ${LIB_NAME} ../classical.so
+)
+

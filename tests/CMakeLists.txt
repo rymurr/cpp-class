@@ -52,7 +52,7 @@ add_definitions(-DTESTING)
 
 
 link_libraries(boost_unit_test_framework gsl blas ${LIBS} ${Boost_LIBRARIES})
-SET(COMMON ../src/params.cpp ../src/input_func.cpp)
+SET(COMMON ../src/params.cpp ../src/input_param.cpp ../src/input_funcs.cpp )
 add_executable(params_tests ${COMMON} params_tests.cpp)
 #TARGET_LINK_LIBRARIES(twodwf_tests vtkHybrid vtkWidgets)
 #add_executable(wf_tests ${COMMON} wf_tests.cpp)
