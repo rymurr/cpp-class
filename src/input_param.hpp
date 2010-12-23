@@ -36,6 +36,10 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/program_options.hpp>
 #include <boost/assign/list_inserter.hpp>
+//#include <boost/archive/binary_oarchive.hpp>
+//#include <boost/archive/binary_iarchive.hpp>
+//#include <boost/serialization/map.hpp>
+#include <glog/logging.h>
 
 //#include "input_func.hpp"
 #include "params.hpp"
@@ -79,6 +83,10 @@ class pmap {
         void print();
         
         void print(std::string);
+
+//        void serialize();
+    
+//        void restore();
 
         bool read_params(std::string, int, char**);
 };

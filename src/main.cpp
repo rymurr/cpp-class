@@ -15,11 +15,13 @@
 #include <string>
 
 #include "pywrapper.hpp"
+#include <glog/logging.h>
+#include <gflags/gflags.h>
 
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
-    std::string av = *argv;
-    if (!run_main(argc, av, "run_params.cfg")){return 10;};
+    google::InitGoogleLogging(*argv);
+    if (!run_main(argc, argv, "run_params.cfg")){return 10;};
 }
 

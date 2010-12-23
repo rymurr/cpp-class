@@ -22,7 +22,7 @@ pmap::~pmap(){
 
 }
 
-bool pmap::read_params(std::string fname, int ac, char** av){
+bool pmap::read_params(std::string fname, int argc, char** argv){
 
     //TODO: add another section for file handling: file_opts
     //need state_params for log/output direction: std::cout/cerr or a file
@@ -144,15 +144,22 @@ bool pmap::read_params(std::string fname, int ac, char** av){
         visible.add(generic).add(timepos).add(wfopts).add(field).add(runopts);
 
     po::variables_map vm;
-        po::store(po::parse_command_line(ac, av, cmdline), vm);
-        po::notify(vm);
+    po::parsed_options parsed = po::command_line_parser(argc, argv).options(cmdline).allow_unregistered().run();
+    po::store(parsed, vm);
+    po::notify(vm);
 
     std::ifstream ifs(fname.c_str());
-    store(parse_config_file(ifs, config), vm);
-    notify(vm);
+    po::store(parse_config_file(ifs, config), vm);
+    po::notify(vm);
+
+    std::vector<std::string> to_gflags = po::collect_unrecognized(parsed.options,po::include_positional);                                                                                                   
+    foreach(std::string item, to_gflags){
+        std::cout << item << " ";
+    }
+    std::cout << std::endl;
 
     if (vm.count("help")){
-        std::cerr << visible << "\n";
+        std::cout << visible << "\n";
         return false; 
     }
 
@@ -193,7 +200,7 @@ bool pmap::read_params(std::string fname, int ac, char** av){
             pairm n = validate(m,newVal);
             map[n.first] = n.second;
     }
-
+    
     return true;
 }
 
@@ -203,7 +210,7 @@ void pmap::print(std::string runParams){
 		fp_out.open(runParams.c_str());
 	}
 	catch(std::ofstream::failure e){
-		std::cerr << "could not open the file" << std::endl;
+		LOG(ERROR) << "could not open the file" << std::endl;
 		return;
 	}
 
@@ -242,41 +249,58 @@ void pmap::print(std::string runParams){
 
 void pmap::print(){
 
+    //TODO: change this to print to log instead of COUT.
+    // when printing to log I have to make single 
 	ptime now = second_clock::local_time();
-    std::cout << "This is the set of parameters being used in the current run, performed at: "
-        << to_simple_string(now)
-        << std::endl;
+    LOG(INFO) << "This is the set of parameters being used in the current run, performed at: " + to_simple_string(now);
     foreach(pairm m, map)
     {
-        std::cout << "The value of " << m.first << " is: " ;
+        std::string front = "The value of " + boost::lexical_cast<std::string>(m.first) + " is: " ;
         try
         {
-             std::cout << any_cast<double>(m.second) <<"\n";
+             any_cast<double>(m.second);
+             LOG(INFO) << front + boost::lexical_cast<std::string>(any_cast<double>(m.second)) ;
         }
         catch(boost::bad_any_cast & e)
         {
             try
             {
-                std::cout << any_cast<int>(m.second) <<"\n";
+                any_cast<int>(m.second);
+                LOG(INFO) << front + boost::lexical_cast<std::string>(any_cast<int>(m.second));
             }
             catch(boost::bad_any_cast & e)
             {
                 try{
-                    std::cout << any_cast<std::string>(m.second) <<"\n";
+                    any_cast<std::string>(m.second);
+                    LOG(INFO) << front + boost::lexical_cast<std::string>(any_cast<std::string>(m.second));
                 }
                 catch(boost::bad_any_cast & e) {
                     try{
+                        any_cast<std::vector<int> >(m.second);
+                        std::string back;
                         foreach(int i, any_cast<std::vector<int> >(m.second)){
-                            std::cout << i << " ";
+                             back = back + lexical_cast<std::string>(i) + " ";
                         }
-                        std::cout << "\n";
+                        LOG(INFO) << front + back;
                     }
                     catch(boost::bad_any_cast & e){
-                        std::cout << "n/a" << "\n";
+                        LOG(INFO) << front + "n/a";
                     }
                 }   
             }
         }
     }
-    std::cout << std::endl;
 }
+
+/*
+void pmap::serialize(){
+    std::ofstream ofs(any_cast<std::string>((*this).map["data_file"]).c_str());
+    boost::archive::binary_oarchive oa(ofs);
+    oa << (*this).map;
+}
+
+void pmap::restore(){
+    boost::archive::binary_iarchive ia(std::cin);
+    ia >> (*this).map;
+}
+*/

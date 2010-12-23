@@ -54,13 +54,13 @@ find_package(FFTW REQUIRED)
 include_directories(${FFTW_INCLUDE_DIR})
 set (LIBS ${LIBS} ${FFTW_LIBRARIES} ${FFTW_LIBRARIES_THREADED})
 
-link_libraries(${LIBS} -lpthread -lpython2.6 ${Boost_LIBRARIES})
+link_libraries(${LIBS} -lpthread -lpython2.6 ${Boost_LIBRARIES} -lglog -lgflags)
 
 
 add_definitions(-DCHUNKSIZE=10)
 add_definitions(-DTESTING)
 
-set(classical_lib_src input_param.cpp params.cpp input_funcs.cpp pywrapper.cpp pymodule.cpp)
+set(classical_lib_src input_param.cpp params.cpp input_funcs.cpp pywrapper.cpp pymodule.cpp fields.cpp)
 add_library(classical SHARED ${classical_lib_src}  )
 
 add_executable (cpp-class main.cpp)

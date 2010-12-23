@@ -29,6 +29,7 @@
 #include <boost/lambda/bind.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/shared_ptr.hpp>
+#include <glog/logging.h>
 //#include <boost/bimap.hpp>
 
 //#include "input_func.hpp"
@@ -36,7 +37,7 @@
 #define foreach     BOOST_FOREACH
 
 using boost::any_cast;
-using namespace boost::lambda;
+//using namespace boost::lambda;
 using namespace boost;
 
 typedef std::map<std::string,boost::any> anyMap;
@@ -113,7 +114,7 @@ class run_param: public param<S> {
 
 		void verify(){
             if (*((*this).actualValue) >= *min && *((*this).actualValue) <= *max){
-                std::cout << *((*this).name) << " is within the allowed range" << std::endl;
+                LOG(INFO) << *((*this).name) << " is within the allowed range" << std::endl;
             }
             else {
                 throw std::invalid_argument(*((*this).name) + " is not in the valid range.\n");
@@ -191,7 +192,7 @@ void list_param<R>::verify(){
     split(splitStr, *((*this).actualValue), is_any_of(","), token_compress_on);
 
     if (splitStr.size() > *size){
-        std::cerr <<  "\n***WARNING! The number of elements for the list given for " + *name + " exceeds the number of dimensions given. The list is being truncated to " + boost::lexical_cast<std::string>(*size) + ".***\n" << std::endl;
+        LOG(WARNING) <<  "\n***WARNING! The number of elements for the list given for " + *name + " exceeds the number of dimensions given. The list is being truncated to " + boost::lexical_cast<std::string>(*size) + ".***\n" << std::endl;
     }
     if (splitStr.size() < *size){
         throw std::invalid_argument("The number of elements for the list given for " + *name + " is too short, at least " + boost::lexical_cast<std::string>(*size) + " are needed.");
