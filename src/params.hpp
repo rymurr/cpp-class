@@ -103,10 +103,10 @@ class run_param: public param<S> {
         }
 
         run_param<S> operator=(const run_param<S> &a){
-            description = a.description;
-            name = a.name;
-            actualValue = a.actualValue;
-            defaultValue = a.defaultValue;
+            (*this).description = a.description;
+            (*this).name = a.name;
+            (*this).actualValue = a.actualValue;
+            (*this).defaultValue = a.defaultValue;
             max = a.max;
             min = a.min;
             std::cout << "I FEEL USED\n";

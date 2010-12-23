@@ -22,7 +22,7 @@ pmap::~pmap(){
 
 }
 
-bool pmap::read_params(std::string fname, int argc, char** argv){
+bool pmap::read_params(std::string fname, int argc, char *argv[]){
 
     //TODO: add another section for file handling: file_opts
     //need state_params for log/output direction: std::cout/cerr or a file

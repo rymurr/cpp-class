@@ -17,17 +17,16 @@
 #include <boost/bind.hpp>
 #include <glog/logging.h>
 
-#include "input_param.hpp"
 
 #define pi M_PI
 
 using boost::any_cast;
-
+typedef std::map<std::string,boost::any> anyMap;
 
 class field {
     
     public:
-        field(pmap map, int);
+        field(anyMap map, int);
 
         field();
 
@@ -36,7 +35,7 @@ class field {
         double operator()(double);
 
     private:
-        double omega, fwhm, ef, phi;
+        double omega, fwhm, ef, phi, tmid;
 
         boost::function<double (double)> fpick;
 

@@ -88,7 +88,7 @@ class pmap {
     
 //        void restore();
 
-        bool read_params(std::string, int, char**);
+        bool read_params(std::string, int, char *argv[]);
 };
 
 
