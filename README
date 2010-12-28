@@ -1,4 +1,13 @@
+1) figure out how to deal with potentials in 1&2 dimensions...extra functions??
 
-1) get gflags working with glog and program_options!!
+1.5) finish constructor for potential
 
 2) write/find a timer app similar to serguei's simple/easy/fun!
+
+4) add a polarization parameter to fields
+
+5) change around defaults eg: ndim = 4
+
+6) docs! should be noted that ndim = 4 is x,px,y,py
+
+7) add id private member to fields class

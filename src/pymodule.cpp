@@ -4,5 +4,5 @@ using namespace boost::python;
 
 BOOST_PYTHON_MODULE(classical)
 {
-    def("run_main",run_main);
+    def("pyrun_main",pyrun_main);
 }

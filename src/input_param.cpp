@@ -22,7 +22,7 @@ pmap::~pmap(){
 
 }
 
-bool pmap::read_params(std::string fname, int argc, char *argv[]){
+bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &argv){
 
     //TODO: add another section for file handling: file_opts
     //need state_params for log/output direction: std::cout/cerr or a file
@@ -144,7 +144,14 @@ bool pmap::read_params(std::string fname, int argc, char *argv[]){
         visible.add(generic).add(timepos).add(wfopts).add(field).add(runopts);
 
     po::variables_map vm;
-    po::parsed_options parsed = po::command_line_parser(argc, argv).options(cmdline).allow_unregistered().run();
+
+    char** av=new char*[argc];
+    for(int i=0;i<argc;i++){
+        av[i] = &argv[i][0];
+    }
+    po::parsed_options parsed = po::command_line_parser(argc, av).options(cmdline).allow_unregistered().run();
+    delete[] av;
+
     po::store(parsed, vm);
     po::notify(vm);
 
@@ -152,15 +159,32 @@ bool pmap::read_params(std::string fname, int argc, char *argv[]){
     po::store(parse_config_file(ifs, config), vm);
     po::notify(vm);
 
-    std::vector<std::string> to_gflags = po::collect_unrecognized(parsed.options,po::include_positional);                                                                                                   
-    foreach(std::string item, to_gflags){
-        std::cout << item << " ";
-    }
-    std::cout << std::endl;
+    std::vector<std::string> to_gflags = po::collect_unrecognized(parsed.options,po::include_positional);
+    std::vector<std::string>::iterator it;
+    it = to_gflags.begin();
+    to_gflags.insert(it,argv[0]);
 
+    
+//    delete[] av2;
+    std::string usage = "Options included by google-glog for logging purposes";
+    google::SetUsageMessage(usage);
     if (vm.count("help")){
         std::cout << visible << "\n";
+        to_gflags.push_back("--help");
+        int gsize = to_gflags.size();
+        char** av2=new char*[gsize];
+        for(int i=0;i<gsize;i++){
+            av2[i] = &to_gflags[i][0];
+        }
+        google::ParseCommandLineFlags(&gsize, &av2, true);
         return false; 
+    } else {
+        int gsize = to_gflags.size();
+        char** av2=new char*[gsize];
+        for(int i=0;i<gsize;i++){
+            av2[i] = &to_gflags[i][0];
+        }
+        google::ParseCommandLineFlags(&gsize, &av2, true);
     }
 
     for (po::variables_map::iterator iter = vm.begin(); iter != vm.end(); ++iter){
@@ -304,3 +328,7 @@ void pmap::restore(){
     ia >> (*this).map;
 }
 */
+
+void pmap::map_out(anyMap &mapout){
+    mapout = (*this).map;
+}

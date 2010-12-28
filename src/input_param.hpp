@@ -39,6 +39,7 @@
 //#include <boost/archive/binary_oarchive.hpp>
 //#include <boost/archive/binary_iarchive.hpp>
 //#include <boost/serialization/map.hpp>
+#include <gflags/gflags.h>
 #include <glog/logging.h>
 
 //#include "input_func.hpp"
@@ -73,9 +74,10 @@ typedef list_param<double> doubleList;
 
 class pmap {
 
-    public:
+    private:
         anyMap map;
 
+    public:
         pmap();
         
         virtual ~pmap();
@@ -83,12 +85,14 @@ class pmap {
         void print();
         
         void print(std::string);
+        
+        void map_out(anyMap&);
 
 //        void serialize();
     
 //        void restore();
 
-        bool read_params(std::string, int, char *argv[]);
+        bool read_params(std::string, int, std::vector<std::string>&);
 };
 
 

@@ -20,7 +20,7 @@ state_param::state_param(std::string desc, std::string varName, int defVal, std:
                   
 }
 
-void state_param::verify(){
+bool state_param::verify(){
     std::map<int,std::string>::iterator it;
     it = (*legalVals).find(*actualValue);
     if (it != (*legalVals).end()){

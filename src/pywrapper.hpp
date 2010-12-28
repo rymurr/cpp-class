@@ -1,4 +1,11 @@
 #include <string>
-#include "input_param.hpp"
+#include <vector>
 
-int run_main(int argc, char *argv[], std::string fname);
+#include <boost/python/extract.hpp>
+#include <boost/python/list.hpp>
+#include "input_param.hpp"
+#include "fields.hpp"
+
+
+int run_main(int argc, std::vector<std::string> argv, std::string fname);
+int pyrun_main(int argc,boost::python::list argv, std::string fname);

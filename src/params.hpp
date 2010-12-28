@@ -57,6 +57,8 @@ class param {
             actualValue = defaultValue;
 		}
 
+        bool virtual verify(){};
+
         param(){};
 
 		void virtual print();
@@ -92,6 +94,7 @@ class run_param: public param<S> {
 
         run_param(){};
 
+        /*
         run_param(const run_param &a){
             (*this).description = a.description;
             (*this).name = a.name;
@@ -111,8 +114,8 @@ class run_param: public param<S> {
             min = a.min;
             std::cout << "I FEEL USED\n";
         }
-
-		void verify(){
+        */
+		bool verify(){
             if (*((*this).actualValue) >= *min && *((*this).actualValue) <= *max){
                 LOG(INFO) << *((*this).name) << " is within the allowed range" << std::endl;
             }
@@ -142,7 +145,7 @@ class state_param: public param<int> {
 
 		state_param(std::string, std::string, int, std::map<int,std::string>);
 
-		void verify();
+		bool verify();
 
 		void print();
 };
@@ -157,7 +160,7 @@ class list_param: public param<std::string> {
             size =sz;
         }
 
-		void verify();
+		bool verify();
 
 		void print(){
             std::cout << *description << " " 
@@ -185,7 +188,7 @@ class list_param: public param<std::string> {
 };
 
 template <class R>
-void list_param<R>::verify(){
+bool list_param<R>::verify(){
 
     typedef std::vector< std::string > split_vector_type;
     split_vector_type splitStr;

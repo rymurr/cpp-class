@@ -13,29 +13,22 @@ using boost::any_cast;
 
 BOOST_AUTO_TEST_SUITE(params)
 
-BOOST_AUTO_TEST_CASE(initparams)
-{
-
-    pmap params;
-    params.map["test"]=1;
-    int j=1;
-    BOOST_REQUIRE_EQUAL(any_cast<int>(params.map["test"]),j);
-
-
-}
-
 BOOST_AUTO_TEST_CASE(retparams)
 {
-	int a=3;
+	int a=2;
 
 	std::string str="test_config.cfg";
-	char *writable = "hello --ndim 1";
+	std::vector<std::string> writable;
+    writable.push_back("hello");
+    writable.push_back("--ndim=2");
 
     pmap params;
-    params.read_params(str,a,&writable);
+    std::map<std::string,boost::any> retMap;
+    params.read_params(str,a,writable);
+    params.map_out(retMap);
 
     int j=1, i=2;
-    BOOST_REQUIRE_EQUAL(any_cast<int>(params.map["ndim"]),i);
+    BOOST_REQUIRE_EQUAL(any_cast<int>(retMap["ndim"]),i);
     params.print();
 
 }

@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>
 #include "fields.hpp"
+#include "potential.hpp"
 #include "input_param.hpp"
 
 using boost::any_cast;
@@ -18,15 +19,37 @@ BOOST_AUTO_TEST_SUITE(fields)
 BOOST_AUTO_TEST_CASE(initparams)
 {
 
-    pmap test;
+    anyMap test;
     std::vector<double> y,x;
     x.push_back(1.);
     y.push_back(0.);
-    test.map["omega"] = x;
-    test.map["ce"] = y;
-    test.map["ef"] = x;
-    test.map["fwhm"] = x;
-    test.map["env"] = 1;
+    test["omega"] = x;
+    test["ce"] = y;
+    test["ef"] = x;
+    test["fwhm"] = x;
+    test["env"] = 1;
+    test["tfinal"] = 100.;
+    test["tinitial"] = 1.;
+    field efield(test,0);
+    BOOST_CHECK_CLOSE(efield(0.),1.,1E-6); 
+
+
+}
+
+BOOST_AUTO_TEST_CASE(initpotparams)
+{
+
+    anyMap test;
+    std::vector<double> y,x;
+    x.push_back(1.);
+    y.push_back(0.);
+    test["omega"] = x;
+    test["ce"] = y;
+    test["ef"] = x;
+    test["fwhm"] = x;
+    test["env"] = 1;
+    test["tfinal"] = 100.;
+    test["tinitial"] = 1.;
     field efield(test,0);
     BOOST_CHECK_CLOSE(efield(0.),1.,1E-6); 
 

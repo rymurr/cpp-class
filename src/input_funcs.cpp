@@ -1,6 +1,7 @@
 #include "input_funcs.hpp"
 
 
+//TODO: try and leverage polymorphism here!
 pairm validate(pairm& m, boost::any newVal){
     if (m.second.type() == typeid(intRunPtr)){
         any_cast<intRunPtr>(m.second)->set(any_cast<int>(newVal));
