@@ -6,6 +6,7 @@ using boost::any_cast;
 
 field::field(anyMap map, int id){
 
+    id_=id;
     omega_ = any_cast<std::vector<double> >(map["omega"])[id];
     fwhm_ = any_cast<std::vector<double> >(map["fwhm"])[id];
     ef_ = any_cast<std::vector<double> >(map["ef"])[id];

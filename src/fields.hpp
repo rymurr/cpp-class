@@ -34,6 +34,8 @@ class field {
         double operator()(double);
 
     private:
+        int id_;
+
         double omega_, fwhm_, ef_, phi_, tmid_;
 
         boost::function<double (double)> fpick;

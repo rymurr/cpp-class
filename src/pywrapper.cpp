@@ -19,7 +19,7 @@ int run_main(int argc, std::vector<std::string> argv, std::string fname){
     std::vector<double> dist_center;
     //find_center(params.map
 
-
+    google::ShutdownGoogleLogging();
     return 1;
 }
 

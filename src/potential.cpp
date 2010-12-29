@@ -9,8 +9,11 @@ potential::~potential(){}
 
 potential::potential(anyMap in_param){
 
-    double theta=;
-    double rnuc=;
+    double theta=any_cast<double>(in_param["theta-nuc"]);
+    double phi=any_cast<double>(in_param["phi-nuc"]);
+    double rnuc=any_cast<double>(in_param["rnuc"]);
+    charges_=any_cast<std::vector<double> >(in_param["charges"]);
+    alpha_=any_cast<double>(in_param["smoothing"]);
     int pot_choice = any_cast<int>(in_param["pot-type"]);
     switch (pot_choice){
         case 1:
