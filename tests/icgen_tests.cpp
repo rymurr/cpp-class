@@ -120,5 +120,39 @@ BOOST_AUTO_TEST_CASE(lineartest)
     std::cout << "\n" << std::endl;
 }
 
+BOOST_AUTO_TEST_CASE(lineartest2)
+{
+
+    anyMap test;
+    std::vector<double> x;
+    std::vector<int> y;
+    x.push_back(0.);
+    x.push_back(0.);
+    x.push_back(0.);
+    y.push_back(5);
+    y.push_back(5);
+    y.push_back(5);
+    test["dims"] = y;
+    test["means"] = x;
+    test["variance"] = 1.;
+    test["dist-type"] = 2;
+    
+    std::cout << "\n" << std::endl;
+    test["nobuild"] = true;
+    icgenerator gen2(test);
+    boost::shared_ptr<std::vector<double> > vals = boost::shared_ptr<std::vector<double> >(new std::vector<double>(x));
+    std::cout << "\n" << std::endl;
+    for (int i = 0; i < 3; i++)
+            (*vals)[i]= 202;
+    for (int i=0;i<125;i++){
+        gen2.get_ic(vals);
+        for (int j=0;j<3;j++){
+            std::cout << (*vals)[j] << " ";
+        }
+        std::cout << "\n";
+    }
+    std::cout << "\n" << std::endl;
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 

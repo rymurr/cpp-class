@@ -13,13 +13,14 @@
 //#include <gsl/gsl_math.h>
 
 #include <boost/any.hpp>
-#include <boost/cast.hpp>
+//#include <boost/cast.hpp>
 //#include <boost/array.hpp>
 #include <boost/multi_array.hpp>
 //#include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 #include <boost/lambda/lambda.hpp>
+#include <boost/lambda/casts.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/random/linear_congruential.hpp>
 #include <boost/random/normal_distribution.hpp>
@@ -56,6 +57,8 @@ class SingleIC{
         void virtual RetVal(boost::shared_ptr<std::vector<double> >){};
 
         double virtual RetVal(){return 0;};
+
+        void virtual reset(){};
         
 };
 

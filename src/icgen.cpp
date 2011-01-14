@@ -79,22 +79,43 @@ void icgenerator::singlemc(boost::shared_ptr<std::vector<double> > ics){
 
 void icgenerator::singlelin(boost::shared_ptr<std::vector<double> > ics){
     
-    if (!lindone_)
-        for_each(gens_.begin(),gens_.end(),boost::bind(&SingleLinIC::RetVal,_1));
+    if (!lindone_){
+//        transform(gens_.begin(),gens_.end(),ics->begin(),boost::bind<double>(&SingleLinIC::RetVal,boost::lambda::ll_reinterpret_cast<SingleLinIC*>(boost::lambda::_1)));
+//        for_each(gens_.begin(),gens_.end(),boost::bind(&SingleLinIC::RetVal,boost::lambda::ll_dynamic_cast<boost::shared_ptr<SingleLinIC> >(boost::lambda::_1)));
+        for (int i=0;i<gens_.size();i++){
+            (*ics)[i] = gens_[i]->RetVal();
+            tsing_[i]+=1;
+        }
+    //    tsing_[0]++;
+        lindone_=true;
+        return;
         //TRYING TO GET THIS TO WORK AS A ONE LINER!
-/*
-    (*ics)[0] = gens_[0]->RetVal();
-    for (int i=0;i<gens_.size()-1;i++){
-        if (gens_[i]->current_ >= gens_[i]->finish_){
-            gens_[i]->current_ = gens_[i]->start_;
+    }
+
+    if (tsing_[0] >= trajs_[0]){
+        tsing_[0]=0;
+        gens_[0]->reset();
+        (*ics)[1] = gens_[1]->RetVal();
+        tsing_[1]++;
+    }
+
+    for (int i=1;i<tsing_.size()-1;i++){
+        if (tsing_[i] > trajs_[i]){
+            tsing_[i]=1;
+            gens_[i]->reset();
             (*ics)[i] = gens_[i]->RetVal();
             (*ics)[i+1] = gens_[i+1]->RetVal();
+            tsing_[i+1]++;
 //            return;
-        }
+        }// else 
+
     }
-    if (gens_[gens_.size()-1]->current_ >= gens_[gens_.size()-1]->finish_)
-        throw std::range_error("Reached the end of the trajectories"); 
-*/
+
+    (*ics)[0] = gens_[0]->RetVal();
+    tsing_[0]++;
+
+//    if (gens_[gens_.size()-1]->current_ >= gens_[gens_.size()-1]->finish_)
+//        throw std::range_error("Reached the end of the trajectories"); 
 }
 
 void icgenerator::linear(){
@@ -158,8 +179,8 @@ SingleLinIC::~SingleLinIC(){}
 
 SingleLinIC::SingleLinIC(double mean, double var, int size): mean_(mean), SingleIC(var,size){
 
-    double start_ = mean_ - 4.*sqrt((*this).var_);
-    double finish_ = mean_ + 4.*sqrt((*this).var_);
+    start_ = mean_ - 4.*sqrt((*this).var_);
+    finish_ = mean_ + 4.*sqrt((*this).var_);
     dx_ = (finish_-start_)/(*this).size_;
     current_ = start_ - 0.5*dx_;
 
@@ -171,7 +192,7 @@ double SingleLinIC::RetVal(){
 }
 
 void SingleLinIC::reset(){
-    current_ = start_;
+    current_ = start_ - 0.5*dx_;
 }
 
 SingleIC::SingleIC(){}
