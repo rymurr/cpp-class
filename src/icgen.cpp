@@ -13,6 +13,8 @@ icgenerator::icgenerator(anyMap params){
     trajs_ = any_cast<std::vector<int> >(params["dims"]);
     tType_ = any_cast<int>(params["dist-type"]);
     variance_= any_cast<double>(params["variance"]);
+    tnumb_ = 1;
+    for_each(trajs_.begin(), trajs_.end(), tnumb_*=boost::lambda::_1);
 
     try{
         single_ = any_cast<bool>(params["nobuild"]);
@@ -61,7 +63,7 @@ icgenerator::icgenerator(anyMap params){
     }
 }
 
-void icgenerator::get_ic(boost::shared_ptr<std::vector<double> > ics){
+void icgenerator::get_ic(vTraj ics){
     (*this).gpick(ics);
 }
 
@@ -73,11 +75,17 @@ void icgenerator::ret_ics(boost::shared_ptr<ic_array> icPtr){
     *icPtr = initConditions_;
 }
 
-void icgenerator::singlemc(boost::shared_ptr<std::vector<double> > ics){
-    gens_[0]->RetVal(ics);    
+void icgenerator::singlemc(vTraj ics){
+    if (tnumb_ > 0){
+        gens_[0]->RetVal(ics); 
+        tnumb_--;
+    } else {
+        throw std::range_error("Reached the end of the trajectories"); 
+    }
+
 }
 
-void icgenerator::singlelin(boost::shared_ptr<std::vector<double> > ics){
+void icgenerator::singlelin(vTraj ics){
     
     if (!lindone_){
 //        transform(gens_.begin(),gens_.end(),ics->begin(),boost::bind<double>(&SingleLinIC::RetVal,boost::lambda::ll_reinterpret_cast<SingleLinIC*>(boost::lambda::_1)));
@@ -113,9 +121,10 @@ void icgenerator::singlelin(boost::shared_ptr<std::vector<double> > ics){
 
     (*ics)[0] = gens_[0]->RetVal();
     tsing_[0]++;
+//VERY IMPORTANT!!! IS ALL OF THIS THREAD SAFE???? Shouldnt need to be, see notes.
 
-//    if (gens_[gens_.size()-1]->current_ >= gens_[gens_.size()-1]->finish_)
-//        throw std::range_error("Reached the end of the trajectories"); 
+    if (tsing_[tsing_.size()-1] > trajs_[trajs_.size()-1])
+        throw std::range_error("Reached the end of the trajectories"); 
 }
 
 void icgenerator::linear(){
@@ -143,7 +152,7 @@ void icgenerator::montecarlo(){
     */
     //double trajs = std::accumulate(trajs_.begin(),trajs_.end(),0);
     SingleRandIC uni(means_,variance_);
-    boost::shared_ptr<std::vector<double> > rands = boost::shared_ptr<std::vector<double> >(new std::vector<double>(means_));
+    vTraj rands = vTraj(new std::vector<double>(means_));
     for (int j=0;j<tot;j++){
             uni.RetVal(rands);
         for (int i=0;i<trajs_.size();i++){
@@ -167,7 +176,7 @@ SingleRandIC::SingleRandIC(std::vector<double> means, double var): means_(means)
     
 }
 
-void SingleRandIC::RetVal(boost::shared_ptr<std::vector<double> > retVal){
+void SingleRandIC::RetVal(vTraj retVal){
     for (int i=0;i<(*this).size_;i++){
         (*retVal)[i] = (*generators_)()+means_[i];
     }

@@ -35,6 +35,7 @@
 typedef std::map<std::string,boost::any> anyMap;
 typedef boost::multi_array<double,1> w_array;
 typedef boost::multi_array<double,2> ic_array;
+typedef boost::shared_ptr<std::vector<double> > vTraj;
 
 // This is a typedef for a random number generator.
 // Try boost::mt19937 or boost::ecuyer1988 instead of boost::minstd_rand
@@ -54,7 +55,7 @@ class SingleIC{
 
         SingleIC(double, int);
 
-        void virtual RetVal(boost::shared_ptr<std::vector<double> >){};
+        void virtual RetVal(vTraj){};
 
         double virtual RetVal(){return 0;};
 
@@ -93,29 +94,30 @@ class SingleRandIC: public SingleIC{
 
         SingleRandIC(std::vector<double>, double);
 
-        void RetVal(boost::shared_ptr<std::vector<double> >);
+        void RetVal(vTraj);
 };
 
 class icgenerator{
+
     private:
-        int tType_;
+        int tType_, tnumb_;
         std::vector<double> means_;
         std::vector<int> trajs_,tsing_;
         double variance_;
         ic_array initConditions_;
         w_array weights_;
         boost::function<void (void)> fpick;
-        boost::function<void (boost::shared_ptr<std::vector<double> >)> gpick;
+        boost::function<void (vTraj)> gpick;
         bool single_,lindone_;
         std::vector<boost::shared_ptr<SingleIC> > gens_;
 
         void montecarlo();
         
-        void singlemc(boost::shared_ptr<std::vector<double> >);
+        void singlemc(vTraj);
 
         void linear();
 
-        void singlelin(boost::shared_ptr<std::vector<double> >);
+        void singlelin(vTraj);
 
     public:
         icgenerator();
@@ -133,7 +135,7 @@ class icgenerator{
 
         void gen_ics();
 
-        void get_ic(boost::shared_ptr<std::vector<double> >);
+        void get_ic(vTraj);
 
         void gen_weights(boost::function<void (anyMap)>, anyMap);
 };
