@@ -111,6 +111,23 @@ class icgenerator{
         bool single_,lindone_;
         std::vector<boost::shared_ptr<SingleIC> > gens_;
 
+    friend class boost::serialization::access;
+        template<class Archive>
+        void serialize(Archive & ar, const unsigned int version)
+        {
+            ar & means_;
+            ar & trajs_;
+            ar & tsing_;
+            ar & variance_;
+            ar & single_;
+            ar & lindone_;
+            ar & fpick;
+            ar & gpick;
+            ar & initConditions_;
+            ar & weights_;
+            ar & gens_;
+        }
+        
         void montecarlo();
         
         void singlemc(vTraj);
