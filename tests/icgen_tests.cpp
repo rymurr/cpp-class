@@ -218,15 +218,21 @@ BOOST_AUTO_TEST_CASE(serialize2)
     test["variance"] = 1.;
     test["dist-type"] = 2;
 
-    icgenerator gen(test);
     icgenerator gen2;
-    std::ifstream ifs("test.dat");
-    std::ofstream ofs("test.dat");
+
+    {
+    icgenerator gen(test);
     gen.gen_ics();
+    std::ofstream ofs("test.dat");
     boost::archive::text_oarchive oa(ofs);
     oa << gen;
+    }
+    std::cout << "poo" << std::endl;
+    {
+    std::ifstream ifs("test.dat");
     boost::archive::text_iarchive ia(ifs);
     ia >> gen2;
+    }
     boost::shared_ptr<boost::multi_array<double, 2> > retArray=boost::shared_ptr<boost::multi_array<double,2> >(new boost::multi_array<double,2>(boost::extents[2][5]));
     gen2.ret_ics(retArray);
 

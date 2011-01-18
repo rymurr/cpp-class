@@ -122,22 +122,24 @@ class icgenerator{
         template<class Archive>
         void save(Archive & ar, const unsigned int version) const
         {
-            ar << tType_;
-            ar << tnumb_;
+            ar & tType_;
+            ar & tnumb_;
             ar & means_;
             ar & trajs_;
             ar & tsing_;
             ar & variance_;
             ar & single_;
             ar & lindone_;
-std::cout << "poo" << std::endl;
-            for(double* iter=const_cast<double*>(initConditions_.origin());iter != initConditions_.origin()+initConditions_.num_elements(); iter++){ar & *iter;}
+            for (int i=0;i<initConditions_.shape()[0];i++){
+                for (int j=0;j<initConditions_.shape()[1];j++){
+                    ar & initConditions_[i][j];
+                }
+            }
 //            ar & weights_;
         }
         template<class Archive>
         void load(Archive & ar, const unsigned int version)
         {
-std::cout << 'poo' << std::endl;
             ar >> tType_;
             ar >> tnumb_;
             ar & means_;
@@ -146,25 +148,31 @@ std::cout << 'poo' << std::endl;
             ar & variance_;
             ar & single_;
             ar & lindone_;
-//            ar & initConditions_;
 //            ar & weights_;
+            int tot=1, max; 
 
             if (single_ == false){
                 LOG(INFO) << "the icgenerator will build a full set of ICs and store them for later use";
                 switch (tType_){
                     case 1:
                         fpick = boost::bind(&icgenerator::montecarlo,this);
+                        std::for_each(trajs_.begin(),trajs_.end(),tot*=boost::lambda::_1);
+                        initConditions_.resize(boost::extents[trajs_.size()][tot]);
                         break;
                     case 2:
                         fpick = boost::bind(&icgenerator::linear,this);
-                        int max = *(std::max_element(trajs_.begin(),trajs_.end()));
+                        max = *(std::max_element(trajs_.begin(),trajs_.end()));
                         initConditions_.resize(boost::extents[trajs_.size()][max]);    
-                        for(double* iter=const_cast<double*>(initConditions_.origin());iter != initConditions_.origin()+initConditions_.num_elements(); iter++){ar & *iter;}
                         break;
                     case 3:
                         LOG(FATAL) << "staged-linear is currently not implemented";
                     default:
                         LOG(FATAL) << "Bad choice for Initial conditions";
+                }
+                for (int i=0;i<initConditions_.shape()[0];i++){
+                    for (int j=0;j<initConditions_.shape()[1];j++){
+                        ar & initConditions_[i][j];
+                    }
                 }
             } else {
                 LOG(INFO) << "The icgenerator is generating ICs on the fly and will not store them";
