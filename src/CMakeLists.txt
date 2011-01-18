@@ -40,7 +40,7 @@ ENDIF ("${CMAKE_SYSTEM}" MATCHES "Linux")
 
 SET(Boost_USE_MULTITHREADED "OFF")
 SET(Boost_ADDITIONAL_VERSIONS "0.99" "0.99.0" "1.78" "1.78.0" "1.41.0" "1.40.0" "1.42.0" "1.36.0" "1.45.0")
-find_package(Boost 1.45.0 COMPONENTS program_options date_time python REQUIRED)
+find_package(Boost 1.45.0 COMPONENTS program_options date_time python serialization REQUIRED)
 link_directories ( ${Boost_LIBRARY_DIRS} )
 include_directories ( ${Boost_INCLUDE_DIRS} )
 INCLUDE_DIRECTORIES("/usr/include/python2.6")

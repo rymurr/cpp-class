@@ -3,9 +3,12 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/any.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include <string>
 #include <map>
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include "icgen.hpp"
 
@@ -152,6 +155,87 @@ BOOST_AUTO_TEST_CASE(lineartest2)
         std::cout << "\n";
     }
     std::cout << "\n" << std::endl;
+}
+
+BOOST_AUTO_TEST_CASE(serialize1)
+{
+    std::ofstream ofs("test.dat");
+    anyMap test;
+    std::vector<double> x;
+    std::vector<int> y;
+    x.push_back(0.);
+    x.push_back(0.);
+    x.push_back(0.);
+    y.push_back(5);
+    y.push_back(5);
+    y.push_back(5);
+    test["dims"] = y;
+    test["means"] = x;
+    test["variance"] = 1.;
+    test["dist-type"] = 2;
+    
+    std::cout << "\n" << std::endl;
+    test["nobuild"] = true;
+    {
+        icgenerator gen2(test);
+        boost::archive::text_oarchive oa(ofs);
+        oa << gen2;    
+    }
+
+
+    icgenerator gen;
+    std::ifstream ifs("test.dat");
+    boost::archive::text_iarchive ia(ifs);
+    ia >> gen;
+
+
+    boost::shared_ptr<std::vector<double> > vals = boost::shared_ptr<std::vector<double> >(new std::vector<double>(x));
+    std::cout << "\n" << std::endl;
+    for (int i = 0; i < 3; i++)
+            (*vals)[i]= 202;
+    for (int i=0;i<125;i++){
+        gen.get_ic(vals);
+        for (int j=0;j<3;j++){
+            std::cout << (*vals)[j] << " ";
+        }
+        std::cout << "\n";
+    }
+    std::cout << "\n" << std::endl;
+
+}
+
+BOOST_AUTO_TEST_CASE(serialize2)
+{
+    anyMap test;
+    std::vector<double> x;
+    std::vector<int> y;
+    x.push_back(0.);
+    x.push_back(0.);
+    y.push_back(5);
+    y.push_back(5);
+    test["dims"] = y;
+    test["means"] = x;
+    test["variance"] = 1.;
+    test["dist-type"] = 2;
+
+    icgenerator gen(test);
+    icgenerator gen2;
+    std::ifstream ifs("test.dat");
+    std::ofstream ofs("test.dat");
+    gen.gen_ics();
+    boost::archive::text_oarchive oa(ofs);
+    oa << gen;
+    boost::archive::text_iarchive ia(ifs);
+    ia >> gen2;
+    boost::shared_ptr<boost::multi_array<double, 2> > retArray=boost::shared_ptr<boost::multi_array<double,2> >(new boost::multi_array<double,2>(boost::extents[2][5]));
+    gen2.ret_ics(retArray);
+
+    std::cout << "\n" << std::endl;
+    for (int i=0;i<2;i++){
+        for (int j=0;j<5;j++){
+            std::cout << (*retArray)[i][j] << " ";
+        }
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

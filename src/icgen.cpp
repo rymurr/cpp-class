@@ -15,6 +15,7 @@ icgenerator::icgenerator(anyMap params){
     variance_= any_cast<double>(params["variance"]);
     tnumb_ = 1;
     for_each(trajs_.begin(), trajs_.end(), tnumb_*=boost::lambda::_1);
+    lindone_ = false;
 
     try{
         single_ = any_cast<bool>(params["nobuild"]);
@@ -52,7 +53,6 @@ icgenerator::icgenerator(anyMap params){
                     gens_.push_back(boost::shared_ptr<SingleLinIC>(new SingleLinIC(means_[i],variance_,trajs_[i])));
                     tsing_.push_back(0);
                 }
-                lindone_ = false;
                 gpick = boost::bind(&icgenerator::singlelin,this,_1);
                 break;
              case 3:

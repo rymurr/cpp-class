@@ -26,6 +26,11 @@
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/split_member.hpp>
+#include <boost/serialization/version.hpp>
 
 #include <glog/logging.h>
 
@@ -43,6 +48,8 @@ typedef boost::shared_ptr<std::vector<double> > vTraj;
 typedef boost::minstd_rand base_generator_type;
 
 class SingleIC{
+       
+
     public:
 
         double var_;
@@ -60,7 +67,7 @@ class SingleIC{
         double virtual RetVal(){return 0;};
 
         void virtual reset(){};
-        
+
 };
 
 class SingleLinIC: public SingleIC{
@@ -79,7 +86,7 @@ class SingleLinIC: public SingleIC{
         double RetVal();
 
         void reset();
-};
+ };
 
 class SingleRandIC: public SingleIC{
     private:
@@ -108,25 +115,81 @@ class icgenerator{
         w_array weights_;
         boost::function<void (void)> fpick;
         boost::function<void (vTraj)> gpick;
-        bool single_,lindone_;
+        bool single_, lindone_;
         std::vector<boost::shared_ptr<SingleIC> > gens_;
 
     friend class boost::serialization::access;
         template<class Archive>
-        void serialize(Archive & ar, const unsigned int version)
+        void save(Archive & ar, const unsigned int version) const
         {
+            ar << tType_;
+            ar << tnumb_;
             ar & means_;
             ar & trajs_;
             ar & tsing_;
             ar & variance_;
             ar & single_;
             ar & lindone_;
-            ar & fpick;
-            ar & gpick;
-            ar & initConditions_;
-            ar & weights_;
-            ar & gens_;
+std::cout << "poo" << std::endl;
+            for(double* iter=const_cast<double*>(initConditions_.origin());iter != initConditions_.origin()+initConditions_.num_elements(); iter++){ar & *iter;}
+//            ar & weights_;
         }
+        template<class Archive>
+        void load(Archive & ar, const unsigned int version)
+        {
+std::cout << 'poo' << std::endl;
+            ar >> tType_;
+            ar >> tnumb_;
+            ar & means_;
+            ar & trajs_;
+            ar & tsing_;
+            ar & variance_;
+            ar & single_;
+            ar & lindone_;
+//            ar & initConditions_;
+//            ar & weights_;
+
+            if (single_ == false){
+                LOG(INFO) << "the icgenerator will build a full set of ICs and store them for later use";
+                switch (tType_){
+                    case 1:
+                        fpick = boost::bind(&icgenerator::montecarlo,this);
+                        break;
+                    case 2:
+                        fpick = boost::bind(&icgenerator::linear,this);
+                        int max = *(std::max_element(trajs_.begin(),trajs_.end()));
+                        initConditions_.resize(boost::extents[trajs_.size()][max]);    
+                        for(double* iter=const_cast<double*>(initConditions_.origin());iter != initConditions_.origin()+initConditions_.num_elements(); iter++){ar & *iter;}
+                        break;
+                    case 3:
+                        LOG(FATAL) << "staged-linear is currently not implemented";
+                    default:
+                        LOG(FATAL) << "Bad choice for Initial conditions";
+                }
+            } else {
+                LOG(INFO) << "The icgenerator is generating ICs on the fly and will not store them";
+                switch (tType_){
+                    case 1:
+                        gens_.push_back(boost::shared_ptr<SingleRandIC>(new SingleRandIC(means_,variance_)));
+                        gpick = boost::bind(&icgenerator::singlemc,this,_1);
+                        break;
+                    case 2:
+                        for(int i=0;i<trajs_.size();i++){
+                            gens_.push_back(boost::shared_ptr<SingleLinIC>(new SingleLinIC(means_[i],variance_,trajs_[i])));
+//                            tsing_.push_back(0);
+                        }
+//                        lindone_ = false;
+                        gpick = boost::bind(&icgenerator::singlelin,this,_1);
+                        break;
+                     case 3:
+                        LOG(FATAL) << "staged-linear is currently not implemented";
+                    default:
+                        LOG(FATAL) << "Bad choice for Initial conditions";
+                }
+            }
+
+        }
+        BOOST_SERIALIZATION_SPLIT_MEMBER()
         
         void montecarlo();
         
