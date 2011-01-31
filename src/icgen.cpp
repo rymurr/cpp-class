@@ -32,14 +32,21 @@ icgenerator::icgenerator(anyMap params){
         switch (tType_){
             case 1:
                 fpick = boost::bind(&icgenerator::montecarlo,this);
+                hpick = boost::bind(&icgenerator::mcsingle,this,_1);
                 break;
             case 2:
                 fpick = boost::bind(&icgenerator::linear,this);
+                hpick = boost::bind(&icgenerator::linsingle,this,_1);
                 break;
             case 3:
                 LOG(FATAL) << "staged-linear is currently not implemented";
             default:
                 LOG(FATAL) << "Bad choice for Initial conditions";
+        }
+        j_=0;
+        (*this).gen_ics();
+        for(int i=0;i<trajs_.size();i++){
+            tsing_.push_back(0);
         }
     } else {
         LOG(INFO) << "The icgenerator is generating ICs on the fly and will not store them";
@@ -64,7 +71,55 @@ icgenerator::icgenerator(anyMap params){
 }
 
 void icgenerator::get_ic(vTraj ics){
-    (*this).gpick(ics);
+    if (single_ == true) {
+        (*this).gpick(ics);
+    } else {
+        (*this).hpick(ics);
+    }
+}
+
+void icgenerator::mcsingle(vTraj ics){
+    for (int i=0;i<trajs_.size();i++){
+        (*ics)[i] = initConditions_[i][j_];
+    }
+    j_++;
+}
+
+void icgenerator::linsingle(vTraj ics){
+
+    if (!lindone_){
+        for (int i=0;i<trajs_.size();i++){
+            (*ics)[i] = initConditions_[i][0];
+            tsing_[i]+=1;
+        }
+        lindone_=true;
+        return;
+    }
+
+    if (tsing_[0] >= trajs_[0]){
+        tsing_[0]=0;
+        (*ics)[1] = initConditions_[1][tsing_[1]];
+        tsing_[1]++;
+    }
+
+
+//stopped here, cant get third row to change
+    for (int i=1;i<tsing_.size()-1;i++){
+        if (tsing_[i] > trajs_[i]){
+            tsing_[i]=0;
+            tsing_[i+1]++;
+            (*ics)[i] = initConditions_[i][0];
+            (*ics)[i+1] = initConditions_[i+1][tsing_[i+1]];
+        } 
+
+    }
+
+    (*ics)[0] = initConditions_[0][tsing_[0]];
+    tsing_[0]++;
+
+    if (tsing_[tsing_.size()-1] > trajs_[trajs_.size()-1]){
+        throw std::range_error("Reached the end of the trajectories"); 
+    } 
 }
 
 void icgenerator::gen_ics(){
@@ -209,3 +264,39 @@ SingleIC::SingleIC(){}
 SingleIC::~SingleIC(){}
 
 SingleIC::SingleIC(double var, int size): size_(size), var_(var){}
+
+void icgenerator::save(std::string sType, std::string fName){
+
+    std::string binary="binary", text="text";
+    std::ofstream ofs(fName.c_str());
+
+    if (sType.compare(binary) == 0){
+        boost::archive::binary_oarchive oa(ofs);
+        oa << *this;
+    } else if (sType.compare(text) == 0) {
+        boost::archive::text_oarchive oa(ofs);
+        oa << *this;
+    } else {
+        std::string throwArg="archive type must be binary or text not" + sType;
+        throw std::invalid_argument(throwArg);
+    }
+
+}
+
+void icgenerator::load(std::string sType, std::string fName){
+
+    std::string binary="binary", text="text";
+    std::ifstream ifs(fName.c_str());
+
+    if (sType.compare(binary) == 0){
+        boost::archive::binary_iarchive ia(ifs);
+        ia >> *this;
+    } else if (sType.compare(text) == 0) {
+        boost::archive::text_iarchive ia(ifs);
+        ia >> *this;
+    } else {
+        std::string throwArg="archive type must be binary or text not" + sType;
+        throw std::invalid_argument(throwArg);
+    }
+
+}

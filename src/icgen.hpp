@@ -4,7 +4,7 @@
 #include <map>
 #include <string>
 #include <iostream>
-//#include <fstream>
+#include <fstream>
 //#include <iterator>
 #include <stdexcept>
 #include <vector>
@@ -28,6 +28,8 @@
 #include <boost/random/variate_generator.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/version.hpp>
@@ -84,6 +86,8 @@ class SingleLinIC: public SingleIC{
         SingleLinIC(double, double, int);
 
         double RetVal();
+        
+        void RetVal(vTraj){};
 
         void reset();
  };
@@ -102,19 +106,21 @@ class SingleRandIC: public SingleIC{
         SingleRandIC(std::vector<double>, double);
 
         void RetVal(vTraj);
+
+        double RetVal(){return 0;};
 };
 
 class icgenerator{
 
     private:
-        int tType_, tnumb_;
+        int tType_, tnumb_, j_;
         std::vector<double> means_;
         std::vector<int> trajs_,tsing_;
         double variance_;
         ic_array initConditions_;
         w_array weights_;
         boost::function<void (void)> fpick;
-        boost::function<void (vTraj)> gpick;
+        boost::function<void (vTraj)> gpick, hpick;
         bool single_, lindone_;
         std::vector<boost::shared_ptr<SingleIC> > gens_;
 
@@ -203,9 +209,15 @@ class icgenerator{
         
         void singlemc(vTraj);
 
+        void mcsingle(vTraj);
+
         void linear();
 
         void singlelin(vTraj);
+
+        void linsingle(vTraj);
+
+        void gen_ics();
 
     public:
         icgenerator();
@@ -221,11 +233,13 @@ class icgenerator{
 
         void ret_weight(boost::shared_ptr<w_array>);
 
-        void gen_ics();
-
         void get_ic(vTraj);
 
         void gen_weights(boost::function<void (anyMap)>, anyMap);
+
+        void save(std::string, std::string);
+
+        void load(std::string, std::string);
 };
 
 #endif
