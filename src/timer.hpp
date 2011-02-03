@@ -31,6 +31,7 @@ class SingleTimer {
         double realKids_;
 
     public:
+
         SingleTimer(std::string);
 
         SingleTimer();
@@ -50,6 +51,10 @@ typedef boost::unordered_map<std::string,SingleTimer> hashTable;
 class Timer {
 
     private:
+        Timer(){};
+        Timer(Timer const&){};
+        Timer& operator=(Timer const&){};
+        static Timer* m_pInstance;
         std::stack<std::string> timerStack_;
         hashTable timerHash_;
         /*
@@ -63,5 +68,7 @@ class Timer {
         void stop(std::string);
 
         void report();
+
+        static Timer* create();
 };
 

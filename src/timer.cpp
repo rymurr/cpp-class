@@ -35,6 +35,14 @@ void SingleTimer::setKids(std::pair<double,double> T){
 }
 //still need to integrate realKids adn wallKids into stop.
 
+Timer* Timer::m_pInstance = NULL;
+
+Timer* Timer::create(){
+    if (!m_pInstance)
+        m_pInstance = new Timer;
+    return m_pInstance;
+}
+
 void Timer::start(std::string name){
     std::pair<hashTable::iterator,bool> ret;
 
