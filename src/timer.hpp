@@ -72,3 +72,6 @@ class Timer {
         static Timer* create();
 };
 
+void TimerStart(std::string);
+void TimerStop(std::string);
+void TimerReport();

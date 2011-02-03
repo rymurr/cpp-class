@@ -120,10 +120,22 @@ void Timer::report(){
             << std::setw(20) << std::left << "    " + str2 + "     " + str4
             ;
     }
-    /*  There is a small problem still with how the CPU and REAL are aligned
+    /*  TODO There is a small problem still with how the CPU and REAL are aligned
         I should alter the last two lines to print out the two columns in line
         Ryan Feb 2, 2011
     */        
+}
+
+void TimerStart(std::string name){
+	Timer::create()->start(name);
+}
+
+void TimerStop(std::string name){
+	Timer::create()->stop(name);
+}
+
+void TimerReport(){
+	Timer::create()->report();
 }
 
 
