@@ -164,9 +164,9 @@ BOOST_AUTO_TEST_CASE(lineartest3)
     x.push_back(0.);
     x.push_back(0.);
     x.push_back(0.);
-    y.push_back(5);
-    y.push_back(5);
-    y.push_back(5);
+    y.push_back(3);
+    y.push_back(3);
+    y.push_back(3);
     test["dims"] = y;
     test["means"] = x;
     test["variance"] = 1.;
@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE(lineartest3)
     std::cout << "\n" << std::endl;
     for (int i = 0; i < 3; i++)
             (*vals)[i]= 202;
-    for (int i=0;i<125;i++){
+    for (int i=0;i<27;i++){
         gen2.get_ic(vals);
         for (int j=0;j<3;j++){
             std::cout << (*vals)[j] << " ";

@@ -3,30 +3,56 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <ctime> 
 #include <algorithm>
-#include <boost/random/linear_congruential.hpp>
-#include <boost/random/uniform_real.hpp>
-#include <boost/random/variate_generator.hpp>
+#include <boost/multi_array.hpp>
 #include <boost/lambda/lambda.hpp>
-#include <boost/foreach.hpp>
 
-#define foreach     BOOST_FOREACH
-typedef boost::minstd_rand base_generator_type; 
 int main(int argc, char** argv){
-    using namespace boost::lambda;
-    std::vector<int> x;
-    x.push_back(1);
-    x.push_back(2);
-    x.push_back(3);
-    x.push_back(4);
-    x.push_back(5);
-    std::vector<int> y = x;
-    int tot=1;
-    std::for_each(x.begin(),x.end(),tot*=_1);
-    std::cout <<tot << "\n";
-    std::transform(x.begin(),x.end(),y.begin(),_1*=_2);
-    for (int i=0;i<5;i++){
-        std::cout << x[i] << " " << y[i] << "\n";
+
+  typedef boost::multi_array<double, 2> array_type;
+  typedef array_type::index index;
+  array_type A(boost::extents[4][4]);
+
+  // Assign values to the elements
+  int values = 0;
+  for(index i = 0; i != 4; ++i) 
+    for(index j = 0; j != 4; ++j)
+        A[i][j] = values++;
+
+  typedef boost::multi_array_types::index_range range;
+  array_type::index_gen indices;
+  std::vector<array_type::array_view<1>::type> V;
+  for (index i=0;i<4;++i)
+    V.push_back(A[ indices[i][range(0,4)] ]);
+
+  for (int j=0;j<4;++j){  
+    for (array_type::index i = 0; i != 4; ++i)
+      assert(V[j][i] == A[j][i]);
+  }
+
+  std::vector<boost::multi_array<double,1>::iterator> x;
+  std::vector<double> y;
+  std::vector<int> z;
+  for (int i=0;i<4;++i){
+    x.push_back(V[i].begin());
+    y.push_back(*x[i]);
+    z.push_back(1);
+  }
+  std::for_each(y.begin(),y.end(),std::cout << boost::lambda::_1 << " ");
+  std::cout << "\n";
+  for (int i=0;i<16*16;++i){
+    ++x[0];
+    for (int j=0;j<3;++j){
+      if (x[j] == V[j].end()){
+        x[j] = V[j].begin();
+        ++x[j+1];
+      }
+      y[j] = *x[j];
     }
+    if (x[x.size()-1] == V[V.size()-1].end())
+      throw std::range_error("Reached the end of the trajectories");
+    y[3] = *x[3];
+    std::for_each(y.begin(),y.end(),std::cout << boost::lambda::_1 << " ");
+    std::cout << "\n";
+  }
 }

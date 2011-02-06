@@ -45,7 +45,7 @@ icgenerator::icgenerator(anyMap params){
         }
         j_=0;
         (*this).gen_ics();
-        for(int i=0;i<trajs_.size();i++){
+        for(unsigned int i=0;i<trajs_.size();i++){
             tsing_.push_back(0);
         }
     } else {
@@ -56,7 +56,7 @@ icgenerator::icgenerator(anyMap params){
                 gpick = boost::bind(&icgenerator::singlemc,this,_1);
                 break;
             case 2:
-                for(int i=0;i<trajs_.size();i++){
+                for(unsigned int i=0;i<trajs_.size();i++){
                     gens_.push_back(boost::shared_ptr<SingleLinIC>(new SingleLinIC(means_[i],variance_,trajs_[i])));
                     tsing_.push_back(0);
                 }
@@ -79,7 +79,7 @@ void icgenerator::get_ic(vTraj ics){
 }
 
 void icgenerator::mcsingle(vTraj ics){
-    for (int i=0;i<trajs_.size();i++){
+    for (unsigned int i=0;i<trajs_.size();i++){
         (*ics)[i] = initConditions_[i][j_];
     }
     j_++;
@@ -87,8 +87,57 @@ void icgenerator::mcsingle(vTraj ics){
 
 void icgenerator::linsingle(vTraj ics){
 
-    if (!lindone_){
-        for (int i=0;i<trajs_.size();i++){
+	  typedef boost::multi_array<double, 2> array_type;
+	  typedef array_type::index index;
+	  array_type A(boost::extents[4][4]);
+
+	  // Assign values to the elements
+	  int values = 0;
+	  for(index i = 0; i != 4; ++i)
+	    for(index j = 0; j != 4; ++j)
+	        A[i][j] = values++;
+
+	  typedef boost::multi_array_types::index_range range;
+	  array_type::index_gen indices;
+	  std::vector<array_type::array_view<1>::type> V;
+	  for (index i=0;i<4;++i)
+	    V.push_back(A[ indices[i][range(0,4)] ]);
+
+	  for (int j=0;j<4;++j){
+	    for (array_type::index i = 0; i != 4; ++i)
+	      assert(V[j][i] == A[j][i]);
+	  }
+
+	  std::vector<boost::multi_array<double,1>::iterator> x;
+	  std::vector<double> y;
+	  std::vector<int> z;
+	  for (int i=0;i<4;++i){
+	    x.push_back(V[i].begin());
+	    y.push_back(*x[i]);
+	    z.push_back(1);
+	  }
+	  std::for_each(y.begin(),y.end(),std::cout << boost::lambda::_1 << " ");
+	  std::cout << "\n";
+	  for (int i=0;i<16*16;++i){
+	    ++x[0];
+	    for (int j=0;j<3;++j){
+	      if (x[j] == V[j].end()){
+	        x[j] = V[j].begin();
+	        ++x[j+1];
+	      }
+	      y[j] = *x[j];
+	    }
+	    if (x[x.size()-1] == V[V.size()-1].end())
+	      throw std::range_error("Reached the end of the trajectories");
+	    y[3] = *x[3];
+	    std::for_each(y.begin(),y.end(),std::cout << boost::lambda::_1 << " ");
+	    std::cout << "\n";
+	  }
+
+
+
+	if (!lindone_){
+        for (unsigned int i=0;i<trajs_.size();i++){
             (*ics)[i] = initConditions_[i][0];
             tsing_[i]+=1;
         }
@@ -96,23 +145,27 @@ void icgenerator::linsingle(vTraj ics){
         return;
     }
 
+//    std::for_each(tsing_.begin(),tsing_.end(), std::cout << boost::lambda::_1 << "\n");
+/*
     if (tsing_[0] >= trajs_[0]){
         tsing_[0]=0;
-        (*ics)[1] = initConditions_[1][tsing_[1]];
+      	(*ics)[1] = initConditions_[1][tsing_[1]];
         tsing_[1]++;
     }
-
-
+    */
+    std::for_each(tsing_.begin(),tsing_.end(), std::cout << boost::lambda::_1 << "\n");
 //stopped here, cant get third row to change
-    for (int i=1;i<tsing_.size()-1;i++){
-        if (tsing_[i] > trajs_[i]){
-            tsing_[i]=0;
+    for (unsigned int i=0;i<tsing_.size()-1;i++){
+        if (tsing_[i] >= trajs_[i]){
+            tsing_[i]=1;
             tsing_[i+1]++;
-            (*ics)[i] = initConditions_[i][0];
+            (*ics)[i] = initConditions_[i][tsing_[i]];
             (*ics)[i+1] = initConditions_[i+1][tsing_[i+1]];
         } 
-
     }
+
+
+
 
     (*ics)[0] = initConditions_[0][tsing_[0]];
     tsing_[0]++;
@@ -145,7 +198,7 @@ void icgenerator::singlelin(vTraj ics){
     if (!lindone_){
 //        transform(gens_.begin(),gens_.end(),ics->begin(),boost::bind<double>(&SingleLinIC::RetVal,boost::lambda::ll_reinterpret_cast<SingleLinIC*>(boost::lambda::_1)));
 //        for_each(gens_.begin(),gens_.end(),boost::bind(&SingleLinIC::RetVal,boost::lambda::ll_dynamic_cast<boost::shared_ptr<SingleLinIC> >(boost::lambda::_1)));
-        for (int i=0;i<gens_.size();i++){
+        for (unsigned int i=0;i<gens_.size();i++){
             (*ics)[i] = gens_[i]->RetVal();
             tsing_[i]+=1;
         }
@@ -162,7 +215,7 @@ void icgenerator::singlelin(vTraj ics){
         tsing_[1]++;
     }
 
-    for (int i=1;i<tsing_.size()-1;i++){
+    for (unsigned int i=1;i<tsing_.size()-1;i++){
         if (tsing_[i] > trajs_[i]){
             tsing_[i]=1;
             gens_[i]->reset();
@@ -186,7 +239,7 @@ void icgenerator::linear(){
     int max = *(std::max_element(trajs_.begin(),trajs_.end()));
     initConditions_.resize(boost::extents[trajs_.size()][max]);    
     
-    for (int i=0;i<trajs_.size();i++){
+    for (unsigned int i=0;i<trajs_.size();i++){
             SingleLinIC uni(means_[i],variance_,trajs_[i]);
         for (int j=0;j<trajs_[i];j++){
             initConditions_[i][j] = uni.RetVal();
@@ -210,7 +263,7 @@ void icgenerator::montecarlo(){
     vTraj rands = vTraj(new std::vector<double>(means_));
     for (int j=0;j<tot;j++){
             uni.RetVal(rands);
-        for (int i=0;i<trajs_.size();i++){
+        for (unsigned int i=0;i<trajs_.size();i++){
             initConditions_[i][j] = (*rands)[i];
         }
     }
@@ -221,7 +274,7 @@ SingleRandIC::SingleRandIC(){}
 
 SingleRandIC::~SingleRandIC(){}
 
-SingleRandIC::SingleRandIC(std::vector<double> means, double var): means_(means), SingleIC(var,1){
+SingleRandIC::SingleRandIC(std::vector<double> means, double var): SingleIC(var,1), means_(means){
 
     (*this).size_ = means_.size();
 
@@ -241,7 +294,7 @@ SingleLinIC::SingleLinIC(){}
 
 SingleLinIC::~SingleLinIC(){}
 
-SingleLinIC::SingleLinIC(double mean, double var, int size): mean_(mean), SingleIC(var,size){
+SingleLinIC::SingleLinIC(double mean, double var, int size): SingleIC(var,size), mean_(mean){
 
     start_ = mean_ - 4.*sqrt((*this).var_);
     finish_ = mean_ + 4.*sqrt((*this).var_);
@@ -298,5 +351,4 @@ void icgenerator::load(std::string sType, std::string fName){
         std::string throwArg="archive type must be binary or text not" + sType;
         throw std::invalid_argument(throwArg);
     }
-
 }

@@ -6,7 +6,7 @@ include_directories (.)
 set(EXECUTABLE_OUTPUT_PATH "../")
 
 if (CMAKE_COMPILER_IS_GNUCXX)
-    set ( CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -pg -p -Wall")
+    set ( CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -pg -p -Wall -arch i386")
     set ( CMAKE_CXX_FLAGS_RELEASE  "" )
 else ()
     set ( CMAKE_CXX_FLAGS_DEBUG "-C -g -O0  -debug all -traceback -Wall")

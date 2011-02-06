@@ -54,9 +54,9 @@ class SingleIC{
 
     public:
 
-        double var_;
-
         int size_;
+
+        double var_;
 
         SingleIC();
 
@@ -75,7 +75,7 @@ class SingleIC{
 class SingleLinIC: public SingleIC{
     private:
 
-        double current_, dx_, mean_, finish_, start_;
+        double mean_, current_, dx_, finish_, start_;
 
     public:
 
@@ -136,8 +136,8 @@ class icgenerator{
             ar & variance_;
             ar & single_;
             ar & lindone_;
-            for (int i=0;i<initConditions_.shape()[0];i++){
-                for (int j=0;j<initConditions_.shape()[1];j++){
+            for (unsigned int i=0;i<initConditions_.shape()[0];i++){
+                for (unsigned int j=0;j<initConditions_.shape()[1];j++){
                     ar & initConditions_[i][j];
                 }
             }
@@ -175,8 +175,8 @@ class icgenerator{
                     default:
                         LOG(FATAL) << "Bad choice for Initial conditions";
                 }
-                for (int i=0;i<initConditions_.shape()[0];i++){
-                    for (int j=0;j<initConditions_.shape()[1];j++){
+                for (unsigned int i=0;i<initConditions_.shape()[0];i++){
+                    for (unsigned int j=0;j<initConditions_.shape()[1];j++){
                         ar & initConditions_[i][j];
                     }
                 }
@@ -188,7 +188,7 @@ class icgenerator{
                         gpick = boost::bind(&icgenerator::singlemc,this,_1);
                         break;
                     case 2:
-                        for(int i=0;i<trajs_.size();i++){
+                        for(unsigned int i=0;i<trajs_.size();i++){
                             gens_.push_back(boost::shared_ptr<SingleLinIC>(new SingleLinIC(means_[i],variance_,trajs_[i])));
 //                            tsing_.push_back(0);
                         }
