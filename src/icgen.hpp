@@ -43,6 +43,7 @@ typedef std::map<std::string,boost::any> anyMap;
 typedef boost::multi_array<double,1> w_array;
 typedef boost::multi_array<double,2> ic_array;
 typedef boost::shared_ptr<std::vector<double> > vTraj;
+typedef boost::multi_array_types::index_range range;
 
 // This is a typedef for a random number generator.
 // Try boost::mt19937 or boost::ecuyer1988 instead of boost::minstd_rand
@@ -123,6 +124,8 @@ class icgenerator{
         boost::function<void (vTraj)> gpick, hpick;
         bool single_, lindone_;
         std::vector<boost::shared_ptr<SingleIC> > gens_;
+        std::vector<ic_array::array_view<1>::type> sliceVec_;
+        std::vector<boost::multi_array<double,1>::iterator> sliceIter_;
 
     friend class boost::serialization::access;
         template<class Archive>

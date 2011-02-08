@@ -87,92 +87,36 @@ void icgenerator::mcsingle(vTraj ics){
 
 void icgenerator::linsingle(vTraj ics){
 
-	  typedef boost::multi_array<double, 2> array_type;
-	  typedef array_type::index index;
-	  array_type A(boost::extents[4][4]);
-
-	  // Assign values to the elements
-	  int values = 0;
-	  for(index i = 0; i != 4; ++i)
-	    for(index j = 0; j != 4; ++j)
-	        A[i][j] = values++;
-
-	  typedef boost::multi_array_types::index_range range;
-	  array_type::index_gen indices;
-	  std::vector<array_type::array_view<1>::type> V;
-	  for (index i=0;i<4;++i)
-	    V.push_back(A[ indices[i][range(0,4)] ]);
-
-	  for (int j=0;j<4;++j){
-	    for (array_type::index i = 0; i != 4; ++i)
-	      assert(V[j][i] == A[j][i]);
-	  }
-
-	  std::vector<boost::multi_array<double,1>::iterator> x;
-	  std::vector<double> y;
-	  std::vector<int> z;
-	  for (int i=0;i<4;++i){
-	    x.push_back(V[i].begin());
-	    y.push_back(*x[i]);
-	    z.push_back(1);
-	  }
-	  std::for_each(y.begin(),y.end(),std::cout << boost::lambda::_1 << " ");
-	  std::cout << "\n";
-	  for (int i=0;i<16*16;++i){
-	    ++x[0];
-	    for (int j=0;j<3;++j){
-	      if (x[j] == V[j].end()){
-	        x[j] = V[j].begin();
-	        ++x[j+1];
-	      }
-	      y[j] = *x[j];
-	    }
-	    if (x[x.size()-1] == V[V.size()-1].end())
-	      throw std::range_error("Reached the end of the trajectories");
-	    y[3] = *x[3];
-	    std::for_each(y.begin(),y.end(),std::cout << boost::lambda::_1 << " ");
-	    std::cout << "\n";
-	  }
 
 
+    if (!lindone_){
+        typedef ic_array::index index;
+        ic_array::index_gen indices;
 
-	if (!lindone_){
-        for (unsigned int i=0;i<trajs_.size();i++){
-            (*ics)[i] = initConditions_[i][0];
-            tsing_[i]+=1;
+        for (index i=0;i<(int)trajs_.size();++i)
+          sliceVec_.push_back(initConditions_[ indices[i][range(0,trajs_.size())] ]);
+
+        for (unsigned int i=0;i<trajs_.size();++i){
+          sliceIter_.push_back(sliceVec_[i].begin());
+          (*ics)[i] = *sliceIter_[i];
         }
         lindone_=true;
         return;
     }
 
-//    std::for_each(tsing_.begin(),tsing_.end(), std::cout << boost::lambda::_1 << "\n");
-/*
-    if (tsing_[0] >= trajs_[0]){
-        tsing_[0]=0;
-      	(*ics)[1] = initConditions_[1][tsing_[1]];
-        tsing_[1]++;
+
+    ++sliceIter_[0];
+    for (unsigned int j=0;j<trajs_.size()-1;++j){
+      if (sliceIter_[j] == sliceVec_[j].end()){
+        sliceIter_[j] = sliceVec_[j].begin();
+        ++sliceIter_[j+1];
+      }
+      (*ics)[j] = *sliceIter_[j];
     }
-    */
-    std::for_each(tsing_.begin(),tsing_.end(), std::cout << boost::lambda::_1 << "\n");
-//stopped here, cant get third row to change
-    for (unsigned int i=0;i<tsing_.size()-1;i++){
-        if (tsing_[i] >= trajs_[i]){
-            tsing_[i]=1;
-            tsing_[i+1]++;
-            (*ics)[i] = initConditions_[i][tsing_[i]];
-            (*ics)[i+1] = initConditions_[i+1][tsing_[i+1]];
-        } 
-    }
+    if (sliceIter_[sliceIter_.size()-1] == sliceVec_[sliceVec_.size()-1].end())
+      throw std::range_error("Reached the end of the trajectories");
+    (*ics)[trajs_.size()-1] = *sliceIter_[trajs_.size()-1];
 
-
-
-
-    (*ics)[0] = initConditions_[0][tsing_[0]];
-    tsing_[0]++;
-
-    if (tsing_[tsing_.size()-1] > trajs_[trajs_.size()-1]){
-        throw std::range_error("Reached the end of the trajectories"); 
-    } 
 }
 
 void icgenerator::gen_ics(){
