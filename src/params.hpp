@@ -29,10 +29,13 @@
 #include <boost/lambda/bind.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/shared_ptr.hpp>
+#include "boost/filesystem/operations.hpp"
+#include "boost/filesystem/path.hpp"
 #include <glog/logging.h>
 //#include <boost/bimap.hpp>
 
 //#include "input_func.hpp"
+namespace classical{
 
 #define foreach     BOOST_FOREACH
 
@@ -150,6 +153,15 @@ class state_param: public param<int> {
 		void print();
 };
 
+class file_param: public param<std::string> {
+	public:
+		file_param(std::string, std::string, std::string);
+
+		void verify();
+
+		void print();
+};
+
 template <class R>
 class list_param: public param<std::string> {
 	public:
@@ -222,6 +234,7 @@ void list_param<R>::splitVar(std::string newVal, std::vector<R>& splitVec){
     }
 }
 */
+}
 #endif
 
 

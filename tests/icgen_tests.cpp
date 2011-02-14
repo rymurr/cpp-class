@@ -11,6 +11,7 @@
 #include <fstream>
 #include <vector>
 #include "icgen.hpp"
+namespace classical{
 
 using boost::any_cast;
 
@@ -313,3 +314,4 @@ BOOST_AUTO_TEST_CASE(serialize_member)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+}

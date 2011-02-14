@@ -1,4 +1,5 @@
 #include "input_funcs.hpp"
+namespace classical {
 
 
 //TODO: try and leverage polymorphism here!
@@ -62,4 +63,5 @@ void gen_param(pairm m, po::options_description& desc){
     }
 }
 
+}
 

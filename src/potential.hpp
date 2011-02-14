@@ -18,6 +18,7 @@
 #include <boost/bind.hpp>
 #include <glog/logging.h>
 
+namespace classical{
 
 #define pi M_PI
 
@@ -55,6 +56,6 @@ inline double potential::hatom(double x, double y, double z){
 
 inline double potential::hmol(double x, double y, double z){
     return  -charges_[0]/sqrt((x-x1_)*(x-x1_)+(y-y1_)*(y-y1_)+(z-z1_)*(z-z1_)+alpha_*alpha_)-charges_[1]/sqrt((x+x1_)*(x+x1_)+(y+y1_)*(y+y1_)+(z+z1_)*(z+z1_)+alpha_*alpha_);
-
+}
 }
 #endif

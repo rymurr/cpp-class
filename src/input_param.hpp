@@ -45,6 +45,7 @@
 //#include "input_func.hpp"
 #include "params.hpp"
 #include "input_funcs.hpp"
+namespace classical{
 
 #define foreach     BOOST_FOREACH
 
@@ -94,6 +95,8 @@ class pmap {
 
         bool read_params(std::string, int, std::vector<std::string>&);
 };
+
+}
 
 
 #endif

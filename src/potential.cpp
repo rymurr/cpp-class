@@ -1,5 +1,6 @@
 
 #include "potential.hpp"
+namespace classical {
 
 using boost::any_cast;
 
@@ -39,5 +40,5 @@ potential::potential(anyMap in_param){
     }
 }
 
-
+}
 

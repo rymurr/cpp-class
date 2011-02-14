@@ -5,6 +5,7 @@
  *      Author: ryanmurray
  */
 #include "params.hpp"
+namespace classical {
 
 state_param::state_param(std::string desc, std::string varName, int defVal, std::map<int,std::string> input): param<int>(desc,varName,defVal){
     typedef std::map<int,std::string> valMap;
@@ -40,3 +41,15 @@ void state_param::print(){
         << *ident << std::endl;
 }
 
+file_param::file_param(std::string desc, std::string varName, std::string defVal): param<std::string>(desc,varName,defVal){}
+
+void file_param::print(){
+    std::cout << *description << " "
+        << *name << " "
+        << *defaultValue << " "
+        << *actualValue << " "
+        << std::endl;
+}
+
+void file_param::verify(){}
+}

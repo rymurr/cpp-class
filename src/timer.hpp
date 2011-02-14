@@ -57,10 +57,6 @@ class Timer {
         static Timer* m_pInstance;
         std::stack<std::string> timerStack_;
         hashTable timerHash_;
-        /*
-        int t_count;
-        int t_active;
-        */
 
     public:
         void start(std::string);

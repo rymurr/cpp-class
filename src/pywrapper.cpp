@@ -1,5 +1,6 @@
 #include "pywrapper.hpp"
 
+namespace classical{
 
 int run_main(int argc, std::vector<std::string> argv, std::string fname){
     google::InitGoogleLogging(argv[0].c_str());
@@ -33,4 +34,5 @@ int pyrun_main(int argc, boost::python::list argv, std::string fname){
 
     if (!run_main(argc, av, fname)){return 0;}
     return 1;
+}
 }

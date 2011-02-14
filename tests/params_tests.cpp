@@ -7,6 +7,7 @@
 #include <map>
 #include <iostream>
 #include "input_param.hpp"
+namespace classical{
 
 using boost::any_cast;
 
@@ -70,4 +71,5 @@ BOOST_AUTO_TEST_CASE(paramstpl)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+}
 

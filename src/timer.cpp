@@ -33,7 +33,6 @@ void SingleTimer::setKids(std::pair<double,double> T){
     (*this).wallKids_ += T.first;
     (*this).realKids_ += T.second;
 }
-//still need to integrate realKids adn wallKids into stop.
 
 Timer* Timer::m_pInstance = NULL;
 
@@ -47,14 +46,6 @@ void Timer::start(std::string name){
     std::pair<hashTable::iterator,bool> ret;
 
     ret = timerHash_.insert(std::pair<std::string,SingleTimer>(name,SingleTimer(name)));
-    /*
-    if (ret.second == true){
-        ++t_count;
-        ++t_active;
-    } else {
-        ++t_active;
-    }
-    */
     ret.first->second.start();
     timerStack_.push(name);
 }
@@ -65,7 +56,6 @@ void  Timer::stop(std::string name){
         if (timerStack_.top() == name){
             timerStack_.pop();
             stops = timerHash_[name].stop();
-            //--t_active;
         } else {
             LOG(FATAL) << "Timer " + name + " is not at top of the stack, crossing nested timers.";
         }

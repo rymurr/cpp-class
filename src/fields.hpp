@@ -17,6 +17,7 @@
 #include <boost/bind.hpp>
 #include <glog/logging.h>
 
+namespace classical{
 
 #define pi M_PI
 
@@ -68,6 +69,7 @@ inline double field::gaussian(double t){
 
 inline double field::ssquare(double t){
     return fconst(t) * pow(sin(pi*t*0.5/fwhm_),2);
+}
 }
 #endif
 

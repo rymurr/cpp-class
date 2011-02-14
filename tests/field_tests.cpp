@@ -10,6 +10,7 @@
 #include "fields.hpp"
 #include "potential.hpp"
 #include "input_param.hpp"
+namespace classical{
 
 using boost::any_cast;
 
@@ -55,4 +56,5 @@ BOOST_AUTO_TEST_CASE(initpotparams)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+}
 

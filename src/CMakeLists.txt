@@ -9,7 +9,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
     set ( CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -pg -p -Wall -arch i386")
     set ( CMAKE_CXX_FLAGS_RELEASE  "" )
 else ()
-    set ( CMAKE_CXX_FLAGS_DEBUG "-C -g -O0  -debug all -traceback -Wall")
+    set ( CMAKE_CXX_FLAGS_DEBUG "-C -g -O0  -debug all -traceback -Wall -DTESTING")
     set ( CMAKE_CXX_FLAGS_RELEASE  "-warn -axP -ipo -O3 -no-prec-div -complex_limited_range" )
     set ( CMAKE_CXX_FLAGS_PARALLEL "-DPARALLEL -DBOOST_DISABLE_ASSERTS -axSSE4.2 -ipo -O3 -no-prec-div -complex_limited_range -openmp " )
 endif ()
@@ -58,7 +58,6 @@ link_libraries(${LIBS} -lpthread -lpython2.6 ${Boost_LIBRARIES} -lglog -lgflags)
 
 
 add_definitions(-DCHUNKSIZE=10)
-add_definitions(-DTESTING)
 
 set(classical_lib_src input_param.cpp params.cpp input_funcs.cpp pywrapper.cpp pymodule.cpp fields.cpp potential.cpp icgen.cpp timer.cpp)
 add_library(classical SHARED ${classical_lib_src}  )

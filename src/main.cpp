@@ -22,6 +22,7 @@
 int main(int argc, char *argv[])
 {
 
+	using namespace classical;
     std::vector<std::string> av;
     for(int i=0;i<argc;i++){
         av.push_back(*(argv+i));

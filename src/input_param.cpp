@@ -13,6 +13,7 @@
 // $Log$
 
 #include "input_param.hpp"
+namespace classical {
 
 pmap::pmap(){
     
@@ -112,6 +113,10 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
     po::options_description runopts("Run specific options");
     generic.add_options()
 	        ("help", "displays help message");
+    generic.add_options()
+	        ("help-glog", "displays help messages for google glog, the logging interface");
+    generic.add_options()
+    		("no-build", "builds the initial conditions on the fly, without holding entire set in memory");
 
     //TODO: combine this into one step!!
     foreach(pairm m, general_opts){
@@ -170,6 +175,9 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
     google::SetUsageMessage(usage);
     if (vm.count("help")){
         std::cout << visible << "\n";
+        return false;
+    }
+    if (vm.count("help-glog")){
         to_gflags.push_back("--help");
         int gsize = to_gflags.size();
         char** av2=new char*[gsize];
@@ -225,6 +233,10 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
             map[n.first] = n.second;
     }
     
+    if (vm.count("no-build")){
+    	map["no-build"] = true;
+    }
+
     return true;
 }
 
@@ -331,4 +343,5 @@ void pmap::restore(){
 
 void pmap::map_out(anyMap &mapout){
     mapout = (*this).map;
+}
 }

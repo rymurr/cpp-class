@@ -1,6 +1,7 @@
 
 
 #include "fields.hpp"
+namespace classical {
 
 using boost::any_cast;
 
@@ -38,4 +39,5 @@ field::field(){}
 
 field::~field(){}
 
+}
 

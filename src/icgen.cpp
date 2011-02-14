@@ -1,11 +1,64 @@
 
 #include "icgen.hpp"
 
+namespace classical {
+
 using boost::any_cast;     
+
+SingleIC::SingleIC(){}
+
+SingleIC::~SingleIC(){}
+
+SingleIC::SingleIC(double var, int size): size_(size), var_(var){}
+
+SingleLinIC::SingleLinIC(){}
+
+SingleLinIC::~SingleLinIC(){}
+
+SingleLinIC::SingleLinIC(double mean, double var, int size): SingleIC(var,size), mean_(mean){
+
+    start_ = mean_ - 4.*sqrt((*this).var_);
+    finish_ = mean_ + 4.*sqrt((*this).var_);
+    dx_ = (finish_-start_)/(*this).size_;
+    current_ = start_ - 0.5*dx_;
+
+}
+
+double SingleLinIC::RetVal(){
+    current_ += dx_;
+    return current_;
+}
+
+void SingleLinIC::reset(){
+    current_ = start_ - 0.5*dx_;
+}
+
+SingleRandIC::SingleRandIC(){}
+
+SingleRandIC::~SingleRandIC(){}
+
+SingleRandIC::SingleRandIC(std::vector<double> means, double var): SingleIC(var,1), means_(means){
+
+    (*this).size_ = means_.size();
+
+    generator_.seed(static_cast<unsigned int>(std::time(0)));
+    dist_ = boost::normal_distribution<>(0,(*this).var_);
+    generators_ = boost::shared_ptr<boost::variate_generator<base_generator_type&, boost::normal_distribution<> > >( new boost::variate_generator<base_generator_type&, boost::normal_distribution<> >(generator_,dist_));
+
+}
+
+void SingleRandIC::RetVal(vTraj retVal){
+    for (int i=0;i<(*this).size_;i++){
+        (*retVal)[i] = (*generators_)()+means_[i];
+    }
+}
+
+
 
 icgenerator::icgenerator(){}
 
 icgenerator::~icgenerator(){}
+
 
 icgenerator::icgenerator(anyMap params){
 
@@ -27,47 +80,12 @@ icgenerator::icgenerator(anyMap params){
         throw  std::range_error("the means and dims arrays are not the same size!");
     }
 
+    (*this).singleCheck();
     if (single_ == false){
-        LOG(INFO) << "the icgenerator will build a full set of ICs and store them for later use";
-        switch (tType_){
-            case 1:
-                fpick = boost::bind(&icgenerator::montecarlo,this);
-                hpick = boost::bind(&icgenerator::mcsingle,this,_1);
-                break;
-            case 2:
-                fpick = boost::bind(&icgenerator::linear,this);
-                hpick = boost::bind(&icgenerator::linsingle,this,_1);
-                break;
-            case 3:
-                LOG(FATAL) << "staged-linear is currently not implemented";
-            default:
-                LOG(FATAL) << "Bad choice for Initial conditions";
-        }
-        j_=0;
-        (*this).gen_ics();
-        for(unsigned int i=0;i<trajs_.size();i++){
-            tsing_.push_back(0);
-        }
-    } else {
-        LOG(INFO) << "The icgenerator is generating ICs on the fly and will not store them";
-        switch (tType_){
-            case 1:
-                gens_.push_back(boost::shared_ptr<SingleRandIC>(new SingleRandIC(means_,variance_)));
-                gpick = boost::bind(&icgenerator::singlemc,this,_1);
-                break;
-            case 2:
-                for(unsigned int i=0;i<trajs_.size();i++){
-                    gens_.push_back(boost::shared_ptr<SingleLinIC>(new SingleLinIC(means_[i],variance_,trajs_[i])));
-                    tsing_.push_back(0);
-                }
-                gpick = boost::bind(&icgenerator::singlelin,this,_1);
-                break;
-             case 3:
-                LOG(FATAL) << "staged-linear is currently not implemented";
-            default:
-                LOG(FATAL) << "Bad choice for Initial conditions";
-        }
+    	(*this).gen_ics();
     }
+    j_=0;
+    tsing_.resize(trajs_.size(),0);
 }
 
 void icgenerator::get_ic(vTraj ics){
@@ -78,16 +96,14 @@ void icgenerator::get_ic(vTraj ics){
     }
 }
 
-void icgenerator::mcsingle(vTraj ics){
+void icgenerator::singleMCRet(vTraj ics){
     for (unsigned int i=0;i<trajs_.size();i++){
         (*ics)[i] = initConditions_[i][j_];
     }
     j_++;
 }
 
-void icgenerator::linsingle(vTraj ics){
-
-
+void icgenerator::singleLinRet(vTraj ics){
 
     if (!lindone_){
         typedef ic_array::index index;
@@ -127,7 +143,7 @@ void icgenerator::ret_ics(boost::shared_ptr<ic_array> icPtr){
     *icPtr = initConditions_;
 }
 
-void icgenerator::singlemc(vTraj ics){
+void icgenerator::singleMCFill(vTraj ics){
     if (tnumb_ > 0){
         gens_[0]->RetVal(ics); 
         tnumb_--;
@@ -137,19 +153,15 @@ void icgenerator::singlemc(vTraj ics){
 
 }
 
-void icgenerator::singlelin(vTraj ics){
+void icgenerator::singleLinFill(vTraj ics){
     
     if (!lindone_){
-//        transform(gens_.begin(),gens_.end(),ics->begin(),boost::bind<double>(&SingleLinIC::RetVal,boost::lambda::ll_reinterpret_cast<SingleLinIC*>(boost::lambda::_1)));
-//        for_each(gens_.begin(),gens_.end(),boost::bind(&SingleLinIC::RetVal,boost::lambda::ll_dynamic_cast<boost::shared_ptr<SingleLinIC> >(boost::lambda::_1)));
         for (unsigned int i=0;i<gens_.size();i++){
             (*ics)[i] = gens_[i]->RetVal();
             tsing_[i]+=1;
         }
-    //    tsing_[0]++;
         lindone_=true;
         return;
-        //TRYING TO GET THIS TO WORK AS A ONE LINER!
     }
 
     if (tsing_[0] >= trajs_[0]){
@@ -166,101 +178,95 @@ void icgenerator::singlelin(vTraj ics){
             (*ics)[i] = gens_[i]->RetVal();
             (*ics)[i+1] = gens_[i+1]->RetVal();
             tsing_[i+1]++;
-//            return;
-        }// else 
+        }
 
     }
 
     (*ics)[0] = gens_[0]->RetVal();
     tsing_[0]++;
-//VERY IMPORTANT!!! IS ALL OF THIS THREAD SAFE???? Shouldnt need to be, see notes.
 
     if (tsing_[tsing_.size()-1] > trajs_[trajs_.size()-1])
         throw std::range_error("Reached the end of the trajectories"); 
 }
 
-void icgenerator::linear(){
-    int max = *(std::max_element(trajs_.begin(),trajs_.end()));
-    initConditions_.resize(boost::extents[trajs_.size()][max]);    
+void icgenerator::linearFill(){
     
+	boost::progress_display show_progress(trajs_.size(), std::clog);
     for (unsigned int i=0;i<trajs_.size();i++){
             SingleLinIC uni(means_[i],variance_,trajs_[i]);
         for (int j=0;j<trajs_[i];j++){
             initConditions_[i][j] = uni.RetVal();
         }
+        ++show_progress;
     }
 }
 
-void icgenerator::montecarlo(){
+void icgenerator::montecarloFill(){
 
-    int tot = 1;
-    std::for_each(trajs_.begin(),trajs_.end(),tot*=boost::lambda::_1);
-    initConditions_.resize(boost::extents[trajs_.size()][tot]);
+	int tot = std::accumulate(trajs_.begin(),trajs_.end(),1,std::multiplies<int>());
 
-    /*
-    base_generator_type generator(static_cast<unsigned int>(std::time(0)));
-    boost::normal_distribution<> uni_dist(0,variance_);
-    boost::variate_generator<base_generator_type&, boost::normal_distribution<> > uni(generator, uni_dist);
-    */
-    //double trajs = std::accumulate(trajs_.begin(),trajs_.end(),0);
     SingleRandIC uni(means_,variance_);
     vTraj rands = vTraj(new std::vector<double>(means_));
+    boost::progress_display show_progress(tot, std::clog);
     for (int j=0;j<tot;j++){
             uni.RetVal(rands);
         for (unsigned int i=0;i<trajs_.size();i++){
             initConditions_[i][j] = (*rands)[i];
         }
+        ++show_progress;
     }
 
 }
 
-SingleRandIC::SingleRandIC(){}
-
-SingleRandIC::~SingleRandIC(){}
-
-SingleRandIC::SingleRandIC(std::vector<double> means, double var): SingleIC(var,1), means_(means){
-
-    (*this).size_ = means_.size();
-
-    generator_.seed(static_cast<unsigned int>(std::time(0)));
-    dist_ = boost::normal_distribution<>(0,(*this).var_);
-    generators_ = boost::shared_ptr<boost::variate_generator<base_generator_type&, boost::normal_distribution<> > >( new boost::variate_generator<base_generator_type&, boost::normal_distribution<> >(generator_,dist_));
-    
-}
-
-void SingleRandIC::RetVal(vTraj retVal){
-    for (int i=0;i<(*this).size_;i++){
-        (*retVal)[i] = (*generators_)()+means_[i];
+void icgenerator::singleCheck(){
+	if (single_ == false){
+        LOG(INFO) << "the icgenerator will build a full set of ICs and store them for later use";
+        (*this).tTypeSwitchF();
+    } else {
+    	LOG(INFO) << "The icgenerator is generating ICs on the fly and will not store them";
+    	(*this).tTypeSwitchT();
     }
 }
 
-SingleLinIC::SingleLinIC(){}
-
-SingleLinIC::~SingleLinIC(){}
-
-SingleLinIC::SingleLinIC(double mean, double var, int size): SingleIC(var,size), mean_(mean){
-
-    start_ = mean_ - 4.*sqrt((*this).var_);
-    finish_ = mean_ + 4.*sqrt((*this).var_);
-    dx_ = (finish_-start_)/(*this).size_;
-    current_ = start_ - 0.5*dx_;
-
+void icgenerator::tTypeSwitchT(){
+    switch (tType_){
+        case 1:
+            gens_.push_back(boost::shared_ptr<SingleRandIC>(new SingleRandIC(means_,variance_)));
+            gpick = boost::bind(&icgenerator::singleMCFill,this,_1);
+            break;
+        case 2:
+            for(unsigned int i=0;i<trajs_.size();i++){
+                gens_.push_back(boost::shared_ptr<SingleLinIC>(new SingleLinIC(means_[i],variance_,trajs_[i])));
+            }
+            gpick = boost::bind(&icgenerator::singleLinFill,this,_1);
+            break;
+         case 3:
+            LOG(FATAL) << "staged-linear is currently not implemented";
+        default:
+            LOG(FATAL) << "Bad choice for Initial conditions";
+    }
 }
 
-double SingleLinIC::RetVal(){
-    current_ += dx_;
-    return current_;
+void icgenerator::tTypeSwitchF(){
+	switch (tType_){
+	            case 1:
+	                fpick = boost::bind(&icgenerator::montecarloFill,this);
+	                hpick = boost::bind(&icgenerator::singleMCRet,this,_1);
+	                int tot = std::accumulate(trajs_.begin(),trajs_.end(),1,std::multiplies<int>());
+	                initConditions_.resize(boost::extents[trajs_.size()][tot]);
+	                break;
+	            case 2:
+	                fpick = boost::bind(&icgenerator::linearFill,this);
+	                hpick = boost::bind(&icgenerator::singleLinRet,this,_1);
+	                int max = *(std::max_element(trajs_.begin(),trajs_.end()));
+	                initConditions_.resize(boost::extents[trajs_.size()][max]);
+	                break;
+	            case 3:
+	                LOG(FATAL) << "staged-linear is currently not implemented";
+	            default:
+	                LOG(FATAL) << "Bad choice for Initial conditions";
+	        }
 }
-
-void SingleLinIC::reset(){
-    current_ = start_ - 0.5*dx_;
-}
-
-SingleIC::SingleIC(){}
-
-SingleIC::~SingleIC(){}
-
-SingleIC::SingleIC(double var, int size): size_(size), var_(var){}
 
 void icgenerator::save(std::string sType, std::string fName){
 
@@ -295,4 +301,6 @@ void icgenerator::load(std::string sType, std::string fName){
         std::string throwArg="archive type must be binary or text not" + sType;
         throw std::invalid_argument(throwArg);
     }
+}
+
 }

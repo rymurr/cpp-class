@@ -24,6 +24,7 @@
 
 //#include "input_func.hpp"
 #include "params.hpp"
+namespace classical{
 
 #define foreach     BOOST_FOREACH
 
@@ -53,5 +54,6 @@ pairm validate (pairm&, boost::any);
 
 void gen_param(pairm, po::options_description&);
 
+}
 
 #endif

@@ -9,6 +9,8 @@
 #include <stdexcept>
 #include <vector>
 #include <ctime>
+#include <functional>
+#include <numeric>
 //#include <typeinfo>
 //#include <gsl/gsl_math.h>
 
@@ -33,11 +35,15 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/version.hpp>
+#include <boost/progress.hpp>
 
 #include <glog/logging.h>
 
 
 //#define pi M_PI
+
+namespace classical{
+
 
 typedef std::map<std::string,boost::any> anyMap;
 typedef boost::multi_array<double,1> w_array;
@@ -139,6 +145,7 @@ class icgenerator{
             ar & variance_;
             ar & single_;
             ar & lindone_;
+            ar & j_;
             for (unsigned int i=0;i<initConditions_.shape()[0];i++){
                 for (unsigned int j=0;j<initConditions_.shape()[1];j++){
                     ar & initConditions_[i][j];
@@ -149,78 +156,48 @@ class icgenerator{
         template<class Archive>
         void load(Archive & ar, const unsigned int version)
         {
-            ar >> tType_;
-            ar >> tnumb_;
+            ar & tType_;
+            ar & tnumb_;
             ar & means_;
             ar & trajs_;
             ar & tsing_;
             ar & variance_;
             ar & single_;
             ar & lindone_;
+            ar & j_;
 //            ar & weights_;
-            int tot=1, max; 
 
+            (*this).singleCheck();
             if (single_ == false){
-                LOG(INFO) << "the icgenerator will build a full set of ICs and store them for later use";
-                switch (tType_){
-                    case 1:
-                        fpick = boost::bind(&icgenerator::montecarlo,this);
-                        std::for_each(trajs_.begin(),trajs_.end(),tot*=boost::lambda::_1);
-                        initConditions_.resize(boost::extents[trajs_.size()][tot]);
-                        break;
-                    case 2:
-                        fpick = boost::bind(&icgenerator::linear,this);
-                        max = *(std::max_element(trajs_.begin(),trajs_.end()));
-                        initConditions_.resize(boost::extents[trajs_.size()][max]);    
-                        break;
-                    case 3:
-                        LOG(FATAL) << "staged-linear is currently not implemented";
-                    default:
-                        LOG(FATAL) << "Bad choice for Initial conditions";
-                }
-                for (unsigned int i=0;i<initConditions_.shape()[0];i++){
+            	for (unsigned int i=0;i<initConditions_.shape()[0];i++){
                     for (unsigned int j=0;j<initConditions_.shape()[1];j++){
                         ar & initConditions_[i][j];
                     }
-                }
-            } else {
-                LOG(INFO) << "The icgenerator is generating ICs on the fly and will not store them";
-                switch (tType_){
-                    case 1:
-                        gens_.push_back(boost::shared_ptr<SingleRandIC>(new SingleRandIC(means_,variance_)));
-                        gpick = boost::bind(&icgenerator::singlemc,this,_1);
-                        break;
-                    case 2:
-                        for(unsigned int i=0;i<trajs_.size();i++){
-                            gens_.push_back(boost::shared_ptr<SingleLinIC>(new SingleLinIC(means_[i],variance_,trajs_[i])));
-//                            tsing_.push_back(0);
-                        }
-//                        lindone_ = false;
-                        gpick = boost::bind(&icgenerator::singlelin,this,_1);
-                        break;
-                     case 3:
-                        LOG(FATAL) << "staged-linear is currently not implemented";
-                    default:
-                        LOG(FATAL) << "Bad choice for Initial conditions";
-                }
+            	}
             }
 
         }
         BOOST_SERIALIZATION_SPLIT_MEMBER()
         
-        void montecarlo();
+        void montecarloFill();
         
-        void singlemc(vTraj);
+        void singleMCFill(vTraj);
 
-        void mcsingle(vTraj);
+        void singleMCRet(vTraj);
 
-        void linear();
+        void linearFill();
 
-        void singlelin(vTraj);
+        void singleLinFill(vTraj);
 
-        void linsingle(vTraj);
+        void singleLinRet(vTraj);
 
         void gen_ics();
+
+        void tTypeSwitchF();
+
+        void tTypeSwitchT();
+
+        void singleCheck();
 
     public:
         icgenerator();
@@ -245,4 +222,5 @@ class icgenerator{
         void load(std::string, std::string);
 };
 
+}
 #endif
