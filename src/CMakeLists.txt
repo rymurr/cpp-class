@@ -40,7 +40,7 @@ ENDIF ("${CMAKE_SYSTEM}" MATCHES "Linux")
 
 SET(Boost_USE_MULTITHREADED "OFF")
 SET(Boost_ADDITIONAL_VERSIONS "0.99" "0.99.0" "1.78" "1.78.0" "1.41.0" "1.40.0" "1.42.0" "1.36.0" "1.45.0")
-find_package(Boost 1.45.0 COMPONENTS program_options date_time python serialization REQUIRED)
+find_package(Boost 1.45.0 COMPONENTS program_options date_time python serialization filesystem system REQUIRED)
 link_directories ( ${Boost_LIBRARY_DIRS} )
 include_directories ( ${Boost_INCLUDE_DIRS} )
 INCLUDE_DIRECTORIES("/usr/include/python2.6")
@@ -59,7 +59,7 @@ link_libraries(${LIBS} -lpthread -lpython2.6 ${Boost_LIBRARIES} -lglog -lgflags)
 
 add_definitions(-DCHUNKSIZE=10)
 
-set(classical_lib_src input_param.cpp params.cpp input_funcs.cpp pywrapper.cpp pymodule.cpp fields.cpp potential.cpp icgen.cpp timer.cpp)
+set(classical_lib_src input_param.cpp params.cpp input_funcs.cpp pywrapper.cpp pymodule.cpp fields.cpp potential.cpp icgen.cpp timer.cpp ic_weights.cpp)
 add_library(classical SHARED ${classical_lib_src}  )
 
 add_executable (cpp-class main.cpp)

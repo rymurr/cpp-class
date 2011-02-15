@@ -43,6 +43,7 @@ typedef boost::shared_ptr<run_param<double> > doubleRunPtr;
 typedef boost::shared_ptr<list_param<int> > intListPtr;
 typedef boost::shared_ptr<list_param<double> > doubleListPtr;
 typedef boost::shared_ptr<state_param> statePtr;
+typedef boost::shared_ptr<file_param> filePtr;
 
 typedef run_param<int> intRun;
 typedef run_param<double> doubleRun;

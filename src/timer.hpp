@@ -22,12 +22,12 @@ class SingleTimer {
         //clock_t is measured in milliseconds or so, time_t is measured in seconds
         //there is no simple and portable way to measure time with higher resolution
         //live with it
-        bool active_;
         std::string name_;
         int calls_;
+        bool active_;
         double wallTime_;
-        double wallKids_;
         double realTime_;
+        double wallKids_;
         double realKids_;
 
     public:
@@ -53,7 +53,7 @@ class Timer {
     private:
         Timer(){};
         Timer(Timer const&){};
-        Timer& operator=(Timer const&){};
+        Timer& operator=(Timer const&){return (*this);};
         static Timer* m_pInstance;
         std::stack<std::string> timerStack_;
         hashTable timerHash_;

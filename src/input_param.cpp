@@ -25,12 +25,8 @@ pmap::~pmap(){
 
 bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &argv){
 
-    //TODO: add another section for file handling: file_opts
-    //need state_params for log/output direction: std::cout/cerr or a file
-    //need locations for input files: previous state/numerical input
-    //need locations for output files: logfile and data file
-    //will have to add another inherited class to params class file and new if statements in two helper functions
-    //also need to add an auxilliary variable to accept user variables. Right now everything gets put to standard files
+    //TODO: need locations for input files: numerical input
+    //TODO: need to add an auxilliary variable to accept user variables. Right now everything gets put to standard files
     anyMap general_opts, time_opts, wf_opts, field_opts, run_opts;
     std::vector<anyMap> opts;
     opts.push_back(general_opts);
@@ -52,6 +48,8 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
         (3,"run trajectories only")
         (4,"run binning only")
         (5,"everything")
+        (6,"everything from 3")
+        (7,"everything from 4")
         ;
     boost::assign::insert(inwf_map)
         (1,"Hydrogen atom like")
@@ -78,6 +76,8 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
     general_opts["dist-type"] = statePtr(new state_param("The number of trajectories in each dimension. comma separated list.", "dist-type", 1, dist_map));
     general_opts["run-type"] = statePtr(new state_param("Type of run", "run-type", 5, traj_map));
     general_opts["id-stages"] = intRunPtr(new intRun("Number of stages for staged-linear distribution(not implemented)", "id-stages", 1, 100, 1));
+    general_opts["input_file"] = filePtr( new file_param("Input file, expects serialized results of previous run", "input_file", "in.dat"));
+    general_opts["output_file"] = filePtr( new file_param("Output file, either serialized results of current run or results of whole run. If empty, then results will print to stdout for results of whole run.", "output_file", "out.dat"));
 
     time_opts["tinitial"] = doubleRunPtr(new doubleRun("Start time of the simulation, can be negative", "tinitial", 0, 10E10, -10E10));
     time_opts["tfinal"] = doubleRunPtr(new doubleRun("Finish time of the simulation, can be negative", "tfinal", 100, 10E10, -10E10));
@@ -92,7 +92,6 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
     wf_opts["theta-nuc"] = doubleRunPtr(new doubleRun("alignment of molecule wrt the laser polarization. 0 is aligned, 90 is anti-aligned. given in degrees.", "theta-nuc", 0.0, 10E10, -10E10));
     wf_opts["ip"] = doubleRunPtr(new doubleRun("ionization potential of target, given in atomic units", "ip", 0.5, 10E10, -10E10));
     wf_opts["state"] = doubleRunPtr(new doubleRun("state of atomic or molecular system (not implemented)", "state", 0.01, 10E10, -10E10));
-
     
     field_opts["nfield"] = intRunPtr(new intRun("Number of fields, every option below is given as a comma separated list of options for each field. Currently only 1 field is allowed", "nfield", 1, 100, 1));
     field_opts["env"] = statePtr(new state_param("Type of fields", "env", 1,field_map));
@@ -117,6 +116,8 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
 	        ("help-glog", "displays help messages for google glog, the logging interface");
     generic.add_options()
     		("no-build", "builds the initial conditions on the fly, without holding entire set in memory");
+    generic.add_options()
+            ("binary", "serialize in binary(OS-dependent), if not set serializes to text(default)");
 
     //TODO: combine this into one step!!
     foreach(pairm m, general_opts){
@@ -235,6 +236,9 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
     
     if (vm.count("no-build")){
     	map["no-build"] = true;
+    }
+    if (vm.count("binary")){
+        map["binary"] = true;
     }
 
     return true;

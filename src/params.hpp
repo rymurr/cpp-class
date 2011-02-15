@@ -38,10 +38,12 @@
 namespace classical{
 
 #define foreach     BOOST_FOREACH
+#define BOOST_FILESYSTEM_VERSION 3
 
 using boost::any_cast;
 //using namespace boost::lambda;
 using namespace boost;
+namespace fs = boost::filesystem;
 
 typedef std::map<std::string,boost::any> anyMap;
 //typedef boost::bimap< int, std::string > bm_type;
@@ -155,7 +157,8 @@ class state_param: public param<int> {
 
 class file_param: public param<std::string> {
 	public:
-		file_param(std::string, std::string, std::string);
+
+		file_param(std::string desc, std::string varName, std::string defVal): param<std::string>(desc,varName,defVal){};
 
 		void verify();
 
@@ -206,10 +209,10 @@ void list_param<R>::verify(){
     split_vector_type splitStr;
     split(splitStr, *((*this).actualValue), is_any_of(","), token_compress_on);
 
-    if (splitStr.size() > *size){
+    if ((int)splitStr.size() > *size){
         LOG(WARNING) <<  "\n***WARNING! The number of elements for the list given for " + *name + " exceeds the number of dimensions given. The list is being truncated to " + boost::lexical_cast<std::string>(*size) + ".***\n" << std::endl;
     }
-    if (splitStr.size() < *size){
+    if ((int)splitStr.size() < *size){
         throw std::invalid_argument("The number of elements for the list given for " + *name + " is too short, at least " + boost::lexical_cast<std::string>(*size) + " are needed.");
     }
 

@@ -81,11 +81,16 @@ icgenerator::icgenerator(anyMap params){
     }
 
     (*this).singleCheck();
-    if (single_ == false){
+    if (!single_){
     	(*this).gen_ics();
+    	(*this).gen_weights(any_cast<boost::function<void (anyMap)> >params["weight_func"], params);
     }
     j_=0;
     tsing_.resize(trajs_.size(),0);
+}
+
+void icgenerator::gen_weights(boost::function<void (anyMap)> wFunc, anyMap params){
+    ;
 }
 
 void icgenerator::get_ic(vTraj ics){
@@ -191,7 +196,8 @@ void icgenerator::singleLinFill(vTraj ics){
 
 void icgenerator::linearFill(){
     
-	boost::progress_display show_progress(trajs_.size(), std::clog);
+    LOG(INFO) << "Building linear ICs";
+	boost::progress_display show_progress(trajs_.size(), LOG(INFO));
     for (unsigned int i=0;i<trajs_.size();i++){
             SingleLinIC uni(means_[i],variance_,trajs_[i]);
         for (int j=0;j<trajs_[i];j++){
@@ -207,7 +213,8 @@ void icgenerator::montecarloFill(){
 
     SingleRandIC uni(means_,variance_);
     vTraj rands = vTraj(new std::vector<double>(means_));
-    boost::progress_display show_progress(tot, std::clog);
+    LOG(INFO) << "Building monte-carlo ICs";
+    boost::progress_display show_progress(tot, LOG(INFO));
     for (int j=0;j<tot;j++){
             uni.RetVal(rands);
         for (unsigned int i=0;i<trajs_.size();i++){
@@ -248,17 +255,18 @@ void icgenerator::tTypeSwitchT(){
 }
 
 void icgenerator::tTypeSwitchF(){
-	switch (tType_){
+    int tot=1,max=1;
+    switch (tType_){
 	            case 1:
 	                fpick = boost::bind(&icgenerator::montecarloFill,this);
 	                hpick = boost::bind(&icgenerator::singleMCRet,this,_1);
-	                int tot = std::accumulate(trajs_.begin(),trajs_.end(),1,std::multiplies<int>());
+	                tot = std::accumulate(trajs_.begin(),trajs_.end(),1,std::multiplies<int>());
 	                initConditions_.resize(boost::extents[trajs_.size()][tot]);
 	                break;
 	            case 2:
 	                fpick = boost::bind(&icgenerator::linearFill,this);
 	                hpick = boost::bind(&icgenerator::singleLinRet,this,_1);
-	                int max = *(std::max_element(trajs_.begin(),trajs_.end()));
+	                max = *(std::max_element(trajs_.begin(),trajs_.end()));
 	                initConditions_.resize(boost::extents[trajs_.size()][max]);
 	                break;
 	            case 3:

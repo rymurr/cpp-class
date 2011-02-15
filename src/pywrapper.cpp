@@ -28,7 +28,7 @@ int pyrun_main(int argc, boost::python::list argv, std::string fname){
 
     std::size_t n = boost::python::len(argv);
     std::vector<std::string> av;
-    for (int i = 0; i < n; i++) {
+    for (unsigned int i = 0; i < n; i++) {
         av.push_back(boost::python::extract<std::string>(argv[i]));
     }
 

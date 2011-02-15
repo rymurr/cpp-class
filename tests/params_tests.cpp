@@ -7,10 +7,9 @@
 #include <map>
 #include <iostream>
 #include "input_param.hpp"
-namespace classical{
 
 using boost::any_cast;
-
+using namespace classical;
 
 BOOST_AUTO_TEST_SUITE(params)
 
@@ -70,6 +69,12 @@ BOOST_AUTO_TEST_CASE(paramstpl)
     BOOST_REQUIRE_EQUAL(*(any_cast<boost::shared_ptr<run_param<double> > >(tstmap["b"])->actualValue),23.332);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_CASE(fileparam)
+{
+    file_param test("testname","testdesc","poo.txt");
+    test.verify();
+    test.print();
 }
+BOOST_AUTO_TEST_SUITE_END()
+
 

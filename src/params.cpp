@@ -41,7 +41,6 @@ void state_param::print(){
         << *ident << std::endl;
 }
 
-file_param::file_param(std::string desc, std::string varName, std::string defVal): param<std::string>(desc,varName,defVal){}
 
 void file_param::print(){
     std::cout << *description << " "
@@ -51,5 +50,15 @@ void file_param::print(){
         << std::endl;
 }
 
-void file_param::verify(){}
+void file_param::verify(){
+    fs::path filename(*actualValue);
+    fs::path file = filename.parent_path();
+
+    if (file.empty() || (fs::exists(file) && fs::is_directory(file))){
+        LOG(INFO) << "The path " + *actualValue + " is valid for " + *name;
+    } else {
+        throw std::invalid_argument(*actualValue + " is not a valid file name");
+    }
+}
+
 }
