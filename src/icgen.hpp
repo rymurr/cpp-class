@@ -60,29 +60,29 @@ class SingleIC{
        
 
     public:
-
         int size_;
 
         double var_;
+
+        std::vector<double> mean_;
 
         SingleIC();
 
         ~SingleIC();
 
-        SingleIC(double, int);
+        SingleIC(std::vector<double>, double);
 
         void virtual RetVal(vTraj){};
 
-        double virtual RetVal(){return 0;};
-
-        void virtual reset(){};
+        void virtual reset(int){};
 
 };
 
 class SingleLinIC: public SingleIC{
     private:
 
-        double mean_, current_, dx_, finish_, start_;
+        std::vector<double> current_, dx_, finish_, start_;
+        std::vector<int> sizes_;
 
     public:
 
@@ -90,18 +90,16 @@ class SingleLinIC: public SingleIC{
 
         ~SingleLinIC();
 
-        SingleLinIC(double, double, int);
-
-        double RetVal();
+        SingleLinIC(std::vector<double>, double, std::vector<int>);
         
-        void RetVal(vTraj){};
+        void RetVal(vTraj);
 
-        void reset();
+//        void reset();
  };
 
 class SingleRandIC: public SingleIC{
     private:
-        std::vector<double> means_;
+        //std::vector<double> means_;
         boost::normal_distribution<> dist_;
         boost::shared_ptr<boost::variate_generator<base_generator_type&, boost::normal_distribution<> > >  generators_;
         base_generator_type generator_;
@@ -113,23 +111,21 @@ class SingleRandIC: public SingleIC{
         SingleRandIC(std::vector<double>, double);
 
         void RetVal(vTraj);
-
-        double RetVal(){return 0;};
 };
 
 class icgenerator{
 
     private:
-        int tType_, tnumb_, j_;
+        int tType_, tnumb_, tdim_, j_;
         std::vector<double> means_;
-        std::vector<int> trajs_,tsing_;
         double variance_;
+        std::vector<int> trajs_,tsing_;
         ic_array initConditions_;
         w_array weights_;
-        boost::function<void (void)> fpick;
+        //boost::function<void (void)> fpick;
         boost::function<void (vTraj)> gpick, hpick;
         bool single_, lindone_;
-        std::vector<boost::shared_ptr<SingleIC> > gens_;
+        boost::shared_ptr<SingleIC> gens_;
         std::vector<ic_array::array_view<1>::type> sliceVec_;
         std::vector<boost::multi_array<double,1>::iterator> sliceIter_;
 
@@ -191,11 +187,9 @@ class icgenerator{
 
         void singleLinRet(vTraj);
 
-        void gen_ics();
+        //void gen_ics();
 
-        void tTypeSwitchF();
-
-        void tTypeSwitchT();
+        void tTypeSwitch();
 
         void singleCheck();
 
