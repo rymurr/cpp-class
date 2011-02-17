@@ -29,7 +29,7 @@ void state_param::verify(){
         LOG(INFO) << "For " << *name << " option " << *actualValue<< " is being used, which is " + *ident << std::endl;
     }
     else {
-        throw std::invalid_argument(boost::lexical_cast<std::string>(*actualValue) + " does not have a valid meaning. Possible values are:\n" + *description);
+        throw invalid_input() << err_info(boost::lexical_cast<std::string>(*actualValue) + " does not have a valid meaning. Possible values are:\n" + *description);
     }
 }
 
@@ -57,7 +57,7 @@ void file_param::verify(){
     if (file.empty() || (fs::exists(file) && fs::is_directory(file))){
         LOG(INFO) << "The path " + *actualValue + " is valid for " + *name;
     } else {
-        throw std::invalid_argument(*actualValue + " is not a valid file name");
+        throw invalid_input() << err_info(*actualValue + " is not a valid file name");
     }
 }
 

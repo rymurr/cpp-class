@@ -4,6 +4,7 @@ namespace classical{
 
 int run_main(int argc, std::vector<std::string> argv, std::string fname){
     google::InitGoogleLogging(argv[0].c_str());
+    google::InstallFailureSignalHandler();
 
     pmap params;
     if (!params.read_params(fname, argc, argv)){return 0;};

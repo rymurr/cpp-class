@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <boost/multi_array.hpp>
 #include <boost/lambda/lambda.hpp>
+#include <boost/shared_ptr.hpp>
 
 int main(int argc, char** argv){
 
@@ -13,11 +14,21 @@ int main(int argc, char** argv){
   typedef array_type::index index;
   array_type A(boost::extents[4][4]);
 
+  typedef std::vector<double> dVec;
+  typedef boost::shared_ptr<dVec> pVec;
+
+  dVec B(4,4);
+  pVec C = pVec(new dVec(4));
+  C = pVec(B.begin());
+  for_each(C->begin(),C->end(),std::cout << boost::lambda::_1 << " poo ");
+
   // Assign values to the elements
   int values = 0;
   for(index i = 0; i != 4; ++i) 
     for(index j = 0; j != 4; ++j)
         A[i][j] = values++;
+
+  for_each(A[1].begin(),A[1].end(),std::cout << boost::lambda::_1 << " woo ");
 
   typedef boost::multi_array_types::index_range range;
   array_type::index_gen indices;

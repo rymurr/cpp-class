@@ -6,7 +6,7 @@
 #include <iostream>
 #include <fstream>
 //#include <iterator>
-#include <stdexcept>
+//#include <stdexcept>
 #include <vector>
 #include <ctime>
 #include <functional>
@@ -37,25 +37,44 @@
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/version.hpp>
 #include <boost/progress.hpp>
+#include <boost/foreach.hpp>
 
 #include <glog/logging.h>
 
+#include "exceptions.hpp"
 
 //#define pi M_PI
 
+
 namespace classical{
 
+#define foreach     BOOST_FOREACH
 
 typedef std::map<std::string,boost::any> anyMap;
 typedef boost::multi_array<double,1> w_array;
 typedef boost::multi_array<double,2> ic_array;
 typedef boost::shared_ptr<std::vector<double> > vTraj;
 typedef boost::multi_array_types::index_range range;
+typedef boost::function<double (anyMap)> wFun;
 
 // This is a typedef for a random number generator.
 // Try boost::mt19937 or boost::ecuyer1988 instead of boost::minstd_rand
 //try boost::rand48 for quickest/least accurate
+//TODO: may want to wrap in #define or something to choose for release/debug...profile first for large rands
 typedef boost::minstd_rand base_generator_type;
+
+using boost::any_cast;
+
+class WeightGen {
+    private:
+        wFun func_;
+        anyMap params_;
+    public:
+        WeightGen(){};
+        ~WeightGen(){};
+        WeightGen(anyMap):params_(params){func_ = any_cast<wFun>(params["weight-func"]);};
+        double operator()(){return func_(params_);};
+};
 
 class SingleGrid {
     private:
@@ -65,11 +84,26 @@ class SingleGrid {
 
     public:
 
-        SingleGrid();
+        SingleGrid(){};
 
-        SingleGrid(double, double, int);
+        SingleGrid(double mean, double var, int size): mean_(mean), var_(var), size_(size){
+            start_ = mean_ - 4.*sqrt(var_);
+            finish_ = mean_ + 4.*sqrt(var_);
+            dx_ = (finish_ - start_)/((double) size_);
+            current_ = start_ - 0.5*dx_;
+            finish_ -= dx_;
+        };
 
-        std::pair<double,bool> operator()();
+        std::pair<double,bool> operator()(){
+            current_ += dx_;
+            if (current_  >= finish_){
+                double old = current_;
+                current_ = start_ - 0.5*dx_;
+                return std::make_pair(old,true);
+            } else {
+                return std::make_pair(current_,false);
+            }
+        };
 
 };
 
@@ -77,17 +111,15 @@ class SingleIC{
        
 
     public:
-        int size_;
-
         double var_;
 
         std::vector<double> mean_;
 
-        SingleIC();
+        SingleIC(){};
 
-        ~SingleIC();
+        ~SingleIC(){};
 
-        SingleIC(std::vector<double>, double);
+        SingleIC(std::vector<double> mean, double var): var_(var), mean_(mean){};
 
         void virtual RetVal(vTraj){};
 
@@ -101,51 +133,67 @@ class SingleLinIC: public SingleIC{
 		std::vector<std::pair<double,bool> > current_;
 		std::vector<SingleGrid> grids_;
         std::vector<int> sizes_;
+        int size_;
 
     public:
 
-        SingleLinIC();
+        SingleLinIC(){};
 
-        ~SingleLinIC();
+        ~SingleLinIC(){};
 
-        SingleLinIC(std::vector<double>, double, std::vector<int>);
-        
-        void RetVal(vTraj);
+        SingleLinIC(std::vector<double> means, double var, std::vector<int> sizes): SingleIC(means,var), sizes_(sizes){
+            size_ = (*this).mean_.size();
+            for(int i=0;i<(*this).size_;i++){
+                grids_.push_back(SingleGrid(means[i],var,sizes[i]));
+                current_.push_back(std::make_pair(0.,false));
+            }
+            std::transform(grids_.begin()+1,grids_.end(),current_.begin()+1,boost::lambda::bind(&SingleGrid::operator(),boost::lambda::_1));
+        };
+        void RetVal(vTraj retVal){
+            int i=0;
+            bool exit = false;
+            while (!exit && i<(*this).size_){
 
-//        void reset();
+                if (!current_[i].second)
+                    exit = true;
+                current_[i] = grids_[i]();
+                ++i;
+            }
+            std::transform(current_.begin(),current_.end(),(*retVal).begin(), boost::lambda::bind(&std::pair<double,bool>::first,boost::lambda::_1));
+        };
  };
 
 class SingleRandIC: public SingleIC{
     private:
-        //std::vector<double> means_;
         boost::normal_distribution<> dist_;
         boost::shared_ptr<boost::variate_generator<base_generator_type&, boost::normal_distribution<> > >  generators_;
         base_generator_type generator_;
     public:
-        SingleRandIC();
+        SingleRandIC(){};
 
-        ~SingleRandIC();
+        ~SingleRandIC(){};
 
-        SingleRandIC(std::vector<double>, double);
+        SingleRandIC(std::vector<double> mean, double var): SingleIC(mean, var){
+            generator_.seed(static_cast<unsigned int>(std::time(0)));
+            dist_ = boost::normal_distribution<>(0,(*this).var_);
+            generators_ = boost::shared_ptr<boost::variate_generator<base_generator_type&, boost::normal_distribution<> > >( new boost::variate_generator<base_generator_type&, boost::normal_distribution<> >(generator_,dist_));
+        };
 
-        void RetVal(vTraj);
+        void RetVal(vTraj retVal){std::transform(this->mean_.begin(),this->mean_.end(),retVal->begin(),boost::lambda::_1 + generators_->operator()());};
 };
 
 class icgenerator{
 
     private:
-        int tType_, tnumb_, tdim_, j_;
+        int tType_, tnumb_, tdim_, j_, k_;
         std::vector<double> means_;
         double variance_;
-        std::vector<int> trajs_,tsing_;
+        std::vector<int> trajs_;
         ic_array initConditions_;
         w_array weights_;
-        //boost::function<void (void)> fpick;
-        boost::function<void (vTraj)> gpick, hpick;
-        bool single_, lindone_;
-        boost::shared_ptr<SingleIC> gens_;
-        std::vector<ic_array::array_view<1>::type> sliceVec_;
-        std::vector<boost::multi_array<double,1>::iterator> sliceIter_;
+        bool single_;
+        boost::shared_ptr<SingleIC> icGens_;
+        boost::shared_ptr<WeightGen> wGens_;
 
     friend class boost::serialization::access;
         template<class Archive>
@@ -153,85 +201,105 @@ class icgenerator{
         {
             ar & tType_;
             ar & tnumb_;
+            ar & tdim_;
             ar & means_;
             ar & trajs_;
-            ar & tsing_;
             ar & variance_;
             ar & single_;
-            ar & lindone_;
             ar & j_;
-            for (unsigned int i=0;i<initConditions_.shape()[0];i++){
-                for (unsigned int j=0;j<initConditions_.shape()[1];j++){
-                    ar & initConditions_[i][j];
+            ar & k_;
+            //TODO: this should have an if around it and should be algorithmed
+            if (!single_){
+                for (unsigned int i=0;i<initConditions_.shape()[0];i++){
+                    for (unsigned int j=0;j<initConditions_.shape()[1];j++){
+                        ar & initConditions_[i][j];
+                    }
+                }
+                foreach(double x, weights_){
+                    ar & x;
                 }
             }
-//            ar & weights_;
         }
         template<class Archive>
         void load(Archive & ar, const unsigned int version)
         {
             ar & tType_;
             ar & tnumb_;
+            ar & tdim_;
             ar & means_;
             ar & trajs_;
-            ar & tsing_;
             ar & variance_;
             ar & single_;
-            ar & lindone_;
             ar & j_;
-//            ar & weights_;
+            ar & k_;
 
             (*this).singleCheck();
-            if (single_ == false){
+            //TODO: turn into algorithm
+            if (!single_){
             	for (unsigned int i=0;i<initConditions_.shape()[0];i++){
                     for (unsigned int j=0;j<initConditions_.shape()[1];j++){
                         ar & initConditions_[i][j];
                     }
+            	}
+            	foreach(double x, weights_){
+            	    ar & x;
             	}
             }
 
         }
         BOOST_SERIALIZATION_SPLIT_MEMBER()
         
-        void montecarloFill();
+        void genICs();
         
-        void singleMCFill(vTraj);
-
-        void singleMCRet(vTraj);
-
-        void linearFill();
-
-        void singleLinFill(vTraj);
-
-        void singleLinRet(vTraj);
-
-        //void gen_ics();
-
-        void tTypeSwitch();
+        void genWeights();
 
         void singleCheck();
 
     public:
-        icgenerator();
+        icgenerator(){};
 
         icgenerator(anyMap);
 
-        ~icgenerator();
+        ~icgenerator(){};
 
         //TODO: currently the pointer to a private member is being returned
         //while quite bad i am doing this to avoid a LARGE copy
         //i may change this later
-        void ret_ics(boost::shared_ptr<ic_array>);
+        void retICs(boost::shared_ptr<ic_array> icPtr){*icPtr = initConditions_;};
 
-        void ret_weight(boost::shared_ptr<w_array>);
+        void retWeights(boost::shared_ptr<w_array> wPtr){*wPtr = weights_;};
 
-        void get_ic(vTraj);
+        void retIC(vTraj ics){
+            if (j_ < tnumb_){
+                if (single_) {
+                    icGens_->RetVal(ics);
+                } else {
+                    std::transform(initConditions_[j_].begin(),initConditions_[j_].end(),ics->begin(),boost::lambda::_1);
+                }
+                ++j_;
+            } else {
+                throw out_of_trajectories() << err_info("Reached the end of the trajectories");
+            }
+        };
 
-        void gen_weights(boost::function<void (anyMap)>, anyMap);
+        double retWeight(){
+            if (k_ < tnumb_){
+                if (single_) {
+                    return wGens_->operator()();
+                } else {
+                    return weights_[k_];
+                }
+                ++k_;
+            } else {
+                throw out_of_trajectories() << err_info("Reached the end of the trajectories");
+            }
+        };
+
+        void setWeights(anyMap);
 
         void save(std::string, std::string);
 
-        void load(std::string, std::string);
+        void load(std::string sType, std::string fName, anyMap params=anyMap());
 };
 
 }

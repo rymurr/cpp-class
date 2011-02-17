@@ -24,6 +24,7 @@
 
 //#include "input_func.hpp"
 #include "params.hpp"
+#include "exceptions.hpp"
 namespace classical{
 
 #define foreach     BOOST_FOREACH

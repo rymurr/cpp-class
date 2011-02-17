@@ -54,7 +54,7 @@ find_package(FFTW REQUIRED)
 include_directories(${FFTW_INCLUDE_DIR})
 set (LIBS ${LIBS} ${FFTW_LIBRARIES} ${FFTW_LIBRARIES_THREADED})
 
-link_libraries(${LIBS} -lpthread -lpython2.6 ${Boost_LIBRARIES} -lglog -lgflags)
+link_libraries(${LIBS} -lpthread -lpython2.6 ${Boost_LIBRARIES} -lglog -lgflags -ltcmalloc -lprofiler)
 
 
 add_definitions(-DCHUNKSIZE=10)

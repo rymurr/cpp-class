@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_SUITE(icgen)
 
 BOOST_AUTO_TEST_CASE(initSingleRandIC)
 {
-
+    google::InstallFailureSignalHandler();
     std::vector<double> x;
     x.push_back(1.);
     x.push_back(0.);
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(initSingleRandIC)
 
 BOOST_AUTO_TEST_CASE(initicgen)
 {
-
+    google::InstallFailureSignalHandler();
     anyMap test;
     std::vector<double> x;
     std::vector<int> y;
@@ -52,13 +52,14 @@ BOOST_AUTO_TEST_CASE(initicgen)
     test["means"] = x;
     test["variance"] = 1.;
     test["dist-type"] = 1;
+    //test["weight-func"] = //stopped here!!! need to define weight-func for all test cases, and write weight test cases. use bind? or what?
     icgenerator gen(test);
-    boost::shared_ptr<boost::multi_array<double, 2> > retArray=boost::shared_ptr<boost::multi_array<double,2> >(new boost::multi_array<double,2>(boost::extents[2][4]));
-    gen.ret_ics(retArray);
+    boost::shared_ptr<boost::multi_array<double, 2> > retArray=boost::shared_ptr<boost::multi_array<double,2> >(new boost::multi_array<double,2>(boost::extents[4][2]));
+    gen.retICs(retArray);
 
     std::cout << "\n" << std::endl;
-    for (int i=0;i<2;i++){
-        for (int j=0;j<4;j++){
+    for (int i=0;i<4;i++){
+        for (int j=0;j<2;j++){
             std::cout << (*retArray)[i][j] << " ";
         }
     }
@@ -70,9 +71,9 @@ BOOST_AUTO_TEST_CASE(initicgen)
     std::cout << "\n" << std::endl;
     for (int i = 0; i < 2; i++)
             (*vals)[i]= 202;
-    for (int i=0;i<4;i++){
-        gen2.get_ic(vals);
-        for (int j=0;j<2;j++){
+    for (int i=0;i<2;i++){
+        gen2.retIC(vals);
+        for (int j=0;j<4;j++){
             std::cout << (*vals)[j] << " ";
         }
     }
@@ -124,12 +125,12 @@ BOOST_AUTO_TEST_CASE(lineartest)
     test["dist-type"] = 2;
     
     icgenerator gen(test);
-    boost::shared_ptr<boost::multi_array<double, 2> > retArray=boost::shared_ptr<boost::multi_array<double,2> >(new boost::multi_array<double,2>(boost::extents[2][25]));
-    gen.ret_ics(retArray);
+    boost::shared_ptr<boost::multi_array<double, 2> > retArray=boost::shared_ptr<boost::multi_array<double,2> >(new boost::multi_array<double,2>(boost::extents[25][2]));
+    gen.retICs(retArray);
 
     std::cout << "\n" << std::endl;
-    for (int i=0;i<25;i++){
-        for (int j=0;j<2;j++){
+    for (int i=0;i<2;i++){
+        for (int j=0;j<25;j++){
             std::cout << (*retArray)[j][i] << " ";
         }
         std::cout << std::endl;
@@ -143,7 +144,7 @@ BOOST_AUTO_TEST_CASE(lineartest)
     for (int i = 0; i < 2; i++)
             (*vals)[i]= 202;
     for (int i=0;i<25;i++){
-        gen2.get_ic(vals);
+        gen2.retIC(vals);
         for (int j=0;j<2;j++){
             std::cout << (*vals)[j] << " ";
         }
@@ -176,7 +177,7 @@ BOOST_AUTO_TEST_CASE(lineartest2)
     for (int i = 0; i < 3; i++)
             (*vals)[i]= 202;
     for (int i=0;i<125;i++){
-        gen2.get_ic(vals);
+        gen2.retIC(vals);
         for (int j=0;j<3;j++){
             std::cout << (*vals)[j] << " ";
         }
@@ -208,7 +209,7 @@ BOOST_AUTO_TEST_CASE(lineartest3)
     for (int i = 0; i < 3; i++)
             (*vals)[i]= 202;
     for (int i=0;i<27;i++){
-        gen2.get_ic(vals);
+        gen2.retIC(vals);
         for (int j=0;j<3;j++){
             std::cout << (*vals)[j] << " ";
         }
@@ -255,8 +256,8 @@ BOOST_AUTO_TEST_CASE(serialize1)
             (*vals2)[i]= 203;
     }
     for (int i=0;i<125;i++){
-        gen.get_ic(vals);
-        gen2.get_ic(vals2);
+        gen.retIC(vals);
+        gen2.retIC(vals2);
         for (int j=0;j<3;j++){
             BOOST_CHECK_CLOSE((*vals)[j],(*vals2)[j],1E-6);
         }
@@ -292,14 +293,14 @@ BOOST_AUTO_TEST_CASE(serialize2)
     boost::archive::text_iarchive ia(ifs);
     ia >> gen2;
     }
-    boost::shared_ptr<boost::multi_array<double, 2> > retArray=boost::shared_ptr<boost::multi_array<double,2> >(new boost::multi_array<double,2>(boost::extents[2][5]));
-    boost::shared_ptr<boost::multi_array<double, 2> > retArray2=boost::shared_ptr<boost::multi_array<double,2> >(new boost::multi_array<double,2>(boost::extents[2][5]));
-    gen2.ret_ics(retArray2);
-    gen.ret_ics(retArray);
+    boost::shared_ptr<boost::multi_array<double, 2> > retArray=boost::shared_ptr<boost::multi_array<double,2> >(new boost::multi_array<double,2>(boost::extents[25][2]));
+    boost::shared_ptr<boost::multi_array<double, 2> > retArray2=boost::shared_ptr<boost::multi_array<double,2> >(new boost::multi_array<double,2>(boost::extents[25][2]));
+    gen.retICs(retArray);
+    gen2.retICs(retArray2);
 
     std::cout << "\n" << std::endl;
-    for (int i=0;i<2;i++){
-        for (int j=0;j<5;j++){
+    for (int i=0;i<25;i++){
+        for (int j=0;j<2;j++){
             BOOST_CHECK_CLOSE((*retArray)[i][j],(*retArray2)[i][j],1E-6);
         }
     }
@@ -325,14 +326,14 @@ BOOST_AUTO_TEST_CASE(serialize_member)
     icgenerator gen2;
 
     gen2.load("text", "test3.dat");
-    boost::shared_ptr<boost::multi_array<double, 2> > retArray=boost::shared_ptr<boost::multi_array<double,2> >(new boost::multi_array<double,2>(boost::extents[2][25]));
-    boost::shared_ptr<boost::multi_array<double, 2> > retArray2=boost::shared_ptr<boost::multi_array<double,2> >(new boost::multi_array<double,2>(boost::extents[2][25]));
+    boost::shared_ptr<boost::multi_array<double, 2> > retArray=boost::shared_ptr<boost::multi_array<double,2> >(new boost::multi_array<double,2>(boost::extents[25][2]));
+    boost::shared_ptr<boost::multi_array<double, 2> > retArray2=boost::shared_ptr<boost::multi_array<double,2> >(new boost::multi_array<double,2>(boost::extents[25][2]));
 
-    gen2.ret_ics(retArray2);
-    gen.ret_ics(retArray);
+    gen2.retICs(retArray2);
+    gen.retICs(retArray);
 
-    for (int i=0;i<2;i++){
-        for (int j=0;j<25;j++){
+    for (int i=0;i<25;i++){
+        for (int j=0;j<2;j++){
             BOOST_CHECK_CLOSE((*retArray)[i][j],(*retArray2)[i][j],1E-6);
         }
     }

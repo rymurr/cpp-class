@@ -37,7 +37,7 @@ pairm validate(pairm& m, boost::any newVal){
                 pairm retVal (m.first,newVal);
                 return retVal;
     } else {
-        throw std::invalid_argument("wrong data in parameter array " + m.first + " in validate");
+        throw invalid_parameter() << err_info("wrong data in parameter array " + m.first + " in validate");
     }
 }
 
@@ -68,7 +68,7 @@ void gen_param(pairm m, po::options_description& desc){
             (any_cast<statePtr>(m.second)->name->c_str(),po::value<std::string>()->default_value(*(any_cast<filePtr>(m.second)->defaultValue)),any_cast<filePtr>(m.second)->description->c_str());
         return;
     } else {
-        throw std::invalid_argument("wrong data in parameter array " + m.first + " in gen_param");
+        throw invalid_parameter() << err_info("wrong data in parameter array " + m.first + " in gen_param");
     }
 }
 

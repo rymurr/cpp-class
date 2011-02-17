@@ -34,7 +34,7 @@
 #include <glog/logging.h>
 //#include <boost/bimap.hpp>
 
-//#include "input_func.hpp"
+#include "exceptions.hpp"
 namespace classical{
 
 #define foreach     BOOST_FOREACH
