@@ -23,6 +23,7 @@
 #include <boost/bind.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/casts.hpp>
+#include <boost/lambda/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/random/linear_congruential.hpp>
 #include <boost/random/normal_distribution.hpp>
@@ -56,6 +57,22 @@ typedef boost::multi_array_types::index_range range;
 //try boost::rand48 for quickest/least accurate
 typedef boost::minstd_rand base_generator_type;
 
+class SingleGrid {
+    private:
+        double mean_, var_, start_, finish_, dx_, current_;
+        int size_;
+
+
+    public:
+
+        SingleGrid();
+
+        SingleGrid(double, double, int);
+
+        std::pair<double,bool> operator()();
+
+};
+
 class SingleIC{
        
 
@@ -81,7 +98,8 @@ class SingleIC{
 class SingleLinIC: public SingleIC{
     private:
 
-        std::vector<double> current_, dx_, finish_, start_;
+		std::vector<std::pair<double,bool> > current_;
+		std::vector<SingleGrid> grids_;
         std::vector<int> sizes_;
 
     public:

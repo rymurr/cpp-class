@@ -5,6 +5,8 @@
 #include <boost/any.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/lambda/lambda.hpp>
+#include <boost/lambda/bind.hpp>
 #include <string>
 #include <map>
 #include <iostream>
@@ -79,9 +81,36 @@ BOOST_AUTO_TEST_CASE(initicgen)
 
 }
 
+BOOST_AUTO_TEST_CASE(SingleLinTest)
+{
+	using namespace boost::lambda;
+	using namespace std;
+	typedef vector<double> retVec;
+
+	vector<double> x;
+	vector<int> y;
+    x.push_back(0.);
+    x.push_back(0.);
+    x.push_back(0.);
+    y.push_back(5);
+    y.push_back(5);
+    y.push_back(5);
+    SingleLinIC z(x,1,y);
+    boost::shared_ptr<retVec> vals = boost::shared_ptr<retVec>(new retVec(3));
+    //for (int i=0;i<3;++i)
+    //	vals->push_back(std::make_pair(0.,false));
+
+    for (int i=0;i<125;++i){
+    	z.RetVal(vals);
+    	for_each(vals->begin(),vals->end(),cout << boost::lambda::_1 << " ");
+    	cout << "\n";
+    }
+
+
+}
+
 BOOST_AUTO_TEST_CASE(lineartest)
 {
-
     anyMap test;
     std::vector<double> x;
     std::vector<int> y;
@@ -125,7 +154,6 @@ BOOST_AUTO_TEST_CASE(lineartest)
 
 BOOST_AUTO_TEST_CASE(lineartest2)
 {
-    return;
     anyMap test;
     std::vector<double> x;
     std::vector<int> y;
@@ -159,7 +187,6 @@ BOOST_AUTO_TEST_CASE(lineartest2)
 
 BOOST_AUTO_TEST_CASE(lineartest3)
 {
-    return;
     anyMap test;
     std::vector<double> x;
     std::vector<int> y;
@@ -192,7 +219,6 @@ BOOST_AUTO_TEST_CASE(lineartest3)
 
 BOOST_AUTO_TEST_CASE(serialize1)
 {
-    return;
     std::ofstream ofs("test.dat");
     anyMap test;
     std::vector<double> x;
@@ -240,7 +266,6 @@ BOOST_AUTO_TEST_CASE(serialize1)
 
 BOOST_AUTO_TEST_CASE(serialize2)
 {
-    return;
     anyMap test;
     std::vector<double> x;
     std::vector<int> y;
@@ -282,7 +307,6 @@ BOOST_AUTO_TEST_CASE(serialize2)
 
 BOOST_AUTO_TEST_CASE(serialize_member)
 {
-    return;
     anyMap test;
     std::vector<double> x;
     std::vector<int> y;

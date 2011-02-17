@@ -5,6 +5,25 @@ namespace classical {
 
 using boost::any_cast;     
 
+SingleGrid::SingleGrid(double mean, double var, int size): mean_(mean), var_(var), size_(size){
+    start_ = mean_ - 4.*sqrt(var_);
+    finish_ = mean_ + 4.*sqrt(var_);
+    dx_ = (finish_ - start_)/((double) size_);
+    current_ = start_ - 0.5*dx_;
+    finish_ -= dx_;
+}
+
+std::pair<double,bool> SingleGrid::operator()(){
+    current_ += dx_;
+    if (current_  >= finish_){
+        double old = current_;
+        current_ = start_ - 0.5*dx_;
+        return std::make_pair(old,true);
+    } else {
+        return std::make_pair(current_,false);
+    }
+}
+
 SingleIC::SingleIC(){}
 
 SingleIC::~SingleIC(){}
@@ -18,27 +37,33 @@ SingleLinIC::~SingleLinIC(){}
 SingleLinIC::SingleLinIC(std::vector<double> means, double var, std::vector<int> sizes): SingleIC(means,var), sizes_(sizes) {
 
     (*this).size_ = (*this).mean_.size();
-    //TODO: can this be algorithmed?
-    for (int i=0;i<(*this).size_;++i){
-        start_.push_back(mean_[i] - 4.*sqrt((*this).var_));
-        finish_.push_back(mean_[i] + 4.*sqrt((*this).var_));
-        dx_.push_back((finish_[i]-start_[i])/((double)sizes_[i]));
-        current_.push_back(start_[i] - 0.5*dx_[i]);
+    for(int i=0;i<(*this).size_;i++){
+    	grids_.push_back(SingleGrid(means[i],var,sizes[i]));
+    	current_.push_back(std::make_pair(0.,false));
     }
-
+    std::transform(grids_.begin()+1,grids_.end(),current_.begin()+1,boost::lambda::bind(&SingleGrid::operator(),boost::lambda::_1));
 }
 
 void SingleLinIC::RetVal(vTraj retVal){
-    //TODO: this needs to be changed to use iterators, and to return one at a time similar to singleLinRet
-    for (int i=0;i<size_;i++){
-        current_[i] += dx_[i];
-    }
-    (*retVal) = current_;
+
+	int i=0;
+	bool exit = false;
+	while (!exit && i<(*this).size_){
+
+		if (!current_[i].second)
+			exit = true;
+		current_[i] = grids_[i]();
+		++i;
+	}
+	std::transform(current_.begin(),current_.end(),(*retVal).begin(), boost::lambda::bind(&std::pair<double,bool>::first,boost::lambda::_1));
+
 }
 
+/*
 void SingleLinIC::reset(int i){
     current_[i] = start_[i] - 0.5*dx_[i];
 }
+*/
 
 SingleRandIC::SingleRandIC(){}
 
