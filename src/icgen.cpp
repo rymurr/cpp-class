@@ -53,6 +53,7 @@ void icgenerator::genICs(){
     //TODO: get progress display to go to LOG(INFO)? also, wrap in a #ifdef or something
     boost::progress_display show_progress(tnumb_, std::clog);
 
+    //TODO: this can probably be openmp'ed or another thread type?
     for (int j=0;j<tnumb_;++j){
         icGens_->operator()(rands);
         std::transform(rands->begin(),rands->end(),initConditions_[j].begin(),boost::lambda::_1);
