@@ -25,10 +25,6 @@
 #include <boost/lambda/casts.hpp>
 #include <boost/lambda/bind.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/random/linear_congruential.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include <boost/random/uniform_real.hpp>
-#include <boost/random/variate_generator.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -42,6 +38,7 @@
 #include <glog/logging.h>
 
 #include "exceptions.hpp"
+#include "ic_single.hpp"
 
 //#define pi M_PI
 
@@ -53,134 +50,11 @@ namespace classical{
 typedef std::map<std::string,boost::any> anyMap;
 typedef boost::multi_array<double,1> w_array;
 typedef boost::multi_array<double,2> ic_array;
-typedef boost::shared_ptr<std::vector<double> > vTraj;
+//typedef boost::shared_ptr<std::vector<double> > vTraj;
 typedef boost::multi_array_types::index_range range;
-typedef boost::function<double (anyMap)> wFun;
-
-// This is a typedef for a random number generator.
-// Try boost::mt19937 or boost::ecuyer1988 instead of boost::minstd_rand
-//try boost::rand48 for quickest/least accurate
-//TODO: may want to wrap in #define or something to choose for release/debug...profile first for large rands
-typedef boost::minstd_rand base_generator_type;
+//typedef boost::function<double (anyMap, vTraj)> wFun;
 
 using boost::any_cast;
-
-class WeightGen {
-    private:
-        wFun func_;
-        anyMap params_;
-    public:
-        WeightGen(){};
-        ~WeightGen(){};
-        WeightGen(anyMap):params_(params){func_ = any_cast<wFun>(params["weight-func"]);};
-        double operator()(){return func_(params_);};
-};
-
-class SingleGrid {
-    private:
-        double mean_, var_, start_, finish_, dx_, current_;
-        int size_;
-
-
-    public:
-
-        SingleGrid(){};
-
-        SingleGrid(double mean, double var, int size): mean_(mean), var_(var), size_(size){
-            start_ = mean_ - 4.*sqrt(var_);
-            finish_ = mean_ + 4.*sqrt(var_);
-            dx_ = (finish_ - start_)/((double) size_);
-            current_ = start_ - 0.5*dx_;
-            finish_ -= dx_;
-        };
-
-        std::pair<double,bool> operator()(){
-            current_ += dx_;
-            if (current_  >= finish_){
-                double old = current_;
-                current_ = start_ - 0.5*dx_;
-                return std::make_pair(old,true);
-            } else {
-                return std::make_pair(current_,false);
-            }
-        };
-
-};
-
-class SingleIC{
-       
-
-    public:
-        double var_;
-
-        std::vector<double> mean_;
-
-        SingleIC(){};
-
-        ~SingleIC(){};
-
-        SingleIC(std::vector<double> mean, double var): var_(var), mean_(mean){};
-
-        void virtual RetVal(vTraj){};
-
-        void virtual reset(int){};
-
-};
-
-class SingleLinIC: public SingleIC{
-    private:
-
-		std::vector<std::pair<double,bool> > current_;
-		std::vector<SingleGrid> grids_;
-        std::vector<int> sizes_;
-        int size_;
-
-    public:
-
-        SingleLinIC(){};
-
-        ~SingleLinIC(){};
-
-        SingleLinIC(std::vector<double> means, double var, std::vector<int> sizes): SingleIC(means,var), sizes_(sizes){
-            size_ = (*this).mean_.size();
-            for(int i=0;i<(*this).size_;i++){
-                grids_.push_back(SingleGrid(means[i],var,sizes[i]));
-                current_.push_back(std::make_pair(0.,false));
-            }
-            std::transform(grids_.begin()+1,grids_.end(),current_.begin()+1,boost::lambda::bind(&SingleGrid::operator(),boost::lambda::_1));
-        };
-        void RetVal(vTraj retVal){
-            int i=0;
-            bool exit = false;
-            while (!exit && i<(*this).size_){
-
-                if (!current_[i].second)
-                    exit = true;
-                current_[i] = grids_[i]();
-                ++i;
-            }
-            std::transform(current_.begin(),current_.end(),(*retVal).begin(), boost::lambda::bind(&std::pair<double,bool>::first,boost::lambda::_1));
-        };
- };
-
-class SingleRandIC: public SingleIC{
-    private:
-        boost::normal_distribution<> dist_;
-        boost::shared_ptr<boost::variate_generator<base_generator_type&, boost::normal_distribution<> > >  generators_;
-        base_generator_type generator_;
-    public:
-        SingleRandIC(){};
-
-        ~SingleRandIC(){};
-
-        SingleRandIC(std::vector<double> mean, double var): SingleIC(mean, var){
-            generator_.seed(static_cast<unsigned int>(std::time(0)));
-            dist_ = boost::normal_distribution<>(0,(*this).var_);
-            generators_ = boost::shared_ptr<boost::variate_generator<base_generator_type&, boost::normal_distribution<> > >( new boost::variate_generator<base_generator_type&, boost::normal_distribution<> >(generator_,dist_));
-        };
-
-        void RetVal(vTraj retVal){std::transform(this->mean_.begin(),this->mean_.end(),retVal->begin(),boost::lambda::_1 + generators_->operator()());};
-};
 
 class icgenerator{
 
@@ -258,7 +132,7 @@ class icgenerator{
     public:
         icgenerator(){};
 
-        icgenerator(anyMap);
+        icgenerator(anyMap params, anyMap wParams=anyMap());
 
         ~icgenerator(){};
 
@@ -272,7 +146,7 @@ class icgenerator{
         void retIC(vTraj ics){
             if (j_ < tnumb_){
                 if (single_) {
-                    icGens_->RetVal(ics);
+                    icGens_->operator()(ics);
                 } else {
                     std::transform(initConditions_[j_].begin(),initConditions_[j_].end(),ics->begin(),boost::lambda::_1);
                 }
@@ -282,10 +156,10 @@ class icgenerator{
             }
         };
 
-        double retWeight(){
+        double retWeight(vTraj ics){
             if (k_ < tnumb_){
                 if (single_) {
-                    return wGens_->operator()();
+                    return wGens_->operator()(ics);
                 } else {
                     return weights_[k_];
                 }

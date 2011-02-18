@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(TimerTest1)
 BOOST_AUTO_TEST_CASE(TimerExcept)
 {
     SingleTimer T("d");
-    BOOST_CHECK_THROW(T.stop(),std::runtime_error);
+    BOOST_CHECK_THROW(T.stop(),timer_except);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -7,9 +7,17 @@
 #include <boost/multi_array.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/any.hpp>
 
 int main(int argc, char** argv){
 
+  boost::any xy;
+  xy=4.;
+  try {
+      std::cout << boost::any_cast<int>(xy) <<std::endl;
+  } catch (boost::bad_any_cast &e) {
+      std::cout << e.what() <<std::endl;
+  }
   typedef boost::multi_array<double, 2> array_type;
   typedef array_type::index index;
   array_type A(boost::extents[4][4]);
@@ -19,7 +27,6 @@ int main(int argc, char** argv){
 
   dVec B(4,4);
   pVec C = pVec(new dVec(4));
-  C = pVec(B.begin());
   for_each(C->begin(),C->end(),std::cout << boost::lambda::_1 << " poo ");
 
   // Assign values to the elements

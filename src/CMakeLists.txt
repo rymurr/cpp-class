@@ -59,7 +59,7 @@ link_libraries(${LIBS} -lpthread -lpython2.6 ${Boost_LIBRARIES} -lglog -lgflags 
 
 add_definitions(-DCHUNKSIZE=10)
 
-set(classical_lib_src input_param.cpp params.cpp input_funcs.cpp pywrapper.cpp pymodule.cpp fields.cpp potential.cpp icgen.cpp timer.cpp ic_weights.cpp)
+set(classical_lib_src input_param.cpp params.cpp input_funcs.cpp pywrapper.cpp pymodule.cpp fields.cpp potential.cpp icgen.cpp timer.cpp)
 add_library(classical SHARED ${classical_lib_src}  )
 
 add_executable (cpp-class main.cpp)

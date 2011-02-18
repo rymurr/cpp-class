@@ -5,7 +5,7 @@ namespace classical {
 
 using boost::any_cast;
 
-icgenerator::icgenerator(anyMap params){
+icgenerator::icgenerator(anyMap params, anyMap wParams){
 
     means_ = any_cast<std::vector<double> >(params["means"]);
     trajs_ = any_cast<std::vector<int> >(params["dims"]);
@@ -27,7 +27,14 @@ icgenerator::icgenerator(anyMap params){
     }
 
     this->singleCheck();
-    this->setWeights(params);
+    if (wParams.empty()){
+        LOG(WARNING) << "The weight generator is using the general parameter set to build. This could possibly slow down the program and puts i"
+                << " stronger set of restrictions on what can be in the parameter set. This is fine, but consider using a specialized weight generation parameter set";
+        this->setWeights(params);
+    } else {
+        LOG(WARNING) << "The weight generator is using the custom parameter set supplied by the caller.";
+        this->setWeights(wParams);
+    }
     if (!single_){
     	this->genICs();
     	this->genWeights();
@@ -47,7 +54,7 @@ void icgenerator::genICs(){
     boost::progress_display show_progress(tnumb_, std::clog);
 
     for (int j=0;j<tnumb_;++j){
-        icGens_->RetVal(rands);
+        icGens_->operator()(rands);
         std::transform(rands->begin(),rands->end(),initConditions_[j].begin(),boost::lambda::_1);
         ++show_progress;
     }
@@ -106,17 +113,22 @@ void icgenerator::load(std::string sType, std::string fName, anyMap params){
     std::ifstream ifs(fName.c_str());
 
     LOG(INFO) << "Loading icgenerator from " + sType + " format. Archive is called " + fName;
-    if (sType.compare(binary) == 0){
-        boost::archive::binary_iarchive ia(ifs);
-        ia >> *this;
-    } else if (sType.compare(text) == 0) {
-        boost::archive::text_iarchive ia(ifs);
-        ia >> *this;
-    } else {
-        std::string throwArg="archive type must be binary or text not" + sType;
-        throw archive_error() << err_info(throwArg);
-
+    try{
+        if (sType.compare(binary) == 0){
+            boost::archive::binary_iarchive ia(ifs);
+            ia >> *this;
+        } else if (sType.compare(text) == 0) {
+            boost::archive::text_iarchive ia(ifs);
+            ia >> *this;
+        } else {
+            std::string throwArg="archive type must be binary or text not" + sType;
+            throw archive_error() << err_info(throwArg);
+        }
+    } catch (std::exception &e){
+        LOG(ERROR) << "Binary is of wrong type, " << e.what();
+        throw;
     }
+
     if (!params.empty()){
         this->setWeights(params);
         LOG(INFO) << "weights are being rebuilt from parameter set";

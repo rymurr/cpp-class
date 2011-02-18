@@ -4,6 +4,7 @@ namespace classical{
 
 int run_main(int argc, std::vector<std::string> argv, std::string fname){
     google::InitGoogleLogging(argv[0].c_str());
+    //TODO: this should be wrapped in a #define at some point in the future
     google::InstallFailureSignalHandler();
 
     pmap params;
