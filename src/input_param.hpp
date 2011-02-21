@@ -39,8 +39,10 @@
 //#include <boost/archive/binary_oarchive.hpp>
 //#include <boost/archive/binary_iarchive.hpp>
 //#include <boost/serialization/map.hpp>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
+#ifdef Gflags
+    #include <gflags/gflags.h>
+#endif
+#include "customGlog.hpp"
 
 //#include "input_func.hpp"
 #include "params.hpp"

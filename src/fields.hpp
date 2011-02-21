@@ -15,7 +15,9 @@
 //#include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
-#include <glog/logging.h>
+
+#include "customGlog.hpp"
+
 
 namespace classical{
 

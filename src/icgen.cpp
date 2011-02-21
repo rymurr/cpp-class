@@ -14,6 +14,7 @@ icgenerator::icgenerator(anyMap params, anyMap wParams){
     tnumb_ = std::accumulate(trajs_.begin(),trajs_.end(),1,std::multiplies<int>());
     tdim_ = trajs_.size();
     j_=0;
+    k_=0;
 
 
     try{
@@ -37,7 +38,6 @@ icgenerator::icgenerator(anyMap params, anyMap wParams){
     }
     if (!single_){
     	this->genICs();
-    	//this->genWeights();
     }
 
 }
@@ -58,7 +58,7 @@ void icgenerator::genICs(){
     //TODO: this can probably be openmp'ed or another thread type?
     for (int j=0;j<tnumb_;++j){
         icGens_->operator()(rands);
-        wGens_->operator()(rands);
+        weights_[j] = wGens_->operator()(rands);
         std::transform(rands->begin(),rands->end(),initConditions_[j].begin(),boost::lambda::_1);
         ++show_progress;
     }

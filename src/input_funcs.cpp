@@ -65,7 +65,7 @@ void gen_param(pairm m, po::options_description& desc){
         return;
     } else if (m.second.type() == typeid(filePtr)){
         desc.add_options()
-            (any_cast<statePtr>(m.second)->name->c_str(),po::value<std::string>()->default_value(*(any_cast<filePtr>(m.second)->defaultValue)),any_cast<filePtr>(m.second)->description->c_str());
+            (any_cast<filePtr>(m.second)->name->c_str(),po::value<std::string>()->default_value(*(any_cast<filePtr>(m.second)->defaultValue)),any_cast<filePtr>(m.second)->description->c_str());
         return;
     } else {
         throw invalid_parameter() << err_info("wrong data in parameter array " + m.first + " in gen_param");

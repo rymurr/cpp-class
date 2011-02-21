@@ -39,8 +39,8 @@
 //#include <boost/progress.hpp>
 #include <boost/foreach.hpp>
 
-#include <glog/logging.h>
 
+#include "customGlog.hpp"
 #include "exceptions.hpp"
 
 //#define pi M_PI
@@ -59,6 +59,7 @@ typedef boost::function<double (anyMap&, vTraj)> wFun;
 //try boost::rand48 for quickest/least accurate
 //TODO: may want to wrap in #define or something to choose for release/debug...profile first for large rands
 typedef boost::minstd_rand base_generator_type;
+//typedef boost::rand48 base_generator_type;
 
 using boost::any_cast;
 

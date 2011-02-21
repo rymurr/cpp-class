@@ -3,9 +3,12 @@
 namespace classical{
 
 int run_main(int argc, std::vector<std::string> argv, std::string fname){
+
+#ifdef Gflags
     google::InitGoogleLogging(argv[0].c_str());
     //TODO: this should be wrapped in a #define at some point in the future
     google::InstallFailureSignalHandler();
+#endif
 
     pmap params;
     if (!params.read_params(fname, argc, argv)){return 0;};
@@ -22,7 +25,9 @@ int run_main(int argc, std::vector<std::string> argv, std::string fname){
     std::vector<double> dist_center;
     //find_center(params.map
 
+#ifdef Gflags
     google::ShutdownGoogleLogging();
+#endif
     return 1;
 }
 

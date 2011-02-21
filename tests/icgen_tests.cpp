@@ -14,6 +14,7 @@
 #include <vector>
 #include "icgen.hpp"
 #include "ic_weights.hpp"
+#include "timer.hpp"
 namespace classical{
 
 using boost::any_cast;
@@ -42,7 +43,6 @@ BOOST_FIXTURE_TEST_SUITE(icgen, anymap)
 
 BOOST_AUTO_TEST_CASE(initSingleRandIC)
 {
-    google::InstallFailureSignalHandler();
     std::vector<double> x;
     x.push_back(1.);
     x.push_back(0.);
@@ -60,7 +60,6 @@ BOOST_AUTO_TEST_CASE(initSingleRandIC)
 
 BOOST_AUTO_TEST_CASE(initicgen)
 {
-    google::InstallFailureSignalHandler();
 
     icgenerator gen(test);
     boost::shared_ptr<boost::multi_array<double, 2> > retArray=boost::shared_ptr<boost::multi_array<double,2> >(new boost::multi_array<double,2>(boost::extents[4][2]));
@@ -316,15 +315,68 @@ BOOST_AUTO_TEST_CASE(weights1)
     test["means"] = xx;
     //test["nobuild"] = true;`
     anyMap test2;
-    test2["fun"] = 0;
+    boost::function<double (anyMap&, vTraj)> fx = boost::bind(&unitWeight,_1,_2);
+    test2["weight-func"] = fx;
+
     icgenerator gen(test,test2);
-    boost::shared_ptr<boost::multi_array<double, 1> > retArray=boost::shared_ptr<boost::multi_array<double,2> >(new boost::multi_array<double,2>(boost::extents[25]));
+    boost::shared_ptr<std::vector<double> > retArray=boost::shared_ptr<std::vector<double> >(new std::vector<double>(25));
     gen.retWeights(retArray);
-    std::for_each(retArray->begin(),retArray->end(),std::cout << boost::lambda:_1 << " ");
-    //TODO: switch weights array to vector and start testing it out!
+    std::for_each(retArray->begin(),retArray->end(),std::cout << boost::lambda::_1 << " ");
+    std::cout << std::endl;
 
 }
 
+BOOST_AUTO_TEST_CASE(weights2)
+{
+    std::vector<double> xx(2,0.);
+    std::vector<int> yy(2,5);
+    test["dims"] = yy;
+    test["means"] = xx;
+    test["nobuild"] = true;
+    anyMap test2;
+    boost::function<double (anyMap&, vTraj)> fx = boost::bind(&atomWeight,_1,_2);
+    test2["weight-func"] = fx;
+    test2["ef"] = 0.6666666666;
+    test2["ip"] = 1.0;
+    test2["sigmas"] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(2,1.));
+
+    icgenerator gen(test,test2);
+    boost::shared_ptr<std::vector<double> > vals = boost::shared_ptr<std::vector<double> >(new std::vector<double>(xx));
+    for(int i=0;i<25;++i){
+       gen.retIC(vals);
+       std::cout << gen.retWeight(vals) << " ";
+    }
+    std::cout << std::endl;
+
+}
+
+BOOST_AUTO_TEST_CASE(longrun)
+{
+    Timer::create();
+
+    std::vector<double> xx(4,0.);
+    std::vector<int> yy(4,50);
+    test["dims"] = yy;
+    test["means"] = xx;
+    test["nobuild"] = true;
+    test["dist-type"] = 2;
+    anyMap test2;
+    boost::function<double (anyMap&, vTraj)> fx = boost::bind(&atomWeight,_1,_2);
+    test2["weight-func"] = fx;
+    test2["ef"] = 0.6666666666;
+    test2["ip"] = 1.0;
+    test2["sigmas"] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(4,1.));
+
+    icgenerator gen(test,test2);
+    boost::shared_ptr<std::vector<double> > vals = boost::shared_ptr<std::vector<double> >(new std::vector<double>(xx));
+    TimerStart("main");
+    for(int i=0;i<6250000;++i){
+       gen.retIC(vals);
+       gen.retWeight(vals);
+    }
+    TimerStop("main");
+    TimerReport();
+}
 BOOST_AUTO_TEST_SUITE_END()
 
 }

@@ -35,7 +35,7 @@
 #include <boost/progress.hpp>
 #include <boost/foreach.hpp>
 
-#include <glog/logging.h>
+#include "customGlog.hpp"
 
 #include "exceptions.hpp"
 #include "ic_single.hpp"
@@ -82,7 +82,6 @@ class icgenerator{
             ar & single_;
             ar & j_;
             ar & k_;
-            //TODO: this should have an if around it and should be algorithmed
             if (!single_){
                 for (unsigned int i=0;i<initConditions_.shape()[0];i++){
                     for (unsigned int j=0;j<initConditions_.shape()[1];j++){
@@ -108,7 +107,6 @@ class icgenerator{
             ar & k_;
 
             (*this).singleCheck();
-            //TODO: turn into algorithm
             if (!single_){
             	for (unsigned int i=0;i<initConditions_.shape()[0];i++){
                     for (unsigned int j=0;j<initConditions_.shape()[1];j++){
@@ -125,8 +123,6 @@ class icgenerator{
         
         void genICs();
         
-        //void genWeights();
-
         void singleCheck();
 
     public:

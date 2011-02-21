@@ -14,8 +14,9 @@
 #include <fstream>
 #include <string>
 
-#include <glog/logging.h>
-#include <gflags/gflags.h>
+#include "customGlog.hpp"
+
+//#include <gflags/gflags.h>
 
 #include "pywrapper.hpp"
 

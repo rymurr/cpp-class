@@ -17,12 +17,18 @@ if (WIN32)
 		src/gflags.cc
 		HINTS
 		$ENV{GFLAGS_ROOT})
-else (WIN32)
+elseif(APPLE)
 	FIND_PATH(GFlags_ROOT_DIR
 		libgflags.dylib
 		HINTS
 		/usr/local/lib			
 	)
+else()
+    FIND_PATH(GFlags_ROOT_DIR
+        libgflags.so
+        HINTS
+        /usr/local/lib
+    )
 endif (WIN32)
 
 IF(GFlags_ROOT_DIR)

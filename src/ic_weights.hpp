@@ -23,8 +23,8 @@
 #include <boost/lambda/casts.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include "customGlog.hpp"
 
-#include <glog/logging.h>
 
 
 typedef std::map<std::string,boost::any> anyMap;
@@ -51,8 +51,6 @@ inline double atomWeight(anyMap &params, vTraj ics){
         retVal *= gaussProb((*ics)[i],(*sigmas)[i]);
     }
     return retVal;
-    //std::transform(sigmas.begin(),sigmas.end(),ics->begin(),gaussProb);
-    //return std::accumulate(sigmas.begin(),sigmas.end(),atomProb(ef,ip),std::multiplies<double>());
 }
 
 //need to do more here for molecules and more sophisticated atomic weights. Lots more sophistication can be done

@@ -14,7 +14,8 @@
 #include <boost/unordered_map.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/exception/all.hpp>
-#include <glog/logging.h>
+
+#include "customGlog.hpp"
 
 typedef boost::tuple<std::string,int,double,double,double,double> singleTimerVals;
 typedef boost::error_info<struct info_timer,std::string> timer_err;

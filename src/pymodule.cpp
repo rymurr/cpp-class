@@ -1,4 +1,4 @@
-#ifndef PYTHON
+#ifdef PYTHON
 #include <boost/python.hpp>
 #include <boost/python/extract.hpp>
 #include <boost/python/list.hpp>
@@ -27,5 +27,5 @@ int pyrun_main(int argc, boost::python::list argv, std::string fname){
     return 1;
 }
 }
-}
+
 #endif

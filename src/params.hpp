@@ -31,7 +31,9 @@
 #include <boost/shared_ptr.hpp>
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
-#include <glog/logging.h>
+
+#include "customGlog.hpp"
+
 //#include <boost/bimap.hpp>
 
 #include "exceptions.hpp"

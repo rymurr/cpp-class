@@ -173,7 +173,9 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
     
 //    delete[] av2;
     std::string usage = "Options included by google-glog for logging purposes";
+#ifdef Gflags
     google::SetUsageMessage(usage);
+#endif
     if (vm.count("help")){
         std::cout << visible << "\n";
         return false;
@@ -185,7 +187,9 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
         for(int i=0;i<gsize;i++){
             av2[i] = &to_gflags[i][0];
         }
+#ifdef Gflags
         google::ParseCommandLineFlags(&gsize, &av2, true);
+#endif
         return false; 
     } else {
         int gsize = to_gflags.size();
@@ -193,7 +197,9 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
         for(int i=0;i<gsize;i++){
             av2[i] = &to_gflags[i][0];
         }
+#ifdef Gflags
         google::ParseCommandLineFlags(&gsize, &av2, true);
+#endif
     }
 
     for (po::variables_map::iterator iter = vm.begin(); iter != vm.end(); ++iter){
@@ -277,8 +283,11 @@ void pmap::print(std::string runParams){
                     fp_out << any_cast<std::string>(m.second) <<"\n";
                 }
                 catch(boost::bad_any_cast & e) {
-//TODO: must fix this to print out vectors!
-                    fp_out << "n/a\n";
+                    std::string back;
+                    foreach(int i, any_cast<std::vector<int> >(m.second)){
+                         back = back + lexical_cast<std::string>(i) + ",";
+                    }
+                    fp_out << back;
                 }   
             }
         }
@@ -289,8 +298,6 @@ void pmap::print(std::string runParams){
 
 void pmap::print(){
 
-    //TODO: change this to print to log instead of COUT.
-    // when printing to log I have to make single 
 	ptime now = second_clock::local_time();
     LOG(INFO) << "This is the set of parameters being used in the current run, performed at: " + to_simple_string(now);
     foreach(pairm m, map)
