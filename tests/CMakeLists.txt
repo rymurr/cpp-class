@@ -13,10 +13,6 @@ find_package(GSL REQUIRED)
 include_directories(${GSL_INCLUDE_DIR})
 set(LIBS ${LIBS} ${GSL_LIBRARIES} ) 
 
-find_package(FFTW REQUIRED)
-include_directories(${FFTW_INCLUDE_DIR})
-set (LIBS ${LIBS} ${FFTW_LIBRARIES} ${FFTW_LIBRARIES_THREADED})
-
 link_libraries(${LIBS} -lpthread)
 
 

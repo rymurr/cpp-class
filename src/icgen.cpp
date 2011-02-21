@@ -37,14 +37,16 @@ icgenerator::icgenerator(anyMap params, anyMap wParams){
     }
     if (!single_){
     	this->genICs();
-    	this->genWeights();
+    	//this->genWeights();
     }
 
 }
 
+/*
 void icgenerator::genWeights(){
     ;
 }
+*/
 
 void icgenerator::genICs(){
 
@@ -56,6 +58,7 @@ void icgenerator::genICs(){
     //TODO: this can probably be openmp'ed or another thread type?
     for (int j=0;j<tnumb_;++j){
         icGens_->operator()(rands);
+        wGens_->operator()(rands);
         std::transform(rands->begin(),rands->end(),initConditions_[j].begin(),boost::lambda::_1);
         ++show_progress;
     }
@@ -66,7 +69,7 @@ void icgenerator::singleCheck(){
 	if (!single_){
         DLOG(INFO) << "Dims are: " << tdim_ << " by " << tnumb_;
 	    initConditions_.resize(boost::extents[tnumb_][tdim_]);
-	    weights_.resize(boost::extents[tnumb_]);
+	    weights_.resize(tnumb_);
         LOG(INFO) << "the icgenerator will build a full set of ICs and store them for later use";
         LOG(INFO) << "the icgenerator will build a full set of weights and store them for later use";
     } else {

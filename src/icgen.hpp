@@ -48,7 +48,7 @@ namespace classical{
 #define foreach     BOOST_FOREACH
 
 typedef std::map<std::string,boost::any> anyMap;
-typedef boost::multi_array<double,1> w_array;
+typedef std::vector<double> w_array;
 typedef boost::multi_array<double,2> ic_array;
 //typedef boost::shared_ptr<std::vector<double> > vTraj;
 typedef boost::multi_array_types::index_range range;
@@ -125,7 +125,7 @@ class icgenerator{
         
         void genICs();
         
-        void genWeights();
+        //void genWeights();
 
         void singleCheck();
 

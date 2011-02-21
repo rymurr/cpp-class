@@ -44,11 +44,15 @@ inline double atomProb(double ef, double ip){
 
 inline double atomWeight(anyMap &params, vTraj ics){
     using boost::any_cast;
-    typedef std::vector<double> dVec;
-    dVec sigmas(any_cast<dVec>(params["sigmas"]));
-    double ef(any_cast<double>(params["ef"])), ip(any_cast<double>(params["ip"]));
-    std::transform(sigmas.begin(),sigmas.end(),ics->begin(),gaussProb);
-    return std::accumulate(sigmas.begin(),sigmas.end(),atomProb(ef,ip),std::multiplies<double>());
+    //typedef std::vector<double> dVec;
+    vTraj sigmas(any_cast<vTraj>(params["sigmas"]));
+    double retVal(atomProb(any_cast<double>(params["ef"]),any_cast<double>(params["ip"])));
+    for (std::size_t i=0;i<sigmas->size();++i){
+        retVal *= gaussProb((*ics)[i],(*sigmas)[i]);
+    }
+    return retVal;
+    //std::transform(sigmas.begin(),sigmas.end(),ics->begin(),gaussProb);
+    //return std::accumulate(sigmas.begin(),sigmas.end(),atomProb(ef,ip),std::multiplies<double>());
 }
 
 //need to do more here for molecules and more sophisticated atomic weights. Lots more sophistication can be done

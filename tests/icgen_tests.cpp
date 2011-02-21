@@ -310,8 +310,21 @@ BOOST_AUTO_TEST_CASE(serialize_wrong)
 
 BOOST_AUTO_TEST_CASE(weights1)
 {
-    test["dist-type"] = 1;
+    std::vector<double> xx(2,0.);
+    std::vector<int> yy(2,5);
+    test["dims"] = yy;
+    test["means"] = xx;
+    //test["nobuild"] = true;`
+    anyMap test2;
+    test2["fun"] = 0;
+    icgenerator gen(test,test2);
+    boost::shared_ptr<boost::multi_array<double, 1> > retArray=boost::shared_ptr<boost::multi_array<double,2> >(new boost::multi_array<double,2>(boost::extents[25]));
+    gen.retWeights(retArray);
+    std::for_each(retArray->begin(),retArray->end(),std::cout << boost::lambda:_1 << " ");
+    //TODO: switch weights array to vector and start testing it out!
+
 }
+
 BOOST_AUTO_TEST_SUITE_END()
 
 }

@@ -1,1 +1,1 @@
-rm -r CMakeCache.txt CMakeFiles/ cmake_install.cmake CTestTestfile.cmake Makefile src/CMakeFiles/ src/cmake_install.cmake src/Makefile tests/CMakeFiles tests/cmake_install.cmake tests/CTestTestfile.cmake tests/Makefile cpp-molion tests/*_tests Testing
+rm -r CMakeCache.txt CMakeFiles/ cmake_install.cmake CTestTestfile.cmake Makefile src/CMakeFiles/ src/cmake_install.cmake src/Makefile tests/CMakeFiles tests/cmake_install.cmake tests/CTestTestfile.cmake tests/Makefile cpp-class classical.so src/libclassical.so tests/*_tests Testing
