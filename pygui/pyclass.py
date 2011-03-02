@@ -27,7 +27,7 @@ class MainWindow(QMainWindow):
         self.runTrajsBool = False        
         
         self.imageLabel = QLabel()
-        self.imageLabel.setMinimumSize(200, 200)
+        self.imageLabel.setMinimumSize(500, 400)
         self.imageLabel.setAlignment(Qt.AlignCenter)
         self.imageLabel.setContextMenuPolicy(Qt.ActionsContextMenu)
         self.setCentralWidget(self.imageLabel)
