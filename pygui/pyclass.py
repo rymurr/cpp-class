@@ -8,8 +8,13 @@ from PyQt4.QtGui import *
 
 import qrc_resources
 import helpform
+import paramsform
 
 __version__ = "0.1.0"
+
+#TODO: add paramsform as a QDockWidget
+#TODO: connect log to output of runs, HTML it for prettiness
+#TODO: add some sort of status bar?
 
 class MainWindow(QMainWindow):
     
@@ -47,9 +52,8 @@ class MainWindow(QMainWindow):
                 "Open an existing simulation archive")
         fileSaveAction = self.createAction("&Save", self.fileSave,
                 QKeySequence.Save, "filesave", "Save the simulation")
-        fileSaveAsAction = self.createAction("Save &As...",
-                self.fileSaveAs, icon="filesaveas",
-                tip="Save the simulation using a new name")
+        fileSaveAsAction = self.createAction("Save &As...", self.fileSaveAs
+                , icon="filesaveas", tip="Save the simulation using a new name")
         fileQuitAction = self.createAction("&Quit", self.close,
                 "Ctrl+Q", "filequit", "Close the application")
         
@@ -114,7 +118,12 @@ class MainWindow(QMainWindow):
         self.runPlotAction.setEnabled(self.runPlotBool)
         
     def paramList(self):
-        return
+        dialog = paramsform.ParamsForm()
+        if dialog.exec_():
+            self.params = dialog.paramsDict()
+            self.runParamsTestBool = True
+            self.runAllBool = True
+        self.setEnabled()
     
     def paramTest(self):
         return
@@ -132,10 +141,11 @@ class MainWindow(QMainWindow):
         return
     
     def runAll(self):
-        return
-        
-    def paramList(self):
-         return
+        self.paramTest()
+        self.genICs()
+        self.runTrajs()
+        self.binTrajs()
+        self.plotTrajs()
     
     def paramView(self):
          return
