@@ -10,11 +10,12 @@ import qrc_resources
 import helpform
 import paramsform
 
-__version__ = "0.1.0"
+__version__ = "0.5.0"
 
 #TODO: add paramsform as a QDockWidget
 #TODO: connect log to output of runs, HTML it for prettiness
 #TODO: add some sort of status bar?
+#TODO: change program name and title bar
 
 class MainWindow(QMainWindow):
     
