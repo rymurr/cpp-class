@@ -1,4 +1,4 @@
-#ifndef PYTHON
+#ifdef PYTHON
 #include <boost/python.hpp>
 #include <boost/python/extract.hpp>
 #include <boost/python/list.hpp>

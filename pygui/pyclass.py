@@ -9,13 +9,18 @@ from PyQt4.QtGui import *
 import qrc_resources
 import helpform
 import paramsform
+import runclass
 
 __version__ = "0.5.0"
 
-#TODO: add paramsform as a QDockWidget
+#TODO: add paramsform as a QDockWidget?
 #TODO: connect log to output of runs, HTML it for prettiness
 #TODO: add some sort of status bar?
 #TODO: change program name and title bar
+
+info = "<font color=blue>INFO:</font>"
+error = "<b><font color=red>ERROR:</font></b>"
+end = "<br>"
 
 class MainWindow(QMainWindow):
     
@@ -42,8 +47,9 @@ class MainWindow(QMainWindow):
         logDockWidget.setObjectName("LogDockWidget")
         logDockWidget.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
         #TODO: this may need to be changed from a QListWidget depending on how I implement it
-        self.listWidget = QListWidget()
-        logDockWidget.setWidget(self.listWidget)
+        self.textEditView = QTextEdit()
+        self.textEditView.setReadOnly(True)
+        logDockWidget.setWidget(self.textEditView)
         self.addDockWidget(Qt.RightDockWidgetArea, logDockWidget)
         
         fileNewAction = self.createAction("&New...", self.fileNew,
@@ -104,7 +110,7 @@ class MainWindow(QMainWindow):
         self.runToolbar.setObjectName("RunToolBar")
         self.addActions(self.runToolbar, (self.runParamsAction,self.runParamsTestAction,
                                           self.runICGenAction,self.runTrajsAction,
-                                          self.runBinningAction,self.runPlotAction,
+                                          self.runBinningAction,self.runPlotAction, None,
                                           self.runAllAction))
         
         self.setEnabled()
@@ -122,31 +128,74 @@ class MainWindow(QMainWindow):
         dialog = paramsform.ParamsForm()
         if dialog.exec_():
             self.params = dialog.paramsDict()
-            self.runParamsTestBool = True
-            self.runAllBool = True
+            if dialog.local:
+                self.local = True
+            else:
+                self.local = False
+                self.runparams = dialog.runParamsDict()
+        self.runParamsTestBool = True
+        self.runAllBool = True
+        self.runBinningBool = False
+        self.runICGenBool = False
+        self.runPlotBool = False
+        self.runTrajsBool = False 
+        self.setEnabled()
+        self.textEditView.insertHtml(info + "Parameter List created successfully."+end)
+        
+
+    def convertDict(self):
+        self.filename = "input.cfg"
+        try:
+            f = open(self.filename, 'w')
+        except IOError:
+            self.textEditView.insertHtml(error + "Failed to create configuration file."+end)
+        for k,v in self.params.items():
+            f.write(k + " = " + str(v))
+        f.close()
+    
+    def runIf(self, text):
+        try:
+            if self.local:
+                runclass.runLocal(self.params,self.textEditView)
+            else:
+                runclass.runRemote(self.params,self.runparams,self.textEditView)
+        except runclass.ClassicalError: 
+            self.textEditView.insertHtml(error + text + " failed to run"+end)
+        else:
+            self.textEditView.insertHtml(info + text + " ran successfully"+end)
+            
+    def paramTest(self):
+        self.convertDict()
+        self.params["run-type"] = 1
+        self.runIf("Configuration")
+        self.runICGenBool = True
+        self.setEnabled()
+ 
+            
+    def genICs(self):
+        self.params["run-type"] = 2
+        self.runIf("Initial conditions")
+        self.runTrajsBool = True
         self.setEnabled()
     
-    def paramTest(self):
-        return
-    
-    def genICs(self):
-        return
-    
     def runTrajs(self):
-        return
+        self.params["run-type"] = 3
+        self.runIf("Trajectories")
+        self.runBinningBool = True
+        self.setEnabled()
     
     def binTrajs(self):
-        return
+        self.params["run-type"] = 4
+        self.runIf("Binning")
+        self.runPlotBool = True
+        self.setEnabled()
     
     def plotTrajs(self):
         return
     
     def runAll(self):
-        self.paramTest()
-        self.genICs()
-        self.runTrajs()
-        self.binTrajs()
-        self.plotTrajs()
+        self.params["run-type"] = 5
+        self.runIf("Simulation ")
     
     def paramView(self):
          return

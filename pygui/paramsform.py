@@ -3,14 +3,13 @@ import platform
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-#from labellededit import *
 StyleSheet = '''
     QLineEdit[valid="false"] {background-color: rgb(255, 80, 80);}
 '''
 
-#TODO: add formatting to general, field and time options
-#TODO: finish setting the params in accept() for fields...need to split the vector and compare lengths
+#TODO: add formatting to general, field, run and time options
 #TODO: split up classes into separate files
+#TODO: set tool tips
 
 class ParamsForm(QDialog):
     def __init__(self, params=None, parent=None):
@@ -38,7 +37,10 @@ class ParamsForm(QDialog):
         layout.addWidget(tabWidget)
         layout.addWidget(buttonBox)
         self.setLayout(layout)
-        
+    
+    def runParamsDict(self):
+        return self.runparams        
+
     def paramsDict(self):
         return self.params
     
@@ -53,7 +55,7 @@ class ParamsForm(QDialog):
                 self.params["dims"].append(int(i))
             #i build a list of ints and then replace it with a text string because I want to test the values 
             #being sent to the c++ program, I may comment out the above line depending on how I interface to
-            #the c++ routines
+            #the c++ routines same goes for the fields below
             self.params["run-type"] = self.generalWidget.distBox.currentIndex()+1
             self.params["input_file"] = self.generalWidget.inFileLineEdit.text()
             self.params["output_file"] = self.generalWidget.outFileLineEdit.text()
@@ -75,14 +77,51 @@ class ParamsForm(QDialog):
 
             self.params["nfield"] = self.fieldWidget.nfieldSpinBox.value()
             self.params["env"] = self.fieldWidget.envComboBox.currentIndex()+1
+            self.params["omega"] = []
+            for i in unicode(self.fieldWidget.omegaLineEdit.text()).split(","):
+                self.params["omega"].append(float(i))
+            self.params["ef"] = []
+            for i in unicode(self.fieldWidget.efLineEdit.text()).split(","):
+                self.params["ef"].append(float(i))
+            self.params["ce"] = []
+            for i in unicode(self.fieldWidget.ceLineEdit.text()).split(","):
+                self.params["ce"].append(float(i))
+            self.params["fwhm"] = []
+            for i in unicode(self.fieldWidget.fwhmLineEdit.text()).split(","):
+                self.params["fwhm"].append(float(i))
+            
+            self.params["nthreads"] = self.runWidget.nthreadSpinBox.value()
+            
+            self.runparams={}            
+            if self.runWidget.runLocationComboBox.currentIndex() == 0:
+                self.local = True
+            else:
+                self.local = False
+                self.runparams["user"] = self.runWidget.userLineEdit.text()
+                self.runparams["pass"] = self.runWidget.passLineEdit.text()
+                self.runparams["server"] = self.runWidget.serverLineEdit.text()
+                self.runparams["binary"] = self.runWidget.binaryLineEdit.text()
+                self.runparams["script"] = self.runWidget.scriptComboBox.currentIndex()            
+            
+            if not len(self.params["dims"]) == self.params["ndim"]:
+                raise DimsError, ("The number of trajectories must be the same as the dimensionality")
+            if not len(self.params["omega"]) == self.params["nfield"]:
+                raise DimsError, ("The number of frequencies must be the same as the number of fields")
+            if not len(self.params["ef"]) == self.params["nfield"]:
+                    raise DimsError, ("The number of field strengths must be the same as the number of fields")
+            if self.params["env"] == 3 or self.params["env"] == 4:
+                if not len(self.params["ce"]) == self.params["nfield"]:
+                    raise DimsError, ("The number of CE phases must be the same as the number of fields")
+                if not len(self.params["fwhm"]) == self.params["nfield"]:
+                    raise DimsError, ("The number of FWHMs must be the same as the number of fields")
+                        
+            self.params["dims"] = self.generalWidget.dimsLineEdit.text()
             self.params["omega"] = self.fieldWidget.omegaLineEdit.text()
             self.params["ef"] = self.fieldWidget.efLineEdit.text()
             self.params["ce"] = self.fieldWidget.ceLineEdit.text()
             self.params["fwhm"] = self.fieldWidget.fwhmLineEdit.text()
             
-            if not len(self.params["dims"]) == self.params["ndim"]:
-                raise DimsError, ("The number of trajectories must be the same as the dimensionality")
-            self.params["dims"] = self.generalWidget.dimsLineEdit.text()
+        #these are to test for the existence of a few files, the files may not exist so it isnt terribly important
         #    if not QFile.exists(self.params["input_file"]):
         #        raise FileError, ("input file does not exist")
         #    if not QFile.exists(self.params["output_file"]):
@@ -422,10 +461,66 @@ class FieldParamsWidget(QWidget):
 class RunParamsWidget(QWidget):
     def __init__(self, parent = None):
         super(RunParamsWidget, self).__init__(parent)
-          
-
-
         
+        nthreadLabel = QLabel("Number of threads:")
+        self.nthreadSpinBox = QSpinBox()
+        self.nthreadSpinBox.setRange(1,1000)
+        self.nthreadSpinBox.setValue(1)
+        
+        runLocationType = {1:"local", 2:"remote"}
+        runLocationLabel = QLabel("Simulation Location:")
+        self.runLocationComboBox = QComboBox()
+        for k,v in runLocationType.items():
+            self.runLocationComboBox.insertItem(k, v)
+            
+        userLabel = QLabel("Username:")
+        self.userLineEdit = QLineEdit("user")
+        passLabel = QLabel("Password:")
+        self.passLineEdit = QLineEdit("password")
+        self.passLineEdit.setEchoMode(QLineEdit.Password)
+        serverLabel = QLabel("Server:")
+        self.serverLineEdit = QLineEdit("example.com")
+        binaryLabel = QLabel("Binary Name:")
+        self.binaryLineEdit = QLineEdit("cpp-class")
+        scriptLabel = QLabel("Script type")
+        self.scriptComboBox = QComboBox()
+        self.scriptComboBox.insertItems(1, ["shell script","PBS script"])
+        
+        #TODO: connect user and password etc. to QSettings to store them.
+        blankWidget = QWidget()
+        remoteWidget = QWidget()
+        remoteLayout = QVBoxLayout()
+        remoteTopLayout = QHBoxLayout()       
+        for item in [userLabel, self.userLineEdit, passLabel, self.passLineEdit]:
+            remoteTopLayout.addWidget(item)
+        remoteBottomLayout = QHBoxLayout()
+        for item in [serverLabel, self.serverLineEdit, binaryLabel, self.binaryLineEdit, scriptLabel, self.scriptComboBox]:
+            remoteBottomLayout.addWidget(item)
+        remoteLayout.addLayout(remoteTopLayout)
+        remoteLayout.addLayout(remoteBottomLayout)
+        remoteWidget.setLayout(remoteLayout)
+          
+        self.stackedWidget = QStackedWidget()
+        self.stackedWidget.addWidget(blankWidget)
+        self.stackedWidget.addWidget(remoteWidget)
+        
+        layout = QVBoxLayout()
+        topRow = QHBoxLayout()
+        for item in [nthreadLabel, self.nthreadSpinBox, runLocationLabel, self.runLocationComboBox]:
+            topRow.addWidget(item)
+        layout.addLayout(topRow)
+        layout.addWidget(self.stackedWidget)
+        
+        self.connect(self.runLocationComboBox,SIGNAL("currentIndexChanged(QString)"),self.changeStacked)  
+                
+        self.setLayout(layout)
+        
+    def changeStacked(self, text):
+        if text == "local":
+            self.stackedWidget.setCurrentIndex(0)
+        else:
+            self.stackedWidget.setCurrentIndex(1)  
+            
 if __name__ == "__main__":
     import sys
 
