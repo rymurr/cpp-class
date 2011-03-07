@@ -29,6 +29,6 @@ int main(int argc, char *argv[])
         av.push_back(*(argv+i));
     }
     
-    if (!run_main(argc, av, "run_params.cfg")){return 10;};
+    if (!run_main(argc, av, "input.cfg")){return 10;};
 }
 

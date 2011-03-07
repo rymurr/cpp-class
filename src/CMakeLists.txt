@@ -92,6 +92,6 @@ SET(NEW_LIB_NAME ${Bar_prefix}class${Bar_suffix})
 ADD_CUSTOM_COMMAND(
   TARGET classical
   POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy ${LIB_NAME} ../classical.so
+  COMMAND ${CMAKE_COMMAND} -E copy ${LIB_NAME} ../pygui/classical.so
 )
 

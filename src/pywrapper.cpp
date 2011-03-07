@@ -2,12 +2,16 @@
 
 namespace classical{
 
+static bool hasRun = false;
+
 int run_main(int argc, std::vector<std::string> argv, std::string fname){
 
 #ifdef Gflags
-    google::InitGoogleLogging(argv[0].c_str());
-    //TODO: this should be wrapped in a #define at some point in the future
-    google::InstallFailureSignalHandler();
+    if (!hasRun){
+        google::InitGoogleLogging(argv[0].c_str());
+        google::InstallFailureSignalHandler();
+        hasRun = true;
+    }
 #endif
 
     pmap params;
@@ -26,7 +30,8 @@ int run_main(int argc, std::vector<std::string> argv, std::string fname){
     //find_center(params.map
 
 #ifdef Gflags
-    google::ShutdownGoogleLogging();
+    if (!hasRun)
+        google::ShutdownGoogleLogging();
 #endif
     return 1;
 }

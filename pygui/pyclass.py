@@ -150,15 +150,15 @@ class MainWindow(QMainWindow):
         except IOError:
             self.textEditView.insertHtml(error + "Failed to create configuration file."+end)
         for k,v in self.params.items():
-            f.write(k + " = " + str(v))
+            f.write(k + " = " + str(v) + "\n")
         f.close()
     
-    def runIf(self, text):
+    def runIf(self, text, fileMap=None):
         try:
             if self.local:
-                runclass.runLocal(self.params,self.textEditView)
+                runclass.runLocal(self.params,self.textEditView, fileMap)
             else:
-                runclass.runRemote(self.params,self.runparams,self.textEditView)
+                runclass.runRemote(self.params,self.runparams,self.textEditView, fileMap)
         except runclass.ClassicalError: 
             self.textEditView.insertHtml(error + text + " failed to run"+end)
         else:
@@ -166,8 +166,9 @@ class MainWindow(QMainWindow):
             
     def paramTest(self):
         self.convertDict()
+        fileMap = {"cfg":self.filename,}
         self.params["run-type"] = 1
-        self.runIf("Configuration")
+        self.runIf("Configuration", fileMap)
         self.runICGenBool = True
         self.setEnabled()
  

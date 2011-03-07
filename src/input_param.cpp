@@ -303,6 +303,7 @@ void pmap::print(){
     foreach(pairm m, map)
     {
         std::string front = "The value of " + boost::lexical_cast<std::string>(m.first) + " is: " ;
+        /*LOG(INFO) << front;*/
         try
         {
              any_cast<double>(m.second);
@@ -331,7 +332,17 @@ void pmap::print(){
                         LOG(INFO) << front + back;
                     }
                     catch(boost::bad_any_cast & e){
+                        try{
+                            any_cast<std::vector<double> >(m.second);
+                            std::string back;
+                            foreach(double i, any_cast<std::vector<double> >(m.second)){
+                                 back = back + lexical_cast<std::string>(i) + " ";
+                            }
+                            LOG(INFO) << front + back;
+                        }
+                        catch(boost::bad_any_cast & e){
                         LOG(INFO) << front + "n/a";
+                        }
                     }
                 }   
             }
