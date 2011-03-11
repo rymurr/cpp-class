@@ -86,7 +86,7 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
 
     wf_opts["wf-type"] = statePtr(new state_param("Type of initial wave-function", "wf-type", 1, inwf_map));
     wf_opts["pot-type"] = statePtr(new state_param("Type of initial potential", "pot-type", 1, inpot_map));
-    wf_opts["charges"] = doubleListPtr(new doubleList("charge on core(s). list of numbers for each core only needed for H-like and H2-like potential. 1 is for singly ionized etc.", "charges", "1,1",charges_def));
+    wf_opts["charges"] = doubleListPtr(new doubleList("charge on core(s). list of numbers for each core only needed for H-like and H2-like potential. 1 is for singly ionized etc.", "charges", "1",charges_def));
     wf_opts["smoothing"] = doubleRunPtr(new doubleRun("Smoothing parameter to avoid coulomb singularity. Should be small and is only needed when using analytic potentials.", "smoothing", 1E-4, 10E10, -10E10));
     wf_opts["rnuc"] = doubleRunPtr(new doubleRun("Internuclear separation in atomic units, only needed for analytic potentials", "rnuc", 0.0, 10E10, -10E10));
     wf_opts["theta-nuc"] = doubleRunPtr(new doubleRun("alignment of molecule wrt the laser polarization. 0 is aligned, 90 is anti-aligned. given in degrees.", "theta-nuc", 0.0, 10E10, -10E10));
@@ -207,7 +207,16 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
     }
 
     *ndim_def = any_cast<int>(map["ndim"]);
-    *charges_def = 2;
+    switch (any_cast<int>(map["pot-type"])){
+        case 1:
+            *charges_def = 1;
+            break;
+        case 2:
+            *charges_def = 2;
+            break;
+        default:
+            *charges_def = 0;
+    }
     *field_def = any_cast<int>(map["nfield"]);
 
     foreach(pairm m, general_opts){
@@ -267,30 +276,26 @@ void pmap::print(std::string runParams){
     foreach(pairm m, map)
     {
         fp_out << m.first << " = " ;
-        try
-        {
-            fp_out << any_cast<double>(m.second) <<"\n";
-        }
-        catch(boost::bad_any_cast & e)
-        {
-            try
-            {
-                fp_out << any_cast<int>(m.second) <<"\n";
+        std::string front = "The value of " + boost::lexical_cast<std::string>(m.first) + " is: " ;
+        std::string back;
+        if (typeid(float) == m.second.type()){
+            back =  boost::lexical_cast<std::string>(any_cast<double>(m.second));
+        } else if (typeid(int) == m.second.type()){
+            back = boost::lexical_cast<std::string>(any_cast<int>(m.second));
+        } else if (typeid(std::string) == m.second.type()) {
+            back = boost::lexical_cast<std::string>(any_cast<std::string>(m.second));
+        } else if (typeid(std::vector<int>) == m.second.type()){
+            foreach(int i, any_cast<std::vector<int> >(m.second)){
+                back = back + lexical_cast<std::string>(i) + ",";
             }
-            catch(boost::bad_any_cast & e)
-            {
-                try{
-                    fp_out << any_cast<std::string>(m.second) <<"\n";
-                }
-                catch(boost::bad_any_cast & e) {
-                    std::string back;
-                    foreach(int i, any_cast<std::vector<int> >(m.second)){
-                         back = back + lexical_cast<std::string>(i) + ",";
-                    }
-                    fp_out << back;
-                }   
+        } else if (typeid(std::vector<double>) == m.second.type()){
+            foreach(double i, any_cast<std::vector<double> >(m.second)){
+                 back = back + lexical_cast<std::string>(i) + ",";
             }
-        }
+        } else {
+            back = "n/a";
+        }   
+        fp_out << m.first << " = " << back << "\n";
     }
     fp_out << std::endl;
     fp_out.close();
@@ -303,50 +308,25 @@ void pmap::print(){
     foreach(pairm m, map)
     {
         std::string front = "The value of " + boost::lexical_cast<std::string>(m.first) + " is: " ;
-        /*LOG(INFO) << front;*/
-        try
-        {
-             any_cast<double>(m.second);
-             LOG(INFO) << front + boost::lexical_cast<std::string>(any_cast<double>(m.second)) ;
-        }
-        catch(boost::bad_any_cast & e)
-        {
-            try
-            {
-                any_cast<int>(m.second);
-                LOG(INFO) << front + boost::lexical_cast<std::string>(any_cast<int>(m.second));
+        std::string back;
+        if (typeid(float) == m.second.type()){
+            back =  boost::lexical_cast<std::string>(any_cast<double>(m.second));
+        } else if (typeid(int) == m.second.type()){
+            back = boost::lexical_cast<std::string>(any_cast<int>(m.second));
+        } else if (typeid(std::string) == m.second.type()) {
+            back = boost::lexical_cast<std::string>(any_cast<std::string>(m.second));
+        } else if (typeid(std::vector<int>) == m.second.type()){
+            foreach(int i, any_cast<std::vector<int> >(m.second)){
+                back = back + lexical_cast<std::string>(i) + " ";
             }
-            catch(boost::bad_any_cast & e)
-            {
-                try{
-                    any_cast<std::string>(m.second);
-                    LOG(INFO) << front + boost::lexical_cast<std::string>(any_cast<std::string>(m.second));
-                }
-                catch(boost::bad_any_cast & e) {
-                    try{
-                        any_cast<std::vector<int> >(m.second);
-                        std::string back;
-                        foreach(int i, any_cast<std::vector<int> >(m.second)){
-                             back = back + lexical_cast<std::string>(i) + " ";
-                        }
-                        LOG(INFO) << front + back;
-                    }
-                    catch(boost::bad_any_cast & e){
-                        try{
-                            any_cast<std::vector<double> >(m.second);
-                            std::string back;
-                            foreach(double i, any_cast<std::vector<double> >(m.second)){
-                                 back = back + lexical_cast<std::string>(i) + " ";
-                            }
-                            LOG(INFO) << front + back;
-                        }
-                        catch(boost::bad_any_cast & e){
-                        LOG(INFO) << front + "n/a";
-                        }
-                    }
-                }   
+        } else if (typeid(std::vector<double>) == m.second.type()){
+            foreach(double i, any_cast<std::vector<double> >(m.second)){
+                 back = back + lexical_cast<std::string>(i) + " ";
             }
+        } else {
+            back = "n/a";
         }
+        LOG(INFO) << front + back;
     }
 }
 

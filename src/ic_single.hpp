@@ -125,7 +125,7 @@ class SingleIC{
 
         SingleIC(){};
 
-        ~SingleIC(){};
+        virtual ~SingleIC(){};
 
         SingleIC(std::vector<double> mean, double var): var_(var), mean_(mean){};
 

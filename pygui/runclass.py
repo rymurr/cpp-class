@@ -45,9 +45,14 @@ def Trace(proc, LogLineEdit):
         LogLineEdit.insertHtml(strip(line))
     
 def strip(line):
-    line = line.split("]")
-    errcode = line[0][0]
-    return errHtml(errcode) + line[1] + end
+    try:
+        lineo = line.split("]")
+        errcode = lineo[0][0]
+        retstring = errHtml(errcode) + lineo[1] + end
+    except IndexError:
+        retstring = line
+         
+    return retstring
 
 def errHtml(errcode):
     if errcode == "I":

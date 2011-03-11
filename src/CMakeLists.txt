@@ -37,7 +37,7 @@ SET(Boost_ADDITIONAL_VERSIONS "0.99" "0.99.0" "1.78" "1.78.0" "1.41.0" "1.40.0" 
 
 find_package(Boost 1.45.0 COMPONENTS python)
 if(Boost_FOUND)
-    find_package(PythonLibs 2.7) 
+    find_package(PythonLibs 2.6) 
     if(PYTHONLIBS_FOUND)
         include_directories(${PYTHON_INCLUDE_DIRS})
         set(LIBS ${LIBS} ${PYTHON_LIBRARIES})

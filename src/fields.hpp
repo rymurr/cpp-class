@@ -32,7 +32,7 @@ class field {
 
         field();
 
-        virtual ~field();
+        ~field();
 
         double operator()(double);
 

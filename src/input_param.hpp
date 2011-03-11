@@ -83,7 +83,7 @@ class pmap {
     public:
         pmap();
         
-        virtual ~pmap();
+        ~pmap();
 
         void print();
         
