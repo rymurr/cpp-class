@@ -1,14 +1,14 @@
 // $Id$
 /**
- * @file params.cpp
- * the source for the params functions. This function reads the command line and
- * from a config file and stores the values in a map to be passed back to the 
- * controlling program
+ * @file input_param.hpp
+ * This class reads in a set of parameters and stores them in a std::map
+ * The map can be exported for use in the main numerical algorithm
+ * boost program_options is used along with custom verify functions
  *
- * @brief definition of wavefunction class
+ * @brief params definitions
  *
  * @author Ryan Murray
- * @version 1.00
+ * @version 2.00
  */
 // $Log$
 
@@ -27,14 +27,8 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
 
     //TODO: need locations for input files: numerical input
     //TODO: need to add an auxilliary variable to accept user variables. Right now everything gets put to standard files
-    anyMap general_opts, time_opts, wf_opts, field_opts, run_opts;
-    std::vector<anyMap> opts;
-    opts.push_back(general_opts);
-    opts.push_back(time_opts);
-    opts.push_back(wf_opts);
-    opts.push_back(field_opts);
-    opts.push_back(run_opts);
-
+    paramVec general_opts, time_opts, wf_opts, field_opts, run_opts;
+    
     boost::shared_ptr<int> ndim_def(new int), charges_def(new int), field_def(new int);
     defMap dist_map, traj_map, inwf_map, inpot_map, field_map;
     boost::assign::insert(dist_map)
@@ -71,39 +65,38 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
         (5,"numerical form")
         ;
 
-    general_opts["ndim"] = intRunPtr(new intRun("The Number of dimensions to be used in the calculation", "ndim", 2, 100, 1));
-    general_opts["dims"] = intListPtr(new intList("The number of trajectories in each dimension. comma separated list.", "dims", "1,1",ndim_def));
-    general_opts["dist-type"] = statePtr(new state_param("The number of trajectories in each dimension. comma separated list.", "dist-type", 1, dist_map));
-    general_opts["run-type"] = statePtr(new state_param("Type of run", "run-type", 5, traj_map));
-    general_opts["id-stages"] = intRunPtr(new intRun("Number of stages for staged-linear distribution(not implemented)", "id-stages", 1, 100, 1));
-    general_opts["input_file"] = filePtr( new file_param("Input file, expects serialized results of previous run", "input_file", "in.dat"));
-    general_opts["output_file"] = filePtr( new file_param("Output file, either serialized results of current run or results of whole run. If empty, then results will print to stdout for results of whole run.", "output_file", "out.dat"));
+    general_opts.push_back(intRunPtr(new intRun("The Number of dimensions to be used in the calculation", "ndim", 2, 100, 1)));
+    general_opts.push_back(intListPtr(new intList("The number of trajectories in each dimension. comma separated list.", "dims", "1,1",ndim_def)));
+    general_opts.push_back(statePtr(new state_param("The number of trajectories in each dimension. comma separated list.", "dist-type", 1, dist_map)));
+    general_opts.push_back(statePtr(new state_param("Type of run", "run-type", 5, traj_map)));
+    general_opts.push_back(intRunPtr(new intRun("Number of stages for staged-linear distribution(not implemented)", "id-stages", 1, 100, 1)));
+    general_opts.push_back(filePtr( new file_param("Input file, expects serialized results of previous run", "input_file", "in.dat")));
+    general_opts.push_back(filePtr( new file_param("Output file, either serialized results of current run or results of whole run. If empty, then results will print to stdout for results of whole run.", "output_file", "out.dat")));
 
-    time_opts["tinitial"] = doubleRunPtr(new doubleRun("Start time of the simulation, can be negative", "tinitial", 0, 10E10, -10E10));
-    time_opts["tfinal"] = doubleRunPtr(new doubleRun("Finish time of the simulation, can be negative", "tfinal", 100, 10E10, -10E10));
-    time_opts["dt"] = doubleRunPtr(new doubleRun("Initial time step", "dt", 0.01, 10E10, -10E10));
+    time_opts.push_back(doubleRunPtr(new doubleRun("Start time of the simulation, can be negative", "tinitial", 0, 10E10, -10E10)));
+    time_opts.push_back(doubleRunPtr(new doubleRun("Finish time of the simulation, can be negative", "tfinal", 100, 10E10, -10E10)));
+    time_opts.push_back(doubleRunPtr(new doubleRun("Initial time step", "dt", 0.01, 10E10, -10E10)));
     
-
-    wf_opts["wf-type"] = statePtr(new state_param("Type of initial wave-function", "wf-type", 1, inwf_map));
-    wf_opts["pot-type"] = statePtr(new state_param("Type of initial potential", "pot-type", 1, inpot_map));
-    wf_opts["charges"] = doubleListPtr(new doubleList("charge on core(s). list of numbers for each core only needed for H-like and H2-like potential. 1 is for singly ionized etc.", "charges", "1",charges_def));
-    wf_opts["smoothing"] = doubleRunPtr(new doubleRun("Smoothing parameter to avoid coulomb singularity. Should be small and is only needed when using analytic potentials.", "smoothing", 1E-4, 10E10, -10E10));
-    wf_opts["rnuc"] = doubleRunPtr(new doubleRun("Internuclear separation in atomic units, only needed for analytic potentials", "rnuc", 0.0, 10E10, -10E10));
-    wf_opts["theta-nuc"] = doubleRunPtr(new doubleRun("alignment of molecule wrt the laser polarization. 0 is aligned, 90 is anti-aligned. given in degrees.", "theta-nuc", 0.0, 10E10, -10E10));
-    wf_opts["ip"] = doubleRunPtr(new doubleRun("ionization potential of target, given in atomic units", "ip", 0.5, 10E10, -10E10));
-    wf_opts["state"] = doubleRunPtr(new doubleRun("state of atomic or molecular system (not implemented)", "state", 0.01, 10E10, -10E10));
+    wf_opts.push_back(statePtr(new state_param("Type of initial wave-function", "wf-type", 1, inwf_map)));
+    wf_opts.push_back(statePtr(new state_param("Type of initial potential", "pot-type", 1, inpot_map)));
+    wf_opts.push_back(doubleListPtr(new doubleList("charge on core(s). list of numbers for each core only needed for H-like and H2-like potential. 1 is for singly ionized etc.", "charges", "1",charges_def)));
+    wf_opts.push_back(doubleRunPtr(new doubleRun("Smoothing parameter to avoid coulomb singularity. Should be small and is only needed when using analytic potentials.", "smoothing", 1E-4, 10E10, -10E10)));
+    wf_opts.push_back(doubleRunPtr(new doubleRun("Internuclear separation in atomic units, only needed for analytic potentials", "rnuc", 0.0, 10E10, -10E10)));
+    wf_opts.push_back(doubleRunPtr(new doubleRun("alignment of molecule wrt the laser polarization. 0 is aligned, 90 is anti-aligned. given in degrees.", "theta-nuc", 0.0, 10E10, -10E10)));
+    wf_opts.push_back(doubleRunPtr(new doubleRun("ionization potential of target, given in atomic units", "ip", 0.5, 10E10, -10E10)));
+    wf_opts.push_back(doubleRunPtr(new doubleRun("state of atomic or molecular system (not implemented)", "state", 0.01, 10E10, -10E10)));
     
-    field_opts["nfield"] = intRunPtr(new intRun("Number of fields, every option below is given as a comma separated list of options for each field. Currently only 1 field is allowed", "nfield", 1, 100, 1));
-    field_opts["env"] = statePtr(new state_param("Type of fields", "env", 1,field_map));
-    field_opts["ef"] = doubleListPtr(new doubleList("Field strengths given in atomic units", "ef", "1",field_def));
-    field_opts["omega"] = doubleListPtr(new doubleList("frequencies given in atomic units", "omega", "1",field_def));
-    field_opts["fwhm"] = doubleListPtr(new doubleList("FWHM of envelope, ignored for static or constant field.", "fwhm", "1",field_def));
-    field_opts["ce"] = doubleListPtr(new doubleList("initial CE phase of each field given in degrees", "ce", "1",field_def));
+    field_opts.push_back(intRunPtr(new intRun("Number of fields, every option below is given as a comma separated list of options for each field. Currently only 1 field is allowed", "nfield", 1, 100, 1)));
+    field_opts.push_back(statePtr(new state_param("Type of fields", "env", 1,field_map)));
+    field_opts.push_back(doubleListPtr(new doubleList("Field strengths given in atomic units", "ef", "1",field_def)));
+    field_opts.push_back(doubleListPtr(new doubleList("frequencies given in atomic units", "omega", "1",field_def)));
+    field_opts.push_back(doubleListPtr(new doubleList("FWHM of envelope, ignored for static or constant field.", "fwhm", "1",field_def)));
+    field_opts.push_back(doubleListPtr(new doubleList("initial CE phase of each field given in degrees", "ce", "1",field_def)));
 
-    run_opts["nthreads"] = intRunPtr(new intRun("Number of cuncurrent trajectories", "nthreads", 1, 100, 1));
-    run_opts["mklthreads"] = intRunPtr(new intRun("Number of threads per trajectory", "mklthreads", 1, 100, 1));
-    run_opts["abserr"] = doubleRunPtr(new doubleRun("Absolute error", "abserr", 1E-9, 10E10, -10E10));
-    run_opts["relerr"] = doubleRunPtr(new doubleRun("Relative error", "relerr", 1E-7, 10E10, -10E10));
+    run_opts.push_back(intRunPtr(new intRun("Number of cuncurrent trajectories", "nthreads", 1, 100, 1)));
+    run_opts.push_back(intRunPtr(new intRun("Number of threads per trajectory", "mklthreads", 1, 100, 1)));
+    run_opts.push_back(doubleRunPtr(new doubleRun("Absolute error", "abserr", 1E-9, 10E10, -10E10)));
+    run_opts.push_back(doubleRunPtr(new doubleRun("Relative error", "relerr", 1E-7, 10E10, -10E10)));
 
     po::options_description generic("Generic Options");
     po::options_description timepos("Time Grid");
@@ -119,25 +112,17 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
     generic.add_options()
             ("binary", "serialize in binary(OS-dependent), if not set serializes to text(default)");
 
-    //TODO: combine this into one step!!
-    foreach(pairm m, general_opts){
-        gen_param(m, generic);
-    }
+    std::vector<paramVec> opts;
+    opts.push_back(general_opts);
+    opts.push_back(time_opts);
+    opts.push_back(wf_opts);
+    opts.push_back(field_opts);
+    opts.push_back(run_opts);
 
-    foreach(pairm m, time_opts){
-        gen_param(m, timepos);
-    }
-
-    foreach(pairm m, wf_opts){
-        gen_param(m, wfopts);
-    }
-
-    foreach(pairm m, field_opts){
-        gen_param(m, field);
-    }
-
-    foreach(pairm m, run_opts){
-        gen_param(m, runopts);
+    foreach(paramVec x, opts){
+        foreach(paramPtr m, x){
+            m->genParam(generic);
+        }
     }
 
     po::options_description cmdline;
@@ -219,36 +204,14 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
     }
     *field_def = any_cast<int>(map["nfield"]);
 
-    foreach(pairm m, general_opts){
-            boost::any newVal = map[m.first];
-            pairm n = validate(m,newVal);
-            map[n.first] = n.second;
-    }
-
-    foreach(pairm m, time_opts){
-            boost::any newVal = map[m.first];
-            pairm n = validate(m,newVal);
-            map[n.first] = n.second;
-    }
-
-    foreach(pairm m, wf_opts){
-            boost::any newVal = map[m.first];
-            pairm n = validate(m,newVal);
-            map[n.first] = n.second;
-    }
     
-    foreach(pairm m, field_opts){
-            boost::any newVal = map[m.first];
-            pairm n = validate(m,newVal);
-            map[n.first] = n.second;
+    foreach(paramVec x, opts){
+        foreach(paramPtr m, x){
+            m->set(map[m->getName()]);
+            map[m->getName()] = m->verify();
+        }
     }
 
-    foreach(pairm m, run_opts){
-            boost::any newVal = map[m.first];
-            pairm n = validate(m,newVal);
-            map[n.first] = n.second;
-    }
-    
     if (vm.count("no-build")){
     	map["no-build"] = true;
     }
@@ -260,6 +223,10 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
 }
 
 void pmap::print(std::string runParams){
+
+    using namespace boost::gregorian;
+    using namespace boost::posix_time;
+
 	std::ofstream fp_out;
 	try{
 		fp_out.open(runParams.c_str());
@@ -286,11 +253,11 @@ void pmap::print(std::string runParams){
             back = boost::lexical_cast<std::string>(any_cast<std::string>(m.second));
         } else if (typeid(std::vector<int>) == m.second.type()){
             foreach(int i, any_cast<std::vector<int> >(m.second)){
-                back = back + lexical_cast<std::string>(i) + ",";
+                back = back + boost::lexical_cast<std::string>(i) + ",";
             }
         } else if (typeid(std::vector<double>) == m.second.type()){
             foreach(double i, any_cast<std::vector<double> >(m.second)){
-                 back = back + lexical_cast<std::string>(i) + ",";
+                 back = back + boost::lexical_cast<std::string>(i) + ",";
             }
         } else {
             back = "n/a";
@@ -302,6 +269,9 @@ void pmap::print(std::string runParams){
 }
 
 void pmap::print(){
+
+    using namespace boost::gregorian;
+    using namespace boost::posix_time;
 
 	ptime now = second_clock::local_time();
     LOG(INFO) << "This is the set of parameters being used in the current run, performed at: " + to_simple_string(now);
@@ -317,11 +287,11 @@ void pmap::print(){
             back = boost::lexical_cast<std::string>(any_cast<std::string>(m.second));
         } else if (typeid(std::vector<int>) == m.second.type()){
             foreach(int i, any_cast<std::vector<int> >(m.second)){
-                back = back + lexical_cast<std::string>(i) + " ";
+                back = back + boost::lexical_cast<std::string>(i) + " ";
             }
         } else if (typeid(std::vector<double>) == m.second.type()){
             foreach(double i, any_cast<std::vector<double> >(m.second)){
-                 back = back + lexical_cast<std::string>(i) + " ";
+                 back = back + boost::lexical_cast<std::string>(i) + " ";
             }
         } else {
             back = "n/a";
@@ -343,6 +313,7 @@ void pmap::restore(){
 }
 */
 
+//TODO: this function is TROUBLE!
 void pmap::map_out(anyMap &mapout){
     mapout = (*this).map;
 }

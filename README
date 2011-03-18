@@ -1,19 +1,39 @@
 1) figure out how to deal with potentials in 1&2 dimensions...extra functions??
 
-2) finish constructor for potential
+2) refactor icgen class to use strategy pattern, also need to clean up interface and add to python API
 
-3) write/find a timer app similar to serguei's simple/easy/fun!
+3) refactor fields and potentials to use factory pattern and add to python API
 
 4) add a polarization parameter to fields
 
 5) change around defaults eg: ndim = 4
 
-6) docs! should be noted that ndim = 4 is x,px,y,py
+6) docs! should be noted that ndim = 4 is x,px,y,py. lots of documentation of GUI and backend...Doxygen AND Sphinx.
 
 7) add id private member to fields class
 
-8) expose more functions/options to python...full-ish API
+8) python api should create 'simulation' class, initialization starts glog and sets parameters. then methods call different steps in different ways.
 
 9) Imortant to note that currently program assumes that tinitial is given at the peak of a real ionizatione event and initial conditions are sampled there only.
 
-10) accept user input function for potential and field to generate. function handle in calling function for stuff I didnt think of.
+10) need to start simplectic integrator and make a wrapper to GSL
+
+11) need to design a/several parallelization types (map/reduce, MPI, OpenMP) for creation, running and binning of ICs
+
+12) lots of gui connections to make to interface properly with code
+
+13) design plotting schemes and write the interface
+
+14) important to be able to transfer half done simulation from server to client and vice-versa
+
+15) write SCP module for transfers - send, recieve, schedule, notify.
+
+16) write binning methods, I like the boost library for 1D binners dunno about 2D though.
+
+17) user docs in sphinx
+
+18) get some damn results!
+
+19) distribute on more platforms! need a nicer icon...
+
+20) get some damn results!

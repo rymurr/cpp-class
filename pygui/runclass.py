@@ -28,7 +28,7 @@ def runLocal(params, LogLineEdit, fileMap=None):
         raise ClassicalError
     else:
 #        if not fileMap == None:
-        proc = Run(["/home/ryan/workspace/cpp-class/./cpp-class","-alsologtostderr"]) 
+        proc = Run([".././cpp-class","-alsologtostderr"]) 
         Trace(proc, LogLineEdit)
             #classical.pyrun_main(2,["pyclass","-alsologtostderr"],fileMap["cfg"])
 #        else:

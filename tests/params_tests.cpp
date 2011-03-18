@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(retparams)
     params.read_params(str,a,writable);
     params.map_out(retMap);
 
-    int j=1, i=2;
+    int i=2;
     BOOST_REQUIRE_EQUAL(any_cast<int>(retMap["ndim"]),i);
     params.print();
 
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(paramstpl)
     std::map<int,std::string> testmap;
     testmap[1] = "poo";
     testmap[2] = "crap";
-    param<int> test("this is a test", "testing", 1);
+    run_param<int> test("this is a test", "testing", 1,10,0);
     run_param<double> test2("this", "is", 1., 9., 0.);
     state_param test3("test", "is", 1, testmap);
     list_param<int> test4("list desc", "list", "1,1", x);
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(paramstpl)
     test3.set(82);
     test2.set(50.);
     *x = 4;
-    test4.set("1,1,1");
+    test4.set(boost::any(std::string("1,1,1")));
     test.print();
     test2.print();
     test3.print();

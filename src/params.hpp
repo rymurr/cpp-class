@@ -17,9 +17,6 @@
 #include <sstream>
 #include <vector>
 
-
-//#include <boost/assign/list_inserter.hpp>
-//#include <boost/assert.hpp>
 #include <boost/foreach.hpp>
 #include <boost/any.hpp>
 #include <boost/lexical_cast.hpp>
@@ -29,12 +26,11 @@
 #include <boost/lambda/bind.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/shared_ptr.hpp>
-#include "boost/filesystem/operations.hpp"
-#include "boost/filesystem/path.hpp"
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/program_options.hpp>
 
 #include "customGlog.hpp"
-
-//#include <boost/bimap.hpp>
 
 #include "exceptions.hpp"
 namespace classical{
@@ -43,141 +39,149 @@ namespace classical{
 #define BOOST_FILESYSTEM_VERSION 3
 
 using boost::any_cast;
-//using namespace boost::lambda;
-using namespace boost;
+namespace po = boost::program_options;
+
+
 namespace fs = boost::filesystem;
 
 typedef std::map<std::string,boost::any> anyMap;
-//typedef boost::bimap< int, std::string > bm_type;
 
-template <class T>
 class param {
-	public:
-		boost::shared_ptr<std::string> description, name;
-        boost::shared_ptr<T> actualValue;
-		boost::shared_ptr<T> defaultValue;
+    protected:
+        boost::shared_ptr<std::string> description, name;
 
-		param(std::string desc,std::string varName, T defVal){
+    public:
+
+        param(std::string desc, std::string nameVal){
             description = boost::shared_ptr<std::string>(new std::string(desc));
-            name = boost::shared_ptr<std::string>(new std::string(varName));
-			defaultValue = boost::shared_ptr<T>(new T(defVal));
-            actualValue = defaultValue;
-		}
+            name = boost::shared_ptr<std::string>(new std::string(nameVal));
+        };
 
-        void virtual verify(){};
+        virtual ~param(){};
 
-        param(){};
+        boost::any virtual verify(){return boost::any(0);};
 
-		void virtual print();
+		void virtual print(){};
 
-        void virtual set(T);
+        void virtual set(boost::any){};
+        
+        virtual std::string getName(){return *name;};
+
+        virtual std::string getDesc(){return *description;};
+
+        void virtual genParam(po::options_description&){};
+
+
 };
 
-template <class T>
-void param<T>::print(){
-    std::cout << *description << " " 
-        << *name << " " 
-        << *actualValue << " "
-        << *defaultValue << std::endl;
-}
-
-
-template <class T>
-void param<T>::set(T newVal){
-    (*this).actualValue = boost::shared_ptr<T>(new T(newVal));
-    //std::cout << *((*this).name) << " is now set to " << *((*this).actualValue) << " having been changed by " << newVal << "\n";
-}
-
 template <class S>
-class run_param: public param<S> {
-	public:
+class run_param: public param {
+    private:
+        boost::shared_ptr<S> actualValue;
+        boost::shared_ptr<S> defaultValue;
 		boost::shared_ptr<S> max,min;
 
-		run_param(std::string desc, std::string varName, S defVal, S maximum, S minimum): param<S>(desc,varName,defVal){
+    public:
+		run_param(std::string desc, std::string varName, S defVal, S maximum, S minimum):param(desc, varName){
+	    defaultValue = boost::shared_ptr<S>(new S(defVal));
         max = boost::shared_ptr<S>(new S(maximum));
         min = boost::shared_ptr<S>(new S(minimum));
         }
 
-
-        run_param(){};
-
-        /*
-        run_param(const run_param &a){
-            (*this).description = a.description;
-            (*this).name = a.name;
-            (*this).actualValue = a.actualValue;
-            (*this).defaultValue = a.defaultValue;
-            max = a.max;
-            min = a.min;
-            std::cout << "I FEEL MUCH USED\n";
-        }
-
-        run_param<S> operator=(const run_param<S> &a){
-            (*this).description = a.description;
-            (*this).name = a.name;
-            (*this).actualValue = a.actualValue;
-            (*this).defaultValue = a.defaultValue;
-            max = a.max;
-            min = a.min;
-            std::cout << "I FEEL USED\n";
-        }
-        */
-		void verify(){
-            if (*((*this).actualValue) >= *min && *((*this).actualValue) <= *max){
-                LOG(INFO) << *((*this).name) << " is within the allowed range" << std::endl;
+		boost::any verify(){
+            if (*actualValue >= *min && *actualValue <= *max){
+                LOG(INFO) << *name << " is within the allowed range" << std::endl;
             }
             else {
-                throw std::invalid_argument(*((*this).name) + " is not in the valid range.\n");
+                throw std::invalid_argument(*name + " is not in the valid range.\n");
             }
+            return boost::any(*actualValue);
         }
 
-
 		void print(){
-            std::cout << *((*this).description) << " " 
-                << *((*this).name) << " " 
-                << *((*this).defaultValue) << " " 
-                << *((*this).actualValue) << " " 
+            std::cout << *description << " "
+                << *name << " "
+                << *defaultValue << " "
+                << *actualValue << " "
                 << *max << " " 
                 << *min << std::endl;
         }
 
+		void set(boost::any act){
+		    actualValue = boost::shared_ptr<S>(new S(boost::any_cast<S>(act)));
+		}
 
+        void virtual genParam(po::options_description &desc){
+            desc.add_options()
+                (((*this).name)->c_str(), po::value<S>()->default_value(*defaultValue),((*this).description)->c_str());
+        }
 };
 
 
-class state_param: public param<int> {
-	public:
-	    boost::shared_ptr<std::map<int,std::string> > legalVals;
-	    boost::shared_ptr<std::string> ident;
+class state_param: public param {
+    private:
+        boost::shared_ptr<int> actualValue;
+        boost::shared_ptr<int> defaultValue;
+        boost::shared_ptr<std::map<int,std::string> > legalVals;
+        boost::shared_ptr<std::string> ident;
 
-		state_param(std::string, std::string, int, std::map<int,std::string>);
+    public:
+        state_param(std::string, std::string, int, std::map<int,std::string>);
 
-		void verify();
+        void virtual genParam(po::options_description &desc){
+            desc.add_options()
+                (((*this).name)->c_str(), po::value<int>()->default_value(*defaultValue),((*this).description)->c_str());
+        }
+
+		boost::any verify();
 
 		void print();
+
+		void set(boost::any);
 };
 
-class file_param: public param<std::string> {
+class file_param: public param {
+    private:
+        boost::shared_ptr<std::string> actualValue;
+        boost::shared_ptr<std::string> defaultValue;
+
 	public:
+		file_param(std::string desc, std::string varName, std::string defVal):param(desc,varName){
+	        defaultValue = boost::shared_ptr<std::string>(new std::string(defVal));
+		};
 
-		file_param(std::string desc, std::string varName, std::string defVal): param<std::string>(desc,varName,defVal){};
+        void virtual genParam(po::options_description &desc){
+            desc.add_options()
+                (((*this).name)->c_str(), po::value<std::string>()->default_value(*defaultValue),((*this).description)->c_str());
+        }
 
-		void verify();
+		boost::any verify();
 
 		void print();
+
+		void set(boost::any);
 };
 
 template <class R>
-class list_param: public param<std::string> {
-	public:
+class list_param: public param {
+    private:
+        boost::shared_ptr<std::string> actualValue;
+        boost::shared_ptr<std::string> defaultValue;
         boost::shared_ptr<int> size;
         boost::shared_ptr<std::vector<R> > pArray;
 
-        list_param(std::string desc, std::string varName, std::string defVal, boost::shared_ptr<int> sz): param<std::string>(desc, varName, defVal){
+    public:
+        list_param(std::string desc, std::string varName, std::string defVal, boost::shared_ptr<int> sz):param(desc,varName){
+            defaultValue = boost::shared_ptr<std::string>(new std::string(defVal));
             size =sz;
         }
 
-		void verify();
+        void virtual genParam(po::options_description &desc){
+            desc.add_options()
+                (((*this).name)->c_str(), po::value<std::string>()->default_value(*defaultValue),((*this).description)->c_str());
+        }
+
+        boost::any verify();
 
 		void print(){
             std::cout << *description << " " 
@@ -191,25 +195,27 @@ class list_param: public param<std::string> {
             std::cout << std::endl;
         }
 
-        list_param(){};
-
         list_param(const list_param &a){
-            (*this).description = a.description;
-            (*this).name = a.name;
-            (*this).actualValue = a.actualValue;
-            (*this).defaultValue = a.defaultValue;
+            description = a.description;
+            name = a.name;
+            actualValue = a.actualValue;
+            defaultValue = a.defaultValue;
             size = a.size;
             pArray = a.pArray;
         }
-//        void splitVar(std::string, std::vector<R>&);
+
+        void set(boost::any act){
+            actualValue = boost::shared_ptr<std::string>(new std::string(boost::any_cast<std::string>(act)));
+        }
 };
 
 template <class R>
-void list_param<R>::verify(){
+boost::any list_param<R>::verify(){
 
+    using namespace boost;
     typedef std::vector< std::string > split_vector_type;
     split_vector_type splitStr;
-    split(splitStr, *((*this).actualValue), is_any_of(","), token_compress_on);
+    split(splitStr, *actualValue, is_any_of(","), token_compress_on);
 
     if ((int)splitStr.size() > *size){
         LOG(WARNING) <<  "\n***WARNING! The number of elements for the list given for " + *name + " exceeds the number of dimensions given. The list is being truncated to " + boost::lexical_cast<std::string>(*size) + ".***\n" << std::endl;
@@ -223,22 +229,10 @@ void list_param<R>::verify(){
     {
         (*pArray).push_back(boost::lexical_cast<R>(splitStr[i]));
     }
+    return boost::any(*pArray);
 }
 
-/*
-template <class R>
-void list_param<R>::splitVar(std::string newVal, std::vector<R>& splitVec){
 
-    typedef std::vector< std::string > split_vector_type;
-    split_vector_type splitStr;
-    split(splitStr, newVal, is_any_of(","), token_compress_on);
-
-    for(int i=0; i<size; i++)
-    {
-        splitVec.push_back(boost::lexical_cast<R>(splitStr[i]));
-    }
-}
-*/
 }
 #endif
 

@@ -1,15 +1,14 @@
 // $Id$
 /**
- * @file params.h
- * This is a self-contained function to read in a set of parameters and put them into a map
- * the map is then passed back to the calling function
- * a few more parameters are handed to and from mostly for this program only
- * it implements boost program_options for command line and config file input
+ * @file input_param.hpp
+ * This class reads in a set of parameters and stores them in a std::map
+ * The map can be exported for use in the main numerical algorithm
+ * boost program_options is used along with custom verify functions
  *
  * @brief params definitions
  *
  * @author Ryan Murray
- * @version 1.00
+ * @version 2.00
  */
 // $Log$
 
@@ -24,9 +23,6 @@
 #include <vector>
 #include <typeinfo>
 
-
-//#include <boost/assign/list_inserter.hpp>
-//#include <boost/assert.hpp>
 #include <boost/foreach.hpp>
 #include <boost/any.hpp>
 #include <boost/lexical_cast.hpp>
@@ -44,36 +40,33 @@
 #endif
 #include "customGlog.hpp"
 
-//#include "input_func.hpp"
 #include "params.hpp"
-#include "input_funcs.hpp"
 namespace classical{
 
 #define foreach     BOOST_FOREACH
 
 using boost::any_cast;
-using namespace boost;
-using namespace boost::gregorian;
-using namespace boost::posix_time;
 namespace po = boost::program_options;
 
- 
 typedef std::map<std::string,boost::any> anyMap;
+typedef std::vector<boost::shared_ptr<param> > paramVec;
 typedef std::map<int,std::string> defMap;
 typedef std::vector<boost::any> anyVec;
-typedef std::pair<std::string,boost::any> pairm;
-
-typedef boost::shared_ptr<run_param<int> > intRunPtr;
-typedef boost::shared_ptr<run_param<double> > doubleRunPtr;
-typedef boost::shared_ptr<list_param<int> > intListPtr;
-typedef boost::shared_ptr<list_param<double> > doubleListPtr;
-typedef boost::shared_ptr<state_param> statePtr;
+typedef std::pair<std::string,boost::shared_ptr<param> > pairGen;
+typedef std::pair<std::string,boost::any > pairm;
 
 typedef run_param<int> intRun;
 typedef run_param<double> doubleRun;
 typedef list_param<int> intList;
 typedef list_param<double> doubleList;
 
+typedef boost::shared_ptr<param> paramPtr;
+typedef boost::shared_ptr<intRun > intRunPtr;
+typedef boost::shared_ptr<doubleRun > doubleRunPtr;
+typedef boost::shared_ptr<intList > intListPtr;
+typedef boost::shared_ptr<doubleList > doubleListPtr;
+typedef boost::shared_ptr<state_param> statePtr;
+typedef boost::shared_ptr<file_param> filePtr;
 
 class pmap {
 
