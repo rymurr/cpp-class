@@ -20,6 +20,7 @@
 
 #include "pywrapper.hpp"
 
+
 int main(int argc, char *argv[])
 {
 
@@ -28,7 +29,8 @@ int main(int argc, char *argv[])
     for(int i=0;i<argc;i++){
         av.push_back(*(argv+i));
     }
+    simulation s(argc,av,"poo.cfg");
+    s.param_init();
     
-    if (!run_main(argc, av, "input.cfg")){return 10;};
 }
 

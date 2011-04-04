@@ -6,6 +6,10 @@
 #include <iostream>
 
 #include <boost/lambda/lambda.hpp>
+#include <boost/python.hpp>
+#include <boost/python/extract.hpp>
+#include <boost/python/list.hpp>
+
 
 #include "input_param.hpp"
 #include "fields.hpp"
@@ -22,7 +26,7 @@ class simulation{
         pmap params_;
 
         void common_setup(){
-            google::InitGoogleLogging(argv[0].c_str());
+            google::InitGoogleLogging("cpp-class");
             google::InstallFailureSignalHandler();
         };
 
@@ -44,7 +48,7 @@ class simulation{
         };
 
         void param_init(){
-            if (!params_.read_params(fname, argc, argv)){return 0;};
+            if (!params_.read_params(fname_, argc_, argv_)){LOG(ERROR) << "Parameters build was unsuccessful";return;};
             params_.print();
             LOG(INFO) << "Parameters have been built";
         };

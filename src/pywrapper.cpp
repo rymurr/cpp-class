@@ -2,6 +2,7 @@
 
 namespace classical{
 
+/*
 static bool hasRun = false;
 
 
@@ -36,5 +37,5 @@ int run_main(int argc, std::vector<std::string> argv, std::string fname){
 #endif
     return 1;
 }
-
+*/
 }

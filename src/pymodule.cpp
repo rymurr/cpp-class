@@ -9,18 +9,19 @@ namespace classical{
 
 using namespace boost::python;
 
-int pyrun_main(int argc,boost::python::list argv, std::string fname);
+//int pyrun_main(int argc,boost::python::list argv, std::string fname);
 
 
 
 BOOST_PYTHON_MODULE(classical)
 {
-    def("pyrun_main",pyrun_main);
-    class_<simulation>("simulation",init<int,boost::python::list,std::string>)
-        .def("run",&simulation::run)
+    //def("pyrun_main",pyrun_main);
+    class_<simulation>("simulation",init<int,boost::python::list,std::string>())
+        .def("param_init",&simulation::param_init)
     ;
 }
 
+/*
 int pyrun_main(int argc, boost::python::list argv, std::string fname){
 
     std::size_t n = boost::python::len(argv);
@@ -32,6 +33,7 @@ int pyrun_main(int argc, boost::python::list argv, std::string fname){
     if (!run_main(argc, av, fname)){return 0;}
     return 1;
 }
+*/
 }
 
 #endif
