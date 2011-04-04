@@ -39,6 +39,7 @@
 
 #include "exceptions.hpp"
 #include "ic_single.hpp"
+#include "ic_weights.hpp"
 
 //#define pi M_PI
 

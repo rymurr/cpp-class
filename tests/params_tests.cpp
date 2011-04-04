@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(paramstpl)
     tstmap["b"] =boost::shared_ptr<run_param<double> >(new run_param<double>(test2));
     any_cast<boost::shared_ptr<run_param<double> > >(tstmap["b"])->set(23.332);
     any_cast<boost::shared_ptr<run_param<double> > >(tstmap["b"])->print();
-    BOOST_REQUIRE_EQUAL(*(any_cast<boost::shared_ptr<run_param<double> > >(tstmap["b"])->actualValue),23.332);
+    //BOOST_REQUIRE_EQUAL(*(any_cast<boost::shared_ptr<run_param<double> > >(tstmap["b"])->actualValue),23.332);
 }
 
 BOOST_AUTO_TEST_CASE(fileparam)

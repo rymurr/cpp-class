@@ -4,30 +4,27 @@ namespace classical {
 
 using boost::any_cast;
 
-potential::potential(){}
 
-potential::~potential(){}
-
-potential::potential(anyMap in_param){
+boost::shared_ptr<Potential> Potential::makePotential(anyMap in_param){
 
     double theta=any_cast<double>(in_param["theta-nuc"]);
     double phi=any_cast<double>(in_param["phi-nuc"]);
     double rnuc=any_cast<double>(in_param["rnuc"]);
-    charges_=any_cast<std::vector<double> >(in_param["charges"]);
-    alpha_=any_cast<double>(in_param["smoothing"]);
+    std::vector<double> charges=any_cast<std::vector<double> >(in_param["charges"]);
+    double alpha=any_cast<double>(in_param["smoothing"]);
     int pot_choice = any_cast<int>(in_param["pot-type"]);
+    boost::shared_ptr<Potential> fpick;
+    std::vector<double> x;
+    x.push_back(rnuc*sin(theta)*cos(phi));
+    x.push_back(rnuc*sin(theta)*sin(phi));
+    x.push_back(rnuc*cos(theta));
+    Coords y(x);
     switch (pot_choice){
         case 1:
-            fpick = boost::bind(&potential::hatom,this,_1,_2,_3);
-            z1_=0.;
-            x1_=0.;
-            y1_=0.;
+            fpick = boost::shared_ptr<HAtomPotential>(new HAtomPotential(charges[0], alpha));
             break;
         case 2:
-            fpick = boost::bind(&potential::hmol,this,_1,_2,_3);
-            x1_=rnuc*sin(theta)*cos(phi);
-            y1_=rnuc*sin(theta)*sin(phi);
-            z1_=rnuc*cos(theta);
+            fpick = boost::shared_ptr<HMolPotential>(new HMolPotential(y, alpha, charges[0], charges[1]));
             break;
         case 3:
             LOG(FATAL) << "GAMESS Input: Not Implemented!";
@@ -36,8 +33,9 @@ potential::potential(anyMap in_param){
             LOG(FATAL) << "Numerical Input: Not Implemented!";
             break;
         default:
-             LOG(FATAL) << "the choice of potential" + boost::lexical_cast<std::string>(pot_choice) + "is not valid, the code will exit now";
+            LOG(FATAL) << "the choice of potential" + boost::lexical_cast<std::string>(pot_choice) + "is not valid, the code will exit now";
     }
+    return fpick;
 }
 
 }

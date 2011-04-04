@@ -4,15 +4,21 @@
 #include <boost/python/list.hpp>
 
 #include "pywrapper.hpp"
+
 namespace classical{
 
 using namespace boost::python;
 
 int pyrun_main(int argc,boost::python::list argv, std::string fname);
 
+
+
 BOOST_PYTHON_MODULE(classical)
 {
     def("pyrun_main",pyrun_main);
+    class_<simulation>("simulation",init<int,boost::python::list,std::string>)
+        .def("run",&simulation::run)
+    ;
 }
 
 int pyrun_main(int argc, boost::python::list argv, std::string fname){

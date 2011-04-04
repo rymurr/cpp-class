@@ -78,7 +78,7 @@ endif(GOOGLE_PERFTOOLS_FOUND)
 
 link_libraries(${LIBS} -lpthread ${Boost_LIBRARIES})
 
-set(classical_lib_src input_param.cpp params.cpp pywrapper.cpp pymodule.cpp fields.cpp potential.cpp icgen.cpp)
+set(classical_lib_src input_param.cpp params.cpp pywrapper.cpp pymodule.cpp fields.cpp potential.cpp icgen.cpp coords.cpp)
 add_library(classical SHARED ${classical_lib_src})
 
 add_executable (cpp-class main.cpp)

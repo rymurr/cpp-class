@@ -13,11 +13,12 @@
 
 #include <boost/any.hpp>
 #include <boost/lexical_cast.hpp>
-//#include <boost/shared_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
 #include "customGlog.hpp"
+#include "coords.hpp"
 
 namespace classical{
 
@@ -25,38 +26,38 @@ namespace classical{
 
 typedef std::map<std::string,boost::any> anyMap;
 
-class potential{
-    private:
-        double z1_, x1_, y1_, alpha_;
-        std::vector<double> charges_;
-
-        boost::function<double (double,double,double)> fpick;
-
-        double hatom(double, double, double);
-
-        double hmol(double, double, double);
-
+class Potential{
     public:
-        potential();
-
-        potential(anyMap);
-
-        ~potential();
-
-        double operator()(double, double, double);
-
+        virtual ~Potential(){};
+        virtual double operator()(Coords&) = 0;
+        static boost::shared_ptr<Potential> makePotential(anyMap);
 };
 
-inline double potential::operator()(double x, double y, double z){
-    return (*this).fpick(x,y,z);
-}
+class HAtomPotential: public Potential{
+    private:
+        double charge_, alpha_;
 
-inline double potential::hatom(double x, double y, double z){
-    return -charges_[0]/sqrt(x*x+y*y+z*z+alpha_*alpha_);
-}
+    public:
+        HAtomPotential(double charge,double alpha): charge_(charge), alpha_(alpha*alpha){};
 
-inline double potential::hmol(double x, double y, double z){
-    return  -charges_[0]/sqrt((x-x1_)*(x-x1_)+(y-y1_)*(y-y1_)+(z-z1_)*(z-z1_)+alpha_*alpha_)-charges_[1]/sqrt((x+x1_)*(x+x1_)+(y+y1_)*(y+y1_)+(z+z1_)*(z+z1_)+alpha_*alpha_);
-}
+        double operator()(Coords &r){return -charge_/sqrt(square(r)+alpha_);};
+};
+
+class HMolPotential: public Potential {
+    private:
+        Coords r1_;
+        double alpha_, q1_, q2_;
+
+    public:
+        HMolPotential(Coords &r1, double alpha, double q1, double q2): r1_(r1), alpha_(alpha*alpha), q1_(q1), q2_(q2){};
+        double operator()(Coords &r){
+            Coords rleft = r-r1_;
+            Coords rright = r+r1_;
+            return -q1_/sqrt(square(rleft)+alpha_)-q2_/sqrt(square(rright)+alpha_);
+        };
+};
+
+inline boost::shared_ptr<Potential> potentialFactory(anyMap pMap){return Potential::makePotential(pMap);}
+
 }
 #endif

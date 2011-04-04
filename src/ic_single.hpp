@@ -4,47 +4,22 @@
 #include <map>
 #include <string>
 #include <iostream>
-//#include <fstream>
-//#include <iterator>
-//#include <stdexcept>
 #include <vector>
-//#include <ctime>
-//#include <functional>
-//#include <numeric>
-//#include <typeinfo>
-//#include <gsl/gsl_math.h>
 
 #include <boost/any.hpp>
-//#include <boost/cast.hpp>
-//#include <boost/array.hpp>
-//#include <boost/multi_array.hpp>
 #include <boost/shared_ptr.hpp>
-//#include <boost/function.hpp>
-//#include <boost/bind.hpp>
 #include <boost/lambda/lambda.hpp>
-//#include <boost/lambda/casts.hpp>
 #include <boost/lambda/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/random/linear_congruential.hpp>
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
-//#include <boost/archive/text_oarchive.hpp>
-//#include <boost/archive/text_iarchive.hpp>
-//#include <boost/archive/binary_oarchive.hpp>
-//#include <boost/archive/binary_iarchive.hpp>
-//#include <boost/serialization/vector.hpp>
-//#include <boost/serialization/split_member.hpp>
-//#include <boost/serialization/version.hpp>
-//#include <boost/progress.hpp>
 #include <boost/foreach.hpp>
 
 
 #include "customGlog.hpp"
 #include "exceptions.hpp"
-
-//#define pi M_PI
-
 
 namespace classical{
 
@@ -52,7 +27,6 @@ namespace classical{
 
 typedef std::map<std::string,boost::any> anyMap;
 typedef boost::shared_ptr<std::vector<double> > vTraj;
-typedef boost::function<double (anyMap&, vTraj)> wFun;
 
 // This is a typedef for a random number generator.
 // Try boost::mt19937 or boost::ecuyer1988 instead of boost::minstd_rand
@@ -62,27 +36,6 @@ typedef boost::minstd_rand base_generator_type;
 //typedef boost::rand48 base_generator_type;
 
 using boost::any_cast;
-
-class WeightGen {
-    private:
-        wFun func_;
-        anyMap params_;
-    public:
-        WeightGen(){};
-        ~WeightGen(){};
-        WeightGen(anyMap params):params_(params){
-            DLOG(INFO) << "building WeightGen object and casting out generating function";
-            try{
-                func_ = any_cast<wFun>(params["weight-func"]);
-            } catch (boost::bad_any_cast &e) {
-                LOG(WARNING) << "was unable to cast out weight generating function! Type is: " << params["weight-func"].type().name();
-                throw;
-            }
-        };
-
-
-        double operator()(vTraj ics){return func_(params_,ics);};
-};
 
 class SingleGrid {
     private:

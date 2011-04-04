@@ -78,9 +78,9 @@ class pmap {
         
         ~pmap();
 
-        void print();
+        void print() const;
         
-        void print(std::string);
+        void print(const std::string) const;
         
         void map_out(anyMap&);
 
@@ -88,7 +88,7 @@ class pmap {
     
 //        void restore();
 
-        bool read_params(std::string, int, std::vector<std::string>&);
+        bool read_params(const std::string, const int, std::vector<std::string>&);
 };
 
 }

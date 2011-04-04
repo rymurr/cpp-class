@@ -25,7 +25,6 @@ struct anymap{
     std::vector<int> y;
 
     anymap(){
-        boost::function<double (anyMap&, vTraj)> fx = boost::bind(&unitWeight,_1,_2);
         x.push_back(1.);
         x.push_back(0.);
         y.push_back(2);
@@ -34,7 +33,7 @@ struct anymap{
         test["means"] = x;
         test["variance"] = 1.;
         test["dist-type"] = 1;
-        test["weight-func"] = fx;
+        test["weight-func"] = 1;
     }
 };
 
@@ -315,8 +314,7 @@ BOOST_AUTO_TEST_CASE(weights1)
     test["means"] = xx;
     //test["nobuild"] = true;`
     anyMap test2;
-    boost::function<double (anyMap&, vTraj)> fx = boost::bind(&unitWeight,_1,_2);
-    test2["weight-func"] = fx;
+    test2["weight-func"] = 1;
 
     icgenerator gen(test,test2);
     boost::shared_ptr<std::vector<double> > retArray=boost::shared_ptr<std::vector<double> >(new std::vector<double>(25));
@@ -334,8 +332,7 @@ BOOST_AUTO_TEST_CASE(weights2)
     test["means"] = xx;
     test["nobuild"] = true;
     anyMap test2;
-    boost::function<double (anyMap&, vTraj)> fx = boost::bind(&atomWeight,_1,_2);
-    test2["weight-func"] = fx;
+    test2["weight-func"] = 2;
     test2["ef"] = 0.6666666666;
     test2["ip"] = 1.0;
     test2["sigmas"] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(2,1.));
@@ -361,8 +358,7 @@ BOOST_AUTO_TEST_CASE(longrun)
     test["nobuild"] = true;
     test["dist-type"] = 2;
     anyMap test2;
-    boost::function<double (anyMap&, vTraj)> fx = boost::bind(&atomWeight,_1,_2);
-    test2["weight-func"] = fx;
+    test2["weight-func"] = 2;
     test2["ef"] = 0.6666666666;
     test2["ip"] = 1.0;
     test2["sigmas"] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(4,1.));

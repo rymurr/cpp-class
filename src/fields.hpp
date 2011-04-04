@@ -12,7 +12,7 @@
 
 #include <boost/any.hpp>
 #include <boost/lexical_cast.hpp>
-//#include <boost/shared_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
@@ -25,53 +25,68 @@ namespace classical{
 
 typedef std::map<std::string,boost::any> anyMap;
 
-class field {
+class Field {
     
     public:
-        field(anyMap map, int);
 
-        field();
+        virtual ~Field(){};
 
-        ~field();
+        virtual double operator()(double) = 0;
 
-        double operator()(double);
-
-    private:
-        int id_;
-
-        double omega_, fwhm_, ef_, phi_, tmid_;
-
-        boost::function<double (double)> fpick;
-
-        double fconst(double);
-
-        double fstatic(double);
-
-        double gaussian(double);
-
-        double ssquare(double);
+        static boost::shared_ptr<Field> makeField(anyMap params, int id);
 
 };
 
-inline double field::operator()(double t){
-    return (*this).fpick(t);
-}
+class ConstField: public Field {
+    private:
+        double ef_, omega_, phi_;
+        int id_;
 
-inline double field::fconst(double t){
-    return ef_ * cos(omega_*t+phi_);
-}
+    public:
+        ConstField(int id, double ef, double omega, double phi):ef_(ef), omega_(omega), phi_(phi), id_(id){};
 
-inline double field::fstatic(double t){
-    return ef_;
-}
+        double operator()(double t){return ef_ * cos(omega_*t+phi_);};
+};
 
-inline double field::gaussian(double t){
-    return fconst(t) * exp(-4.0*log(2.0)*(t-tmid_)*(t-tmid_)/(fwhm_*fwhm_));
-}
+class StaticField: public Field {
+    private:
+        double ef_;
+        int id_;
 
-inline double field::ssquare(double t){
-    return fconst(t) * pow(sin(pi*t*0.5/fwhm_),2);
-}
+    public:
+        StaticField(int id, double ef):ef_(ef) ,id_(id){};
+
+        double operator()(double t){return ef_;};
+};
+
+class GaussianField: public Field {
+    private:
+        double ef_, omega_, phi_, tmid_, fwhm_;
+        int id_;
+
+    public:
+        GaussianField(int id, double ef, double omega, double phi, double tmid, double fwhm):ef_(ef), omega_(omega), phi_(phi), tmid_(tmid), id_(id){
+            fwhm_ = -4.0*log(2.0)/(fwhm*fwhm);
+        };
+
+        double operator()(double t){return ef_ * cos(omega_*t+phi_) * exp(-fwhm_*(t-tmid_)*(t-tmid_));};
+};
+
+class SineSquareField: public Field {
+    private:
+        double ef_, omega_, phi_, fwhm_;
+        int id_;
+
+    public:
+        SineSquareField(int id, double ef, double omega, double phi, double fwhm):ef_(ef), omega_(omega), phi_(phi), id_(id){
+            fwhm_ = pi*0.5/fwhm;
+        };
+
+        double operator()(double t){return ef_ * cos(omega_*t+phi_) * pow(sin(fwhm_*t),2);};
+};
+
+inline boost::shared_ptr<Field> fieldFactory(anyMap pMap, int id){return Field::makeField(pMap,id);}
+
 }
 #endif
 

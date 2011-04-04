@@ -23,7 +23,7 @@ pmap::~pmap(){
 
 }
 
-bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &argv){
+bool pmap::read_params(const std::string fname, const int argc, std::vector<std::string> &argv){
 
     //TODO: need locations for input files: numerical input
     //TODO: need to add an auxilliary variable to accept user variables. Right now everything gets put to standard files
@@ -222,7 +222,7 @@ bool pmap::read_params(std::string fname, int argc, std::vector<std::string> &ar
     return true;
 }
 
-void pmap::print(std::string runParams){
+void pmap::print(const std::string runParams) const {
 
     using namespace boost::gregorian;
     using namespace boost::posix_time;
@@ -268,7 +268,7 @@ void pmap::print(std::string runParams){
     fp_out.close();
 }
 
-void pmap::print(){
+void pmap::print() const {
 
     using namespace boost::gregorian;
     using namespace boost::posix_time;
