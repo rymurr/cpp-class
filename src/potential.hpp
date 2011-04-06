@@ -16,9 +16,12 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
+#include <boost/lambda/lambda.hpp>
+#include <boost/lambda/bind.hpp>
 
 #include "customGlog.hpp"
 #include "coords.hpp"
+#include "fields.hpp"
 
 namespace classical{
 
@@ -29,18 +32,20 @@ typedef std::map<std::string,boost::any> anyMap;
 class Potential{
     public:
         virtual ~Potential(){};
-        virtual double operator()(Coords&) = 0;
-        static boost::shared_ptr<Potential> makePotential(anyMap);
+        virtual double operator()(const Coords&, const double t = 0) = 0;
+        static boost::shared_ptr<Potential> makePotential(anyMap&);
 };
+
+typedef boost::shared_ptr<std::vector<boost::shared_ptr<Potential> > > vPots;
 
 class HAtomPotential: public Potential{
     private:
         double charge_, alpha_;
 
     public:
-        HAtomPotential(double charge,double alpha): charge_(charge), alpha_(alpha*alpha){};
+        HAtomPotential(const double charge,const double alpha): charge_(charge), alpha_(alpha*alpha){};
 
-        double operator()(Coords &r){return -charge_/sqrt(square(r)+alpha_);};
+        virtual double operator()(const Coords &r, const double t = 0){return -charge_/sqrt(square(r)+alpha_);};
 };
 
 class HMolPotential: public Potential {
@@ -49,12 +54,38 @@ class HMolPotential: public Potential {
         double alpha_, q1_, q2_;
 
     public:
-        HMolPotential(Coords &r1, double alpha, double q1, double q2): r1_(r1), alpha_(alpha*alpha), q1_(q1), q2_(q2){};
-        double operator()(Coords &r){
+        HMolPotential(const Coords &r1, const double alpha, const double q1, const double q2): r1_(r1), alpha_(alpha*alpha), q1_(q1), q2_(q2){};
+        virtual double operator()(const Coords &r, const double t = 0){
             Coords rleft = r-r1_;
             Coords rright = r+r1_;
             return -q1_/sqrt(square(rleft)+alpha_)-q2_/sqrt(square(rright)+alpha_);
         };
+};
+
+class CombinedPotential: public Potential{
+    private:
+        vPots pots_;
+    public:
+        CombinedPotential(vPots pots):pots_(pots){};
+
+        virtual double operator()(const Coords &r, const double t = 0){
+            double tot(0);
+            std::for_each(pots_->begin(),pots_->end(),tot+=boost::lambda::bind(&Potential::operator(),*boost::lambda::_1,r,t));
+            return tot;
+        }
+};
+        
+class FieldPotential: public Potential{
+    private:
+        boost::shared_ptr<Field> field_;
+    public:
+        FieldPotential(boost::shared_ptr<Field> field): field_(field){};
+        virtual double operator()(const Coords &r, const double t = 0){
+            //TODO: VERY IMPORTANT!!! this should be fixed to calculate with proper polarization on fields
+            Coords x(3,0.);
+            x[2] = field_->operator()(t);
+            return x.dotProd(r);
+        }
 };
 
 inline boost::shared_ptr<Potential> potentialFactory(anyMap pMap){return Potential::makePotential(pMap);}

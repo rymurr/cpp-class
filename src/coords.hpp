@@ -40,11 +40,13 @@ namespace classical {
  * @todo convert to template class so it can hold more than doubles
  *
 */
-class Coords: boost::arithmetic<Coords>{
+class Coords: boost::arithmetic<Coords,boost::indexable<Coords,int,double&,boost::dereferenceable<Coords, double*> > >{
     private:
         ///the vector which holds the n-d point
         std::vector<double> x_;
     public:
+        Coords(int n, double x): x_(n,x){};
+
 /**
     Constructor which copies an input vector.
 
@@ -73,6 +75,9 @@ class Coords: boost::arithmetic<Coords>{
 */
         double square() const;
 
+        double sum() const;
+
+        double dotProd(const Coords &rhs){Coords x(*this * rhs); return x.sum();}
 /**
     returns pointer to begining of stored vector. A bit hacky and I want to make
     a full iterator at some point but dont have time.
@@ -99,7 +104,15 @@ class Coords: boost::arithmetic<Coords>{
 
     @return value of element i in vector
 */
-        double operator[](int i){return x_[i];};
+        double& operator[](int n){return const_cast<double&>(x_[n]);};
+
+/**
+    dereference operator
+
+    @return reference to first element in vector
+*/
+        double& operator*() const {return const_cast<double&>(x_.front());};
+
 
 /**
     addition equals operator, used by boost::operators to build full set.
@@ -176,7 +189,7 @@ class CoordIterator: public boost::iterator_facade<CoordIterator, Coords, boost:
 
     @return norm of vector Coords
 */
-double norm(Coords&);
+double norm(const Coords&);
 
 /**
     calls square member function on input, calculates sum of squares of vector
@@ -185,7 +198,9 @@ double norm(Coords&);
 
     @return square of sums of vector
 */
-double square(Coords&);
+double square(const Coords&);
+
+inline double sum(const Coords& x){return x.sum();};
 }
 
 #endif

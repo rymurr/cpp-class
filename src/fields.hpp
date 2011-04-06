@@ -1,4 +1,4 @@
-#ifndef FIELDS_H
+#ifndef FIELDS_H_
 #define FIELDS_H_
 
 #include <map>

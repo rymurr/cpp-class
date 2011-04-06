@@ -110,4 +110,13 @@ BOOST_AUTO_TEST_CASE(normsquare){
     BOOST_REQUIRE_EQUAL(sqrt(12),norm(y));
 }
 
+BOOST_AUTO_TEST_CASE(indexable){
+    using namespace classical;
+    std::vector<double> x(3,2);
+    Coords y(x);
+
+    BOOST_REQUIRE_EQUAL(2,x[0]);
+    x[1] = 5;
+    BOOST_REQUIRE_EQUAL(5,x[1]);
+}
 BOOST_AUTO_TEST_SUITE_END()

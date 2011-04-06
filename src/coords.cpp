@@ -16,6 +16,13 @@
 
 namespace classical{
 
+double Coords::sum() const{
+    using namespace boost::lambda;
+    double sum(0);
+    std::for_each(x_.begin(),x_.end(),sum+=_1);
+    return sum;
+}
+
 double Coords::square() const{
     using namespace boost::lambda;
     double square(0);
@@ -48,11 +55,11 @@ Coords Coords::operator/=(const Coords &rhs){
     return *this;
 }
 
-double norm(Coords &x){
+double norm(const Coords &x){
     return x.norm();
 }
 
-double square(Coords &x){
+double square(const Coords &x){
     return x.square();
 }
 
