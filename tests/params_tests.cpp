@@ -44,21 +44,27 @@ BOOST_AUTO_TEST_CASE(paramstpl)
     run_param<double> test2("this", "is", 1., 9., 0.);
     state_param test3("test", "is", 1, testmap);
     list_param<int> test4("list desc", "list", "1,1", x);
-    test4.verify();
-    test3.verify();
-    test2.verify();
-    test3.set(82);
-    test2.set(50.);
-    *x = 4;
+    *x = 2;
     test4.set(boost::any(std::string("1,1,1")));
+    test4.verify();
+    test2.set(5.);
+    test2.verify();
+    test3.set(2);
+    test3.verify();
+    test.set(8);
+    test.verify();
     test.print();
     test2.print();
     test3.print();
     test4.print();
 
+    std::cout << "HELLO!" << std::endl;
     std::map<std::string,boost::any> tstmap;
+    std::cout << "HELLO!" << std::endl;
     tstmap["a"] = test2;
+    std::cout << "HELLO!" << std::endl;
     any_cast<run_param<double> >(tstmap["a"]).set(22.2);
+    std::cout << "HELLO!" << std::endl;
     any_cast<run_param<double> >(tstmap["a"]).print();
 
 

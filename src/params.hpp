@@ -87,18 +87,22 @@ class run_param: public param {
         max = boost::shared_ptr<S>(new S(maximum));
         min = boost::shared_ptr<S>(new S(minimum));
         }
+        
+        virtual ~run_param(){};
 
-		boost::any verify(){
+		virtual boost::any verify(){
+            if (!actualValue)
+                actualValue = defaultValue;
             if (*actualValue >= *min && *actualValue <= *max){
                 LOG(INFO) << *name << " is within the allowed range" << std::endl;
             }
             else {
-                throw std::invalid_argument(*name + " is not in the valid range.\n");
+                throw invalid_input() << err_info(*name + " is not in the valid range.\n");
             }
             return boost::any(*actualValue);
         }
 
-		void print(){
+		virtual void print(){
             std::cout << *description << " "
                 << *name << " "
                 << *defaultValue << " "
@@ -107,7 +111,7 @@ class run_param: public param {
                 << *min << std::endl;
         }
 
-		void set(boost::any act){
+		virtual void set(boost::any act){
 		    actualValue = boost::shared_ptr<S>(new S(boost::any_cast<S>(act)));
 		}
 
@@ -133,11 +137,13 @@ class state_param: public param {
                 (((*this).name)->c_str(), po::value<int>()->default_value(*defaultValue),((*this).description)->c_str());
         }
 
-		boost::any verify();
+        virtual ~state_param(){};
 
-		void print();
+		virtual boost::any verify();
 
-		void set(boost::any);
+		virtual void print();
+
+		virtual void set(boost::any);
 };
 
 class file_param: public param {
@@ -155,11 +161,13 @@ class file_param: public param {
                 (((*this).name)->c_str(), po::value<std::string>()->default_value(*defaultValue),((*this).description)->c_str());
         }
 
-		boost::any verify();
+		virtual boost::any verify();
 
-		void print();
+        virtual ~file_param(){};
 
-		void set(boost::any);
+		virtual void print();
+
+		virtual void set(boost::any);
 };
 
 template <class R>
@@ -181,9 +189,33 @@ class list_param: public param {
                 (((*this).name)->c_str(), po::value<std::string>()->default_value(*defaultValue),((*this).description)->c_str());
         }
 
-        boost::any verify();
+        virtual ~list_param(){};
 
-		void print(){
+        virtual boost::any verify(){
+
+            using namespace boost;
+            typedef std::vector< std::string > split_vector_type;
+            if (!actualValue)
+                actualValue = defaultValue;
+            split_vector_type splitStr;
+            split(splitStr, *actualValue, is_any_of(","), token_compress_on);
+
+            if ((int)splitStr.size() > *size){
+                LOG(WARNING) <<  "\n***WARNING! The number of elements for the list given for " + *name + " exceeds the number of dimensions given. The list is being truncated to " + boost::lexical_cast<std::string>(*size) + ".***\n" << std::endl;
+            }
+            if ((int)splitStr.size() < *size){
+                throw invalid_input() << err_info("The number of elements for the list given for " + *name + " is too short, at least " + boost::lexical_cast<std::string>(*size) + " are needed.");
+            }
+
+            pArray = boost::shared_ptr<std::vector<R> >(new std::vector<R>);
+            for(int i=0; i<*size; i++)
+            {
+                (*pArray).push_back(boost::lexical_cast<R>(splitStr[i]));
+            }
+            return boost::any(*pArray);
+        };
+
+		virtual void print(){
             std::cout << *description << " " 
                 << *name << " " 
                 << *defaultValue << " "
@@ -204,34 +236,10 @@ class list_param: public param {
             pArray = a.pArray;
         }
 
-        void set(boost::any act){
+        virtual void set(boost::any act){
             actualValue = boost::shared_ptr<std::string>(new std::string(boost::any_cast<std::string>(act)));
         }
 };
-
-template <class R>
-boost::any list_param<R>::verify(){
-
-    using namespace boost;
-    typedef std::vector< std::string > split_vector_type;
-    split_vector_type splitStr;
-    split(splitStr, *actualValue, is_any_of(","), token_compress_on);
-
-    if ((int)splitStr.size() > *size){
-        LOG(WARNING) <<  "\n***WARNING! The number of elements for the list given for " + *name + " exceeds the number of dimensions given. The list is being truncated to " + boost::lexical_cast<std::string>(*size) + ".***\n" << std::endl;
-    }
-    if ((int)splitStr.size() < *size){
-        throw std::invalid_argument("The number of elements for the list given for " + *name + " is too short, at least " + boost::lexical_cast<std::string>(*size) + " are needed.");
-    }
-
-    pArray = boost::shared_ptr<std::vector<R> >(new std::vector<R>);
-    for(int i=0; i<*size; i++)
-    {
-        (*pArray).push_back(boost::lexical_cast<R>(splitStr[i]));
-    }
-    return boost::any(*pArray);
-}
-
 
 }
 #endif

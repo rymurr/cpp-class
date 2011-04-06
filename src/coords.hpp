@@ -40,19 +40,21 @@ namespace classical {
  * @todo convert to template class so it can hold more than doubles
  *
 */
-class Coords: boost::arithmetic<Coords,boost::indexable<Coords,int,double&,boost::dereferenceable<Coords, double*> > >{
+template <class T>
+//template <class T=double>
+class Coords: boost::arithmetic<Coords<T>,boost::indexable<Coords<T>,int,T&,boost::dereferenceable<Coords<T>, T*> > >{
     private:
         ///the vector which holds the n-d point
-        std::vector<double> x_;
+        std::vector<T> x_;
     public:
-        Coords(int n, double x): x_(n,x){};
+        Coords(int n, T x): x_(n,x){};
 
 /**
     Constructor which copies an input vector.
 
     @param[in] x vector to be copied
 */
-        Coords(std::vector<double> &x): x_(x){};
+        Coords(std::vector<T> &x): x_(x){};
 
 /**
     Copy Constructor
@@ -66,18 +68,29 @@ class Coords: boost::arithmetic<Coords,boost::indexable<Coords,int,double&,boost
 
     @return returns the norm
 */
-        double norm() const;
+        T norm() const{
+           T norm(this->square());
+           return sqrt(norm);
+        };
 
 /**
     sum of all elements sqared
 
     @return returns square of all elements
 */
-        double square() const;
+        T square() const{
+            T square(0);
+            std::for_each(x_.begin(),x_.end(),square+=boost::lambda::_1*boost::lambda::_1);
+            return square;
+        };
 
-        double sum() const;
+        T sum() const{
+            T sum(0);
+            std::for_each(x_.begin(),x_.end(),sum+=boost::lambda::_1);
+            return sum;
+        };
 
-        double dotProd(const Coords &rhs){Coords x(*this * rhs); return x.sum();}
+        T dotProd(const Coords &rhs){Coords x(*this * rhs); return x.sum();}
 /**
     returns pointer to begining of stored vector. A bit hacky and I want to make
     a full iterator at some point but dont have time.
@@ -86,7 +99,7 @@ class Coords: boost::arithmetic<Coords,boost::indexable<Coords,int,double&,boost
 
     @return pointer to begining of coordinate vector
 */
-        std::vector<double>::const_iterator begin() const {return x_.begin();};
+        typename std::vector<T>::const_iterator begin() const {return x_.begin();};
 
 /**
     returns pointer past the end of stored vector. See Coords::begin()
@@ -95,7 +108,7 @@ class Coords: boost::arithmetic<Coords,boost::indexable<Coords,int,double&,boost
 
     @return pointer past the end of coordinate vector
 */
-        std::vector<double>::const_iterator end() const {return x_.end();};
+        typename std::vector<T>::const_iterator end() const {return x_.end();};
 
 /**
     random access element operator. does the same as vector []
@@ -104,14 +117,14 @@ class Coords: boost::arithmetic<Coords,boost::indexable<Coords,int,double&,boost
 
     @return value of element i in vector
 */
-        double& operator[](int n){return const_cast<double&>(x_[n]);};
+        T& operator[](int n){return const_cast<T&>(x_[n]);};
 
 /**
     dereference operator
 
     @return reference to first element in vector
 */
-        double& operator*() const {return const_cast<double&>(x_.front());};
+        T& operator*() const {return const_cast<T&>(x_.front());};
 
 
 /**
@@ -121,7 +134,10 @@ class Coords: boost::arithmetic<Coords,boost::indexable<Coords,int,double&,boost
 
     @return returns this after rhs is added to it
 */
-        Coords operator+=(const Coords&);
+        Coords operator+=(const Coords<T> &rhs){
+            std::transform(rhs.x_.begin(),rhs.x_.end(),this->x_.begin(),this->x_.begin(), std::plus<T>());
+            return *this;
+        };
 /**
     subtration equals operator, used by boost::operators to build full set.
 
@@ -129,7 +145,10 @@ class Coords: boost::arithmetic<Coords,boost::indexable<Coords,int,double&,boost
 
     @return returns this after rhs is subtracted from it
 */
-        Coords operator-=(const Coords&);
+        Coords operator-=(const Coords<T> &rhs){
+            std::transform(rhs.x_.begin(),rhs.x_.end(),this->x_.begin(),this->x_.begin(), std::minus<T>());
+            return *this;
+        };
 /**
     multiply equals operator, used by boost::operators to build full set.
 
@@ -137,7 +156,10 @@ class Coords: boost::arithmetic<Coords,boost::indexable<Coords,int,double&,boost
 
     @return returns this after rhs is multiplied by it
 */        
-        Coords operator*=(const Coords&);
+        Coords operator*=(const Coords<T> &rhs){
+            std::transform(rhs.x_.begin(),rhs.x_.end(),this->x_.begin(),this->x_.begin(), std::multiplies<T>());
+            return *this;
+        };
 /**
     division equals operator, used by boost::operators to build full set.
 
@@ -145,7 +167,10 @@ class Coords: boost::arithmetic<Coords,boost::indexable<Coords,int,double&,boost
 
     @return returns this after rhs is divided by it
 */        
-        Coords operator/=(const Coords&);
+        Coords operator/=(const Coords<T> &rhs){
+            std::transform(rhs.x_.begin(),rhs.x_.end(),this->x_.begin(),this->x_.begin(), std::divides<T>());
+            return *this;
+        };
 };
 
 /*
@@ -189,7 +214,9 @@ class CoordIterator: public boost::iterator_facade<CoordIterator, Coords, boost:
 
     @return norm of vector Coords
 */
-double norm(const Coords&);
+template <class T>
+//template <class T=double>
+inline T norm(const Coords<T> &x){return x.norm();};
 
 /**
     calls square member function on input, calculates sum of squares of vector
@@ -198,9 +225,13 @@ double norm(const Coords&);
 
     @return square of sums of vector
 */
-double square(const Coords&);
+//template <class T=double>
+template <class T>
+inline T square(const Coords<T> &x){return x.square();};
 
-inline double sum(const Coords& x){return x.sum();};
+//template <class T=double>
+template <class T>
+inline T sum(const Coords<T>& x){return x.sum();};
 }
 
 #endif

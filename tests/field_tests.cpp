@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(initpotparams)
     test["phi-nuc"] = 0.;
     test["pot-type"] = 1;
     y[0] = 2.;
-    Coords z(y);
+    Coords<double> z(y);
     boost::shared_ptr<Potential> efield(potentialFactory(test));
     BOOST_CHECK_CLOSE(efield->operator ()(z),-0.5,1E-6);
 

@@ -5,7 +5,7 @@ namespace classical {
 
 using boost::any_cast;
 
-icgenerator::icgenerator(anyMap params, anyMap wParams){
+icgenerator::icgenerator(anyMap &params, anyMap wParams){
 
     means_ = any_cast<std::vector<double> >(params["means"]);
     trajs_ = any_cast<std::vector<int> >(params["dims"]);
@@ -87,6 +87,7 @@ void icgenerator::singleCheck(){
             break;
         case 3:
             LOG(FATAL) << "staged-linear is currently not implemented";
+            break;
         default:
             LOG(FATAL) << "Bad choice for Initial conditions";
 	}
@@ -145,7 +146,4 @@ void icgenerator::load(std::string sType, std::string fName, anyMap params){
     }
 }
 
-void icgenerator::setWeights(anyMap params){
-    wGens_ = boost::shared_ptr<WeightGen>(new WeightGen(params));
-}
 }

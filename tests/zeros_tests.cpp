@@ -32,18 +32,17 @@ BOOST_AUTO_TEST_SUITE(zeroes)
         test["tfinal"] = 100.;
         test["tinitial"] = 1.;
         y[0] = 2.;
-        Coords z(y);
+        Coords<double> z(y);
  
         boost::shared_ptr<Potential> hatom(potentialFactory(test));
         boost::shared_ptr<Field> constant(fieldFactory(test,0));
-        test["field"] = constant;
-        test["pot-type"] = 6;
-        boost::shared_ptr<Potential> constantField(potentialFactory(test));
-        test["pot-type"] = 5;
-        boost::shared_ptr<std::vector<boost::shared_ptr<Potential> > > pots;
+        boost::shared_ptr<Potential> constantField(potentialFactory(constant));
+        boost::shared_ptr<std::vector<boost::shared_ptr<Potential> > > pots(new std::vector<boost::shared_ptr<Potential> >);
         pots->push_back(constantField);
         pots->push_back(hatom);
-        boost::shared_ptr<Potential> comboPot(potentialFactory(test));
+        boost::shared_ptr<Potential> comboPot(potentialFactory(pots));
+        BOOST_CHECK_CLOSE(comboPot->operator()(z,0), -0.5,1E-5);
+
 
     }
 

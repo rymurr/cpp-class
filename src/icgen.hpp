@@ -18,11 +18,11 @@
 //#include <boost/cast.hpp>
 //#include <boost/array.hpp>
 #include <boost/multi_array.hpp>
-//#include <boost/shared_ptr.hpp>
-#include <boost/function.hpp>
-#include <boost/bind.hpp>
+#include <boost/shared_ptr.hpp>
+//#include <boost/function.hpp>
+//#include <boost/bind.hpp>
 #include <boost/lambda/lambda.hpp>
-#include <boost/lambda/casts.hpp>
+//#include <boost/lambda/casts.hpp>
 #include <boost/lambda/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -126,10 +126,14 @@ class icgenerator{
         
         void singleCheck();
 
+        void setWeights(anyMap params){
+            wGens_ = boost::shared_ptr<WeightGen>(new WeightGen(params));
+        };
+
     public:
         icgenerator(){};
 
-        icgenerator(anyMap params, anyMap wParams=anyMap());
+        icgenerator(anyMap& params, anyMap wParams=anyMap());
 
         ~icgenerator(){};
 
@@ -165,8 +169,6 @@ class icgenerator{
                 throw out_of_trajectories() << err_info("Reached the end of the trajectories");
             }
         };
-
-        void setWeights(anyMap);
 
         void save(std::string, std::string);
 

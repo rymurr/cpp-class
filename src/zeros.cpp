@@ -16,24 +16,21 @@ double OneDFunc(double x, void *params){
 }
 */
 
-Coords OneDRootFinder::retZeros(){
+Coords<double> OneDRootFinder::retZeros(){
     std::vector<double> signs;
     std::vector<double> r(3,0);
     r[2] = -100000.;
-    Coords x(r);
-    signs.push_back(ip_+pots_->operator()(x,t0_));
+    signs.push_back(ip_+pots_->operator()(r,t0_));
     for (int i=0;i<100;++i){
         r[2]=-50. + 10.*i;
-        Coords y(r);
-        signs.push_back(ip_+pots_->operator()(y,t0_));
+        signs.push_back(ip_+pots_->operator()(r,t0_));
     }
     r[2] = 100000;
-    Coords z(r);
-    signs.push_back(ip_+pots_->operator()(z,t0_));
+    signs.push_back(ip_+pots_->operator()(r,t0_));
     zeroPts crossPts;
     crossing(signs, crossPts);
     std::for_each(crossPts.begin(),crossPts.end(),std::cout << boost::lambda::bind(&std::pair<double,double>::first,boost::lambda::_1));
-    return z;
+    return r;
 }
 
 void crossing(const std::vector<double> &x, zeroPts &pairs){

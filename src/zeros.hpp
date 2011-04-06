@@ -44,7 +44,7 @@ class RootFinder {
     public:
         virtual ~RootFinder(){};
 
-        virtual Coords retZeros() = 0;
+        virtual Coords<double> retZeros() = 0;
 };
 
 class OneDRootFinder: public RootFinder {
@@ -54,7 +54,7 @@ class OneDRootFinder: public RootFinder {
     public:
         OneDRootFinder(const potPtr pots,const double ip, const double t0): pots_(pots), ip_(ip), t0_(t0){};
 
-        virtual Coords retZeros();
+        virtual Coords<double> retZeros();
 
         virtual ~OneDRootFinder(){};
 };
@@ -77,7 +77,7 @@ class FindZeros {
             }
         }
 
-        Coords retZeros(){
+        Coords<double> retZeros(){
             return rootPtr_->retZeros();
         }
 };

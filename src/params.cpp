@@ -23,6 +23,8 @@ state_param::state_param(std::string desc, std::string varName, int defVal, std:
 }
 
 boost::any state_param::verify(){
+    if (!actualValue)
+        actualValue = defaultValue;
     std::map<int,std::string>::iterator it;
     it = (*legalVals).find(*actualValue);
     if (it != (*legalVals).end()){
@@ -56,6 +58,8 @@ void file_param::print(){
 }
 
 boost::any file_param::verify(){
+    if (!actualValue)
+        actualValue = defaultValue;
     fs::path filename(*actualValue);
     fs::path file = filename.parent_path();
 

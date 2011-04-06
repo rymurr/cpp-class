@@ -104,9 +104,11 @@ class SingleLinIC: public SingleIC{
 
         SingleLinIC(std::vector<double> means, double var, std::vector<int> sizes): SingleIC(means,var), sizes_(sizes){
             size_ = (*this).mean_.size();
+            current_.resize(size_);
+            grids_.resize(size_);
             for(int i=0;i<(*this).size_;i++){
-                grids_.push_back(SingleGrid(means[i],var,sizes[i]));
-                current_.push_back(std::make_pair(0.,false));
+                grids_[i] = SingleGrid(means[i],var,sizes[i]);
+                current_[i] = std::make_pair(0.,false);
             }
             std::transform(grids_.begin()+1,grids_.end(),current_.begin()+1,boost::lambda::bind(&SingleGrid::operator(),boost::lambda::_1));
         };
