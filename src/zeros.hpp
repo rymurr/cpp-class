@@ -11,34 +11,43 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
 #include <boost/lambda/if.hpp>
-
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_roots.h>
+#include <boost/function.hpp>
+#include <boost/foreach.hpp>
+#include <boost/math/tools/roots.hpp>
 
 #include "customGlog.hpp"
 #include "potential.hpp"
-//#include "fields.hpp"
 #include "coords.hpp"
-//class Field;
 
+
+#define foreach BOOST_FOREACH
 
 namespace classical {
 
-//typedef std::map<std::string,boost::any> anyMap;
 typedef boost::shared_ptr<Potential> potPtr;
 typedef std::vector<std::pair<double,double> > zeroPts;
 typedef std::pair<double,double> dPair;
+typedef double (*unaryF)(double);
 
-/*
-struct OneDParams {
-    vecP pots_;
-    double ip_;
+class PotDouble {
+    private:
+        potPtr pots_;
+        double ip_,t0_;
+    public:
+        PotDouble(potPtr pots, double ip, double t0):pots_(pots), ip_(ip), t0_(t0){};
+
+        double operator()(double x){
+            Coords<double> r(3,0);
+            r[2] = x;
+            return ip_ + pots_->operator()(r,t0_);
+        }
 };
 
-double OneDFunc(double x, void *params);
-*/
-void crossing(const std::vector<double>&, zeroPts&);
+double findZero(const dPair&, PotDouble&);
+
+double potDouble(double, potPtr, double, double);
+
+void crossing(const std::vector<double>&, const std::vector<double>&, zeroPts&);
 
 class RootFinder {
     public:

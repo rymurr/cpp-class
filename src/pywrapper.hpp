@@ -1,6 +1,7 @@
 #ifndef PYWRAPPER_HPP_
 #define PYWRAPPER_HPP_
 
+#include <Python.h>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -48,10 +49,13 @@ class simulation{
         };
 
         void param_init(){
+            //TODO: change to hold an anyMap as a private variable
             if (!params_.read_params(fname_, argc_, argv_)){LOG(ERROR) << "Parameters build was unsuccessful";return;};
             params_.print();
             LOG(INFO) << "Parameters have been built";
         };
+
+        //TODO: code to generate ICs goes here
 
 };
 

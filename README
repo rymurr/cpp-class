@@ -2,44 +2,34 @@
 
 2) need to clean up interface and add icgen interface to python API
 
-3) add fields, coords and potentials to python API. Make boost operators for all 3 also.
+3) add a polarization parameter to fields, change field potential to only add fields at the right polarizations.
 
-4) add a polarization parameter to fields, change field potential to only add fields at the right polarizations.
+4) change around defaults eg: ndim = 4
 
-5) change around defaults eg: ndim = 4
+5) docs! should be noted that ndim = 4 is x,px,y,py. lots of documentation of GUI and backend...Doxygen AND Sphinx.
 
-6) docs! should be noted that ndim = 4 is x,px,y,py. lots of documentation of GUI and backend...Doxygen AND Sphinx.
+6) add id private member to fields class and make a static variable total fields. get rid of id initialization parameter
 
-7) add id private member to fields class and make a static variable total fields. get rid of id initialization parameter
+7) Imortant to note that currently program assumes that tinitial is given at the peak of a real ionizatione event and initial conditions are sampled there only.
 
-9) Imortant to note that currently program assumes that tinitial is given at the peak of a real ionizatione event and initial conditions are sampled there only.
+8) need to start simplectic integrator and make a wrapper to GSL
 
-10) need to start simplectic integrator and make a wrapper to GSL
+9) need to design a/several parallelization types (map/reduce, MPI, OpenMP) for creation, running and binning of ICs
 
-11) need to design a/several parallelization types (map/reduce, MPI, OpenMP) for creation, running and binning of ICs
+10) lots of gui connections to make to interface properly with code
 
-12) lots of gui connections to make to interface properly with code
+11) design plotting schemes and write the interface
 
-13) design plotting schemes and write the interface
+12) important to be able to transfer half done simulation from server to client and vice-versa
 
-14) important to be able to transfer half done simulation from server to client and vice-versa
+13) write SCP module for transfers - send, recieve, schedule, notify.
 
-15) write SCP module for transfers - send, recieve, schedule, notify.
+14) write binning methods, I like the boost library for 1D binners dunno about 2D though.
 
-16) write binning methods, I like the boost library for 1D binners dunno about 2D though.
+15) user docs in sphinx
 
-17) user docs in sphinx
+16) distribute on more platforms! need a nicer icon...
 
-18) get some damn results!
+17) make timer namespace
 
-19) distribute on more platforms! need a nicer icon...
-
-21) params_test is failing...why!
-
-22) make iterators for coords class and probably template it to make it independent of double
-
-23) make timer namespace
-
-24) finish doxygen docs and add an intro section to Doxygen site, link to sphinx site
-
-25) make more constructors for Coords class: like vector class!
+18) finish doxygen docs and add an intro section to Doxygen site, link to sphinx site

@@ -10,6 +10,7 @@
  * @version 1.00
  */
 // $Log$
+#include <Python.h>
 #include <iostream>
 #include <fstream>
 #include <string>
