@@ -18,6 +18,7 @@ BOOST_PYTHON_MODULE(classical)
     //def("pyrun_main",pyrun_main);
     class_<simulation>("simulation",init<int,boost::python::list,std::string>())
         .def("param_init",&simulation::param_init)
+        //.def("ic_gen",&simulation::ic_gen)
     ;
 }
 

@@ -349,6 +349,7 @@ BOOST_AUTO_TEST_CASE(weights2)
 
 BOOST_AUTO_TEST_CASE(longrun)
 {
+    using namespace timer;
     Timer::create();
 
     std::vector<double> xx(4,0.);

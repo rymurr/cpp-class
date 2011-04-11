@@ -72,6 +72,8 @@ class SingleIC{
 
 
     public:
+
+        //TODO: make the following private, move them into derived classes
         double var_;
 
         std::vector<double> mean_;

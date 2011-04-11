@@ -82,7 +82,7 @@ class pmap {
         
         void print(const std::string) const;
         
-        void map_out(anyMap&);
+        boost::shared_ptr<anyMap> map_out();
 
 //        void serialize();
     

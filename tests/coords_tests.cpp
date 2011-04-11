@@ -101,6 +101,33 @@ BOOST_AUTO_TEST_CASE(optestdiv2){
     }
 }
 
+BOOST_AUTO_TEST_CASE(optestplus3){
+    using namespace classical;
+    double y(3.);
+    Coords<double> x(3,3);
+    x=x+y;
+    x+=y;
+    x=x-y;
+    x-=y;
+    for(std::vector<double>::const_iterator i=x.begin();i!=x.end();++i){
+        BOOST_REQUIRE_EQUAL(3.,*i);
+    }
+}
+
+
+BOOST_AUTO_TEST_CASE(optestplus4){
+    using namespace classical;
+    double y(3.);
+    Coords<double> x(3,3);
+    x=x*y;
+    x*=y;
+    x=x/y;
+    x/=y;
+    for(std::vector<double>::const_iterator i=x.begin();i!=x.end();++i){
+        BOOST_REQUIRE_EQUAL(3.,*i);
+    }
+}
+
 BOOST_AUTO_TEST_CASE(normsquare){
     using namespace classical;
     std::vector<double> x(3,2);

@@ -27,65 +27,77 @@ typedef std::map<std::string,boost::any> anyMap;
 
 class Field {
     
+    private:
+        static int tot_;
+
     public:
 
         virtual ~Field(){};
 
         virtual double operator()(double) = 0;
 
-        static boost::shared_ptr<Field> makeField(anyMap params, int id);
+        static boost::shared_ptr<Field> makeField(anyMap& params);
 
+        virtual int pol() = 0 ;
 };
 
 class ConstField: public Field {
     private:
         double ef_, omega_, phi_;
-        int id_;
+        int id_, pol_;
 
     public:
-        ConstField(int id, double ef, double omega, double phi):ef_(ef), omega_(omega), phi_(phi), id_(id){};
+        ConstField(int id, double ef, double omega, double phi, int pol):ef_(ef), omega_(omega), phi_(phi), id_(id), pol_(pol){};
 
-        double operator()(double t){return ef_ * cos(omega_*t+phi_);};
+        virtual double operator()(double t){return ef_ * cos(omega_*t+phi_);};
+
+        virtual int pol(){return pol_;};
 };
 
 class StaticField: public Field {
     private:
         double ef_;
-        int id_;
+        int id_, pol_;
 
     public:
-        StaticField(int id, double ef):ef_(ef) ,id_(id){};
+        StaticField(int id, double ef, double pol):ef_(ef) ,id_(id), pol_(pol){};
 
-        double operator()(double t){return ef_;};
+        virtual double operator()(double t){return ef_;};
+
+        virtual int pol(){return pol_;};
 };
 
 class GaussianField: public Field {
     private:
         double ef_, omega_, phi_, tmid_, fwhm_;
-        int id_;
+        int id_, pol_;
 
     public:
-        GaussianField(int id, double ef, double omega, double phi, double tmid, double fwhm):ef_(ef), omega_(omega), phi_(phi), tmid_(tmid), id_(id){
+        GaussianField(int id, double ef, double omega, double phi, double tmid, double fwhm, double pol):ef_(ef), omega_(omega), phi_(phi), tmid_(tmid), id_(id), pol_(pol){
             fwhm_ = -4.0*log(2.0)/(fwhm*fwhm);
         };
 
-        double operator()(double t){return ef_ * cos(omega_*t+phi_) * exp(-fwhm_*(t-tmid_)*(t-tmid_));};
+        virtual double operator()(double t){return ef_ * cos(omega_*t+phi_) * exp(-fwhm_*(t-tmid_)*(t-tmid_));};
+
+        virtual int pol(){return pol_;};
 };
 
 class SineSquareField: public Field {
     private:
         double ef_, omega_, phi_, fwhm_;
-        int id_;
+        int id_, pol_;
 
     public:
-        SineSquareField(int id, double ef, double omega, double phi, double fwhm):ef_(ef), omega_(omega), phi_(phi), id_(id){
+        SineSquareField(int id, double ef, double omega, double phi, double fwhm, double pol):ef_(ef), omega_(omega), phi_(phi), id_(id), pol_(pol){
             fwhm_ = pi*0.5/fwhm;
         };
 
-        double operator()(double t){return ef_ * cos(omega_*t+phi_) * pow(sin(fwhm_*t),2);};
+        virtual double operator()(double t){return ef_ * cos(omega_*t+phi_) * pow(sin(fwhm_*t),2);};
+
+        virtual int pol(){return pol_;};
 };
 
-inline boost::shared_ptr<Field> fieldFactory(anyMap pMap, int id){return Field::makeField(pMap,id);}
+inline boost::shared_ptr<Field> fieldFactory(anyMap& pMap){return Field::makeField(pMap);}
 
 }
 #endif

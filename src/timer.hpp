@@ -22,6 +22,7 @@ typedef boost::error_info<struct info_timer,std::string> timer_err;
 struct timer_except: virtual std::exception, virtual boost::exception { };
 
 //can google glog be easily removed? May want to try?
+namespace timer{
 
 class SingleTimer {
 
@@ -181,5 +182,5 @@ inline void Timer::report(){
         Ryan Feb 2, 2011
     */
 }
-
+}
 #endif

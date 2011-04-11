@@ -85,10 +85,16 @@ class FieldPotential: public Potential{
         virtual double operator()(const Coords<double> &r, const double t = 0){
             //TODO: VERY IMPORTANT!!! this should be fixed to calculate with proper polarization on fields
             Coords<double> x(3,0.);
-            x[2] = field_->operator()(t);
+            x[field_->pol()] = field_->operator()(t);
             return x.dotProd(r);
         }
 };
+
+/*
+class KineticPotential: public Potential{
+    pr
+};
+*/
 
 inline boost::shared_ptr<Potential> Potential::makePotential(boost::shared_ptr<Field> field){
     return boost::shared_ptr<FieldPotential>(new FieldPotential(field));

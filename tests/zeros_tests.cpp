@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_SUITE(zeroes)
         Coords<double> z(y);
  
         boost::shared_ptr<Potential> hatom(potentialFactory(test));
-        boost::shared_ptr<Field> constant(fieldFactory(test,0));
+        boost::shared_ptr<Field> constant(fieldFactory(test));
         boost::shared_ptr<Potential> constantField(potentialFactory(constant));
         boost::shared_ptr<std::vector<boost::shared_ptr<Potential> > > pots(new std::vector<boost::shared_ptr<Potential> >);
         pots->push_back(constantField);

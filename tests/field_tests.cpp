@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE(initparams)
     test["env"] = 1;
     test["tfinal"] = 100.;
     test["tinitial"] = 1.;
-    boost::shared_ptr<Field> efield(fieldFactory(test,0));
+    boost::shared_ptr<Field> efield(fieldFactory(test));
     BOOST_CHECK_CLOSE(efield->operator()(0.),1.,1E-6);
 
 

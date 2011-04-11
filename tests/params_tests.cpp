@@ -23,12 +23,12 @@ BOOST_AUTO_TEST_CASE(retparams)
     writable.push_back("--ndim=2");
 
     pmap params;
-    std::map<std::string,boost::any> retMap;
+    boost::shared_ptr<std::map<std::string,boost::any> > retMap;
     params.read_params(str,a,writable);
-    params.map_out(retMap);
+    retMap = params.map_out();
 
     int i=2;
-    BOOST_REQUIRE_EQUAL(any_cast<int>(retMap["ndim"]),i);
+    BOOST_REQUIRE_EQUAL(any_cast<int>((*retMap)["ndim"]),i);
     params.print();
 
 }

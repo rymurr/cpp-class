@@ -1,11 +1,11 @@
 
-#include "potential.hpp"
+#include "force.hpp"
 
 namespace classical{
 
 
 
-boost::shared_ptr<Potential> Potential::makePotential(anyMap& in_param){
+boost::shared_ptr<Force> Force::makeForce(anyMap& in_param){
 
     using boost::any_cast;
     double theta=any_cast<double>(in_param["theta-nuc"]);
@@ -14,7 +14,7 @@ boost::shared_ptr<Potential> Potential::makePotential(anyMap& in_param){
     std::vector<double> charges=any_cast<std::vector<double> >(in_param["charges"]);
     double alpha=any_cast<double>(in_param["smoothing"]);
     int pot_choice = any_cast<int>(in_param["pot-type"]);
-    boost::shared_ptr<Potential> fpick;
+    boost::shared_ptr<Force> fpick;
     std::vector<double> x;
     x.push_back(rnuc*sin(theta)*cos(phi)*0.5);
     x.push_back(rnuc*sin(theta)*sin(phi)*0.5);
@@ -23,11 +23,11 @@ boost::shared_ptr<Potential> Potential::makePotential(anyMap& in_param){
 
     switch (pot_choice){
         case 1:
-            fpick = boost::shared_ptr<HAtomPotential>(new HAtomPotential(charges[0], alpha));
+            fpick = boost::shared_ptr<HAtomForce>(new HAtomForce(charges[0], alpha));
             LOG(INFO) << "buiding Hydrogen Atomic Potential";
             break;
         case 2:
-            fpick = boost::shared_ptr<HMolPotential>(new HMolPotential(y, alpha, charges[0], charges[1]));
+            fpick = boost::shared_ptr<HMolForce>(new HMolForce(y, alpha, charges[0], charges[1]));
             LOG(INFO) << "building Hydrogen Molecular Potential";
             break;
         case 3:

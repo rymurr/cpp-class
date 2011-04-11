@@ -42,7 +42,7 @@ namespace classical {
 */
 template <class T>
 //template <class T=double>
-class Coords: boost::arithmetic<Coords<T>,boost::indexable<Coords<T>,int,T&,boost::dereferenceable<Coords<T>, T*> > >{
+class Coords: boost::arithmetic<Coords<T>,boost::arithmetic<Coords<T>, T, boost::indexable<Coords<T>,int,T&,boost::dereferenceable<Coords<T>, T*> > > >{
     private:
         ///the vector which holds the n-d point
         std::vector<T> x_;
@@ -62,6 +62,8 @@ class Coords: boost::arithmetic<Coords<T>,boost::indexable<Coords<T>,int,T&,boos
     @param[in] rhs Coord to be copied
 */
         Coords(const Coords &rhs){x_ = rhs.x_;};
+
+        std::size_t size(){return x_.size();};
 
 /**
     norm of vector: sqrt of the sum of all elements squared
@@ -138,6 +140,27 @@ class Coords: boost::arithmetic<Coords<T>,boost::indexable<Coords<T>,int,T&,boos
             std::transform(rhs.x_.begin(),rhs.x_.end(),this->x_.begin(),this->x_.begin(), std::plus<T>());
             return *this;
         };
+
+        Coords operator+=(const T &rhs){
+            std::for_each(this->x_.begin(),this->x_.end(), boost::lambda::_1+=rhs);
+            return *this;
+        };
+
+        Coords operator-=(const T &rhs){
+            std::for_each(this->x_.begin(),this->x_.end(), boost::lambda::_1-=rhs);
+            return *this;
+        };
+
+        Coords operator*=(const T &rhs){
+            std::for_each(this->x_.begin(),this->x_.end(), boost::lambda::_1*=rhs);
+            return *this;
+        };
+
+        Coords operator/=(const T &rhs){
+            std::for_each(this->x_.begin(),this->x_.end(), boost::lambda::_1/=rhs);
+            return *this;
+        };
+
 /**
     subtration equals operator, used by boost::operators to build full set.
 

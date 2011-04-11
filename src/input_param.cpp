@@ -1,3 +1,4 @@
+
 // $Id$
 /**
  * @file input_param.hpp
@@ -65,8 +66,8 @@ bool pmap::read_params(const std::string fname, const int argc, std::vector<std:
         (5,"numerical form")
         ;
 
-    general_opts.push_back(intRunPtr(new intRun("The Number of dimensions to be used in the calculation", "ndim", 2, 100, 1)));
-    general_opts.push_back(intListPtr(new intList("The number of trajectories in each dimension. comma separated list.", "dims", "1,1",ndim_def)));
+    general_opts.push_back(intRunPtr(new intRun("The Number of dimensions to be used in the calculation", "ndim", 4, 100, 1)));
+    general_opts.push_back(intListPtr(new intList("The number of trajectories in each dimension. comma separated list.", "dims", "1,1,1,1",ndim_def)));
     general_opts.push_back(statePtr(new state_param("The number of trajectories in each dimension. comma separated list.", "dist-type", 1, dist_map)));
     general_opts.push_back(statePtr(new state_param("Type of run", "run-type", 5, traj_map)));
     general_opts.push_back(intRunPtr(new intRun("Number of stages for staged-linear distribution(not implemented)", "id-stages", 1, 100, 1)));
@@ -82,16 +83,18 @@ bool pmap::read_params(const std::string fname, const int argc, std::vector<std:
     wf_opts.push_back(doubleListPtr(new doubleList("charge on core(s). list of numbers for each core only needed for H-like and H2-like potential. 1 is for singly ionized etc.", "charges", "1",charges_def)));
     wf_opts.push_back(doubleRunPtr(new doubleRun("Smoothing parameter to avoid coulomb singularity. Should be small and is only needed when using analytic potentials.", "smoothing", 1E-4, 10E10, -10E10)));
     wf_opts.push_back(doubleRunPtr(new doubleRun("Internuclear separation in atomic units, only needed for analytic potentials", "rnuc", 0.0, 10E10, -10E10)));
-    wf_opts.push_back(doubleRunPtr(new doubleRun("alignment of molecule wrt the laser polarization. 0 is aligned, 90 is anti-aligned. given in degrees.", "theta-nuc", 0.0, 10E10, -10E10)));
+    wf_opts.push_back(doubleRunPtr(new doubleRun("x-y plane orientation of molecule", "phi-nuc", 0.0, 10E10, -10E10)));
+    wf_opts.push_back(doubleRunPtr(new doubleRun("alignment of molecule wrt the z-axis.", "theta-nuc", 0.0, 10E10, -10E10)));
     wf_opts.push_back(doubleRunPtr(new doubleRun("ionization potential of target, given in atomic units", "ip", 0.5, 10E10, -10E10)));
     wf_opts.push_back(doubleRunPtr(new doubleRun("state of atomic or molecular system (not implemented)", "state", 0.01, 10E10, -10E10)));
     
     field_opts.push_back(intRunPtr(new intRun("Number of fields, every option below is given as a comma separated list of options for each field. Currently only 1 field is allowed", "nfield", 1, 100, 1)));
     field_opts.push_back(statePtr(new state_param("Type of fields", "env", 1,field_map)));
-    field_opts.push_back(doubleListPtr(new doubleList("Field strengths given in atomic units", "ef", "1",field_def)));
-    field_opts.push_back(doubleListPtr(new doubleList("frequencies given in atomic units", "omega", "1",field_def)));
-    field_opts.push_back(doubleListPtr(new doubleList("FWHM of envelope, ignored for static or constant field.", "fwhm", "1",field_def)));
-    field_opts.push_back(doubleListPtr(new doubleList("initial CE phase of each field given in degrees", "ce", "1",field_def)));
+    field_opts.push_back(doubleListPtr(new doubleList("Field strengths given in atomic units", "ef", "0.01",field_def)));
+    field_opts.push_back(doubleListPtr(new doubleList("frequencies given in atomic units", "omega", "0.57",field_def)));
+    field_opts.push_back(doubleListPtr(new doubleList("FWHM of envelope, ignored for static or constant field.", "fwhm", "0",field_def)));
+    field_opts.push_back(doubleListPtr(new doubleList("initial CE phase of each field given in degrees", "ce", "0",field_def)));
+    field_opts.push_back(intListPtr(new intList("polarization direction, 1 = x, 2 = y, 3 = z,", "pol", "1",field_def)));
 
     run_opts.push_back(intRunPtr(new intRun("Number of cuncurrent trajectories", "nthreads", 1, 100, 1)));
     run_opts.push_back(intRunPtr(new intRun("Number of threads per trajectory", "mklthreads", 1, 100, 1)));
@@ -314,7 +317,7 @@ void pmap::restore(){
 */
 
 //TODO: this function is TROUBLE!
-void pmap::map_out(anyMap &mapout){
-    mapout = (*this).map;
+boost::shared_ptr<anyMap> pmap::map_out(){
+    return boost::shared_ptr<anyMap>(new anyMap((*this).map));
 }
 }

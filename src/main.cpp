@@ -32,6 +32,8 @@ int main(int argc, char *argv[])
     }
     simulation s(argc,av,"poo.cfg");
     s.param_init();
+    LOG(INFO) << "building initial conditions";
+    s.ic_gen();
     
 }
 

@@ -63,9 +63,10 @@ class AtomWeight: public WeightFunc {
         AtomWeight(anyMap &params){
             using boost::any_cast;
             sigmas_ = any_cast<vTraj>(params["sigmas"]);
-            double ef(any_cast<double>(params["ef"]));
+            std::vector<double> ef(any_cast<std::vector<double> >(params["ef"]));
+            double efs = std::accumulate(ef.begin(),ef.end(),0,std::plus<double>());
             double ip(any_cast<double>(params["ip"]));
-            atom_ = atomProb(ef, ip);
+            atom_ = atomProb(efs, ip);
         }
 
         double operator()(vTraj ics){

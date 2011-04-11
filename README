@@ -1,14 +1,6 @@
 1) figure out how to deal with potentials in 1&2 dimensions...extra functions??
 
-2) need to clean up interface and add icgen interface to python API
-
-3) add a polarization parameter to fields, change field potential to only add fields at the right polarizations.
-
-4) change around defaults eg: ndim = 4
-
 5) docs! should be noted that ndim = 4 is x,px,y,py. lots of documentation of GUI and backend...Doxygen AND Sphinx.
-
-6) add id private member to fields class and make a static variable total fields. get rid of id initialization parameter
 
 7) Imortant to note that currently program assumes that tinitial is given at the peak of a real ionizatione event and initial conditions are sampled there only.
 
@@ -30,6 +22,8 @@
 
 16) distribute on more platforms! need a nicer icon...
 
-17) make timer namespace
-
 18) finish doxygen docs and add an intro section to Doxygen site, link to sphinx site
+
+21) add phi, polarization, to Python GUI. integrator strategy,  add descriptions to gui for mouse-over text
+
+22) add variable for integrator strategy

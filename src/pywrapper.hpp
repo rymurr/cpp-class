@@ -13,9 +13,17 @@
 
 
 #include "input_param.hpp"
-#include "fields.hpp"
+#include "icgen.hpp"
+//#include "fields.hpp"
+//#include "potential.hpp"
+#include "zeros.hpp"
+#include "coords.hpp"
+
 
 namespace classical{
+
+class Potential;
+class Field;
 
 using namespace boost::python;
 
@@ -25,6 +33,11 @@ class simulation{
         std::vector<std::string> argv_;
         std::string fname_;
         pmap params_;
+        boost::shared_ptr<anyMap> map_;
+        std::vector<boost::shared_ptr<Field> > fieldVec_;
+        boost::shared_ptr<std::vector<boost::shared_ptr<Potential> > > pots_;
+        boost::shared_ptr<Potential> totPot_;
+        boost::shared_ptr<icgenerator> icgen_;
 
         void common_setup(){
             google::InitGoogleLogging("cpp-class");
@@ -49,13 +62,14 @@ class simulation{
         };
 
         void param_init(){
-            //TODO: change to hold an anyMap as a private variable
+            LOG(INFO) << "building parameter set from input data";
             if (!params_.read_params(fname_, argc_, argv_)){LOG(ERROR) << "Parameters build was unsuccessful";return;};
             params_.print();
+            map_ = params_.map_out();
             LOG(INFO) << "Parameters have been built";
         };
 
-        //TODO: code to generate ICs goes here
+        void ic_gen();
 
 };
 

@@ -6,7 +6,7 @@
 #include <iostream>
 #include "timer.hpp"
 
-
+using namespace timer;
 
 BOOST_AUTO_TEST_SUITE(TimerTests)
 
@@ -19,7 +19,8 @@ BOOST_AUTO_TEST_CASE(SingleTimerTest1)
     SingleTimer x("test1");
 
     x.start();
-    for (int i=0; i<10000000; ++i) int j = i;
+    int j;
+    for (int i=0; i<10000000; ++i) j = i;
     x.stop();
     boost::tie(nname, calls, cputime, cpukids, realtime, realkids) = x.report();
     BOOST_CHECK(nname == name);
