@@ -25,7 +25,7 @@
 #include <gsl/gsl_math.h>
 #include <boost/lambda/lambda.hpp>
 #include <boost/operators.hpp>
-//#include <boost/iterator/iterator_facade.hpp>
+#include <boost/iterator/iterator_facade.hpp>
 //#include <boost/shared_ptr.hpp>
 
 //#include "customGlog.hpp"
@@ -42,7 +42,14 @@ namespace classical {
 */
 template <class T>
 //template <class T=double>
-class Coords: boost::arithmetic<Coords<T>,boost::arithmetic<Coords<T>, T, boost::indexable<Coords<T>,int,T&,boost::dereferenceable<Coords<T>, T*> > > >{
+class Coords: boost::arithmetic<Coords<T>
+              ,boost::arithmetic<Coords<T>, T
+//              ,boost::indexable<Coords<T>,int,T&
+//              ,boost::dereferenceable<Coords<T>, T*>
+//            >
+        >
+    >
+{
     private:
         ///the vector which holds the n-d point
         std::vector<T> x_;
@@ -103,6 +110,8 @@ class Coords: boost::arithmetic<Coords<T>,boost::arithmetic<Coords<T>, T, boost:
 */
         typename std::vector<T>::const_iterator begin() const {return x_.begin();};
 
+        //typename Coords<T>::iterator begin2() {return x_.begin();};
+
 /**
     returns pointer past the end of stored vector. See Coords::begin()
 
@@ -126,7 +135,7 @@ class Coords: boost::arithmetic<Coords<T>,boost::arithmetic<Coords<T>, T, boost:
 
     @return reference to first element in vector
 */
-        T& operator*() const {return const_cast<T&>(x_.front());};
+        //T& operator*() const {return const_cast<T&>(x_.front());};
 
 
 /**
@@ -194,41 +203,40 @@ class Coords: boost::arithmetic<Coords<T>,boost::arithmetic<Coords<T>, T, boost:
             std::transform(rhs.x_.begin(),rhs.x_.end(),this->x_.begin(),this->x_.begin(), std::divides<T>());
             return *this;
         };
+
+        class iterator: public boost::iterator_facade<iterator, Coords<T>, std::random_access_iterator_tag> {
+            private:
+                //std::vector<T>::iterator cptr_;
+                Coords<T> *cptr_;
+
+            public:
+                iterator(): cptr_(0){};
+
+                explicit iterator(Coords<T>* p): cptr_(p){};
+
+            private:
+
+                friend class boost::iterator_core_access;
+
+                void increment() { cptr_ = cptr_++;};
+
+                void decrement() { cptr_ = cptr_--;};
+
+                void advance(int n){ cptr_ = cptr_+=n;};
+
+                void equal(iterator const &other) const{
+                    return this->cptr_ == other.cptr_;
+                }
+
+                T& dereference() const {return *cptr_;};
+
+                int distance_to(iterator const &other) const{
+                    return this->cptr_ - other.cptr_;
+                }
+
+
+        };
 };
-
-/*
-class CoordIterator: public boost::iterator_facade<CoordIterator, Coords, boost::random_access_iterator_tag> {
-    public:
-        CoordIterator(): coord_(0), cptr_(0){};
-
-        explicit CoordIterator(Coords* p): coord_(p), cptr_(p->begin()){};
-
-    private:
-
-        friend class boost::iterator_core_access;
-
-        void increment() { coord_ = coord_->next();};
-
-        void decrement() { coord_ = coord_->prev();};
-
-        void advance(int n){ coord_ = coord_->adv(n);};
-
-        void equal(Coords const &other) const{
-            return this->coord_ == other.coord_;
-        }
-
-        Coords& dereference() const {return *coord_;};
-
-        int distance_to(Coords const &other) const{
-            
-        }
-
-        Coords* coord_;
-        std::vector<double>::iterator cptr_;
-
-
-};
-*/
 
 /**
     norm function which calls member function on input

@@ -147,4 +147,14 @@ BOOST_AUTO_TEST_CASE(indexable){
     x[1] = 5;
     BOOST_REQUIRE_EQUAL(5,x[1]);
 }
+
+BOOST_AUTO_TEST_CASE(iterating){
+    using namespace classical;
+    Coords<double> x(100,100.);
+
+    for(Coords<double>::iterator i(*x);i=!*x+100;i++){
+        std::cout << i <<std::endl;
+    }
+
+}
 BOOST_AUTO_TEST_SUITE_END()
