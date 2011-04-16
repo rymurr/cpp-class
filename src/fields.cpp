@@ -9,8 +9,8 @@ boost::shared_ptr<Field> Field::makeField(anyMap& map){
 
     using boost::any_cast;
 
-    Field::tot_++;
     int id = Field::tot_;
+    Field::tot_++;
     double omega = any_cast<std::vector<double> >(map["omega"])[id];
     double fwhm = any_cast<std::vector<double> >(map["fwhm"])[id];
     double ef = any_cast<std::vector<double> >(map["ef"])[id];

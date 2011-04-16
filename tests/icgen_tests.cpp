@@ -163,11 +163,12 @@ BOOST_AUTO_TEST_CASE(lineartest2)
     std::cout << "\n" << std::endl;
     test["nobuild"] = true;
     icgenerator gen2(test);
-    boost::shared_ptr<std::vector<double> > vals = boost::shared_ptr<std::vector<double> >(new std::vector<double>(x));
+    boost::shared_ptr<std::vector<double> > vals = boost::shared_ptr<std::vector<double> >(new std::vector<double>(xx));
     std::cout << "\n" << std::endl;
     for (int i = 0; i < 3; i++)
             (*vals)[i]= 202;
     for (int i=0;i<125;i++){
+        std::cout <<"crap"<<std::endl;
         gen2.retIC(vals);
         for (int j=0;j<3;j++){
             std::cout << (*vals)[j] << " ";
@@ -333,7 +334,7 @@ BOOST_AUTO_TEST_CASE(weights2)
     test["nobuild"] = true;
     anyMap test2;
     test2["weight-func"] = 2;
-    test2["ef"] = 0.6666666666;
+    test2["ef"] = std::vector<double>(1,0.6666666666);
     test2["ip"] = 1.0;
     test2["sigmas"] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(2,1.));
 
@@ -360,7 +361,7 @@ BOOST_AUTO_TEST_CASE(longrun)
     test["dist-type"] = 2;
     anyMap test2;
     test2["weight-func"] = 2;
-    test2["ef"] = 0.6666666666;
+    test2["ef"] = std::vector<double>(1,0.6666666666);
     test2["ip"] = 1.0;
     test2["sigmas"] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(4,1.));
 

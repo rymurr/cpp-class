@@ -15,6 +15,7 @@ namespace classical{
     struct icgen_input_error: virtual exception_base { };
     struct invalid_parameter: virtual exception_base { };
     struct invalid_input: virtual exception_base { };
+    struct integrator_error: virtual exception_base { };
 
 
 

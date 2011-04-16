@@ -9,18 +9,24 @@
 #include <cmath>
 
 #include "coords.hpp"
-#include "potential.hpp"
+#include "force.hpp"
 #include "customGlog.hpp"
+#include "exceptions.hpp"
 
-typedef std::map<std::string,boost::any> anyMap;
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_odeiv.h>
 
 namespace classical{
+
+typedef std::map<std::string,boost::any> anyMap;
+typedef std::pair<Coords, double> Cpair;
 
 class IntStrategy {
     public:
         virtual ~IntStrategy(){};
 
-        virtual Coords<double> operator()(Coords<double>&, double) = 0;
+        virtual Cpair operator()(Cpair&) = 0;
 
 };
 
@@ -30,29 +36,48 @@ class VoidIntStrategy: public IntStrategy{
 
         virtual ~VoidIntStrategy(){};
 
-        virtual Coords<double> operator()(Coords<double>& x, double tfin){return x;};
+        virtual Cpair operator()(Cpair& x){return x;};
 };
 
 class GSLIntStrategy: public IntStrategy{
+    private:
+        double tin_, dims_, dt_;
+        gsl_odeiv_step_type * T;
+        gsl_odeiv_step * s;
+        gsl_odeiv_control * c;
+        gsl_odeiv_evolve * e;
+        gsl_odeiv_system sys;
+
     public:
-        GSLIntStrategy(){};
+        GSLIntStrategy(int dims, double tin, double dt):tin_(tin), dims_(dims), dt_(dt){
+            *T = gsl_odeiv_step_rk8pd;
+            *s = gsl_odeiv_step_alloc (T, dims);
+            *c = gsl_odeiv_control_y_new (1e-6, 0.0);
+            *e = gsl_odeiv_evolve_alloc (dims);
 
-        virtual ~GSLIntStrategy(){};
+            sys = {func, func, dims_, func};
+        };
 
-        virtual Coords<double> operator()(Coords<double>& x, double t){return Coords<double>(x);};
+        virtual ~GSLIntStrategy(){
+            gsl_odeiv_evolve_free (e);
+            gsl_odeiv_control_free (c);
+            gsl_odeiv_step_free (s);
+        };
+
+        virtual Cpair operator()(Cpair& x){return x;};
 };
 
 class SimplecticIntStrategy: public IntStrategy{
     private:
         double tin_, dt_;
-        boost::shared_ptr<Potential> kin_, pot_;
+        boost::shared_ptr<Force> kin_, pot_;
 
     public:
-        SimplecticIntStrategy(double tin, double dt, boost::shared_ptr<Potential> kin, boost::shared_ptr<Potential> pot):tin_(tin), dt_(dt), kin_(kin), pot_(pot){};
+        SimplecticIntStrategy(double tin, double dt, boost::shared_ptr<Force> kin, boost::shared_ptr<Force> pot):tin_(tin), dt_(dt), kin_(kin), pot_(pot){};
 
         virtual ~SimplecticIntStrategy(){};
 
-        virtual Coords<double> operator()(Coords<double>&, double);
+        virtual Cpair operator()(Cpair&);
 };
 
 class Integrator {
@@ -62,7 +87,7 @@ class Integrator {
     public:
         Integrator(anyMap&);
 
-        Coords<double> operator()(Coords<double> &x, double tfin){return intStrat_->operator()(x,tfin);};
+        Cpair operator()(Cpair x){return intStrat_->operator()(x);};
 
 };
 

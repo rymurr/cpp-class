@@ -37,7 +37,7 @@ class PotDouble {
         PotDouble(potPtr pots, double ip, double t0):pots_(pots), ip_(ip), t0_(t0){};
 
         double operator()(double x){
-            Coords<double> r(3,0);
+            Coords r(3,0);
             r[2] = x;
             return ip_ + pots_->operator()(r,t0_);
         }
@@ -53,7 +53,7 @@ class RootFinder {
     public:
         virtual ~RootFinder(){};
 
-        virtual Coords<double> retZeros() = 0;
+        virtual Coords retZeros() = 0;
 };
 
 class OneDRootFinder: public RootFinder {
@@ -63,7 +63,7 @@ class OneDRootFinder: public RootFinder {
     public:
         OneDRootFinder(const potPtr pots,const double ip, const double t0): pots_(pots), ip_(ip), t0_(t0){};
 
-        virtual Coords<double> retZeros();
+        virtual Coords retZeros();
 
         virtual ~OneDRootFinder(){};
 };
@@ -86,7 +86,7 @@ class FindZeros {
             }
         }
 
-        Coords<double> retZeros(){
+        Coords retZeros(){
             return rootPtr_->retZeros();
         }
 };

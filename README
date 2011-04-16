@@ -4,9 +4,7 @@
 
 7) Imortant to note that currently program assumes that tinitial is given at the peak of a real ionizatione event and initial conditions are sampled there only.
 
-8) need to start simplectic integrator and make a wrapper to GSL
-
-9) need to design a/several parallelization types (map/reduce, MPI, OpenMP) for creation, running and binning of ICs
+9) OpenMP integrator and binner, separately. Integrate and bin in one step using OpenMP. map/reduce to integrate and bin in 1 shot on large cluster.
 
 10) lots of gui connections to make to interface properly with code
 
@@ -27,3 +25,9 @@
 21) add phi, polarization, to Python GUI. integrator strategy,  add descriptions to gui for mouse-over text
 
 22) add variable for integrator strategy
+
+23) create iterator for icgens class, weights and ICs
+
+24) change icgen to use Coords
+
+25) connect error and such to integrators, test error and dt on symplectic and compare two methods. Do some timing comparisons.

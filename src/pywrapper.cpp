@@ -15,7 +15,7 @@ void simulation::ic_gen(){
     totPot_ = potentialFactory(pots_);
     LOG(INFO) << "finding tunnel exit";
     FindZeros zeros(1,boost::any_cast<double>((*map_)["ip"]),0.,totPot_);
-    Coords<double> fz = zeros.retZeros();
+    Coords fz = zeros.retZeros();
     std::vector<double> means(boost::any_cast<int>((*map_)["ndim"]));
     //TODO: there is ambiguity here about how exactly things are set up wrt ionization direction etc.
     //The pieces are there but a standard needs to be set up (ionization always along 0 for example)

@@ -24,6 +24,7 @@ BOOST_AUTO_TEST_CASE(initparams)
 
     anyMap test;
     std::vector<double> y,x;
+    std::vector<int> z(1,3);
     x.push_back(1.);
     y.push_back(0.);
     test["omega"] = x;
@@ -33,6 +34,7 @@ BOOST_AUTO_TEST_CASE(initparams)
     test["env"] = 1;
     test["tfinal"] = 100.;
     test["tinitial"] = 1.;
+    test["pol"] = z;
     boost::shared_ptr<Field> efield(fieldFactory(test));
     BOOST_CHECK_CLOSE(efield->operator()(0.),1.,1E-6);
 
@@ -52,7 +54,8 @@ BOOST_AUTO_TEST_CASE(initpotparams)
     test["phi-nuc"] = 0.;
     test["pot-type"] = 1;
     y[0] = 2.;
-    Coords<double> z(y);
+    Coords z(3,0);
+    z[0] = 2.;
     boost::shared_ptr<Potential> efield(potentialFactory(test));
     BOOST_CHECK_CLOSE(efield->operator ()(z),-0.5,1E-6);
 

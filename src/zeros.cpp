@@ -3,9 +3,9 @@
 
 namespace classical{
 
-Coords<double> OneDRootFinder::retZeros(){
+Coords OneDRootFinder::retZeros(){
     std::vector<double> signs,coords;
-    std::vector<double> r(3,0);
+    Coords r(3,0);
     r[2] = -100000.;
     signs.push_back(pots_->operator()(r,t0_));
     coords.push_back(r[2]);
