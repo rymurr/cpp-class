@@ -16,6 +16,11 @@ static const double k = 1;
 static const double c[1] = {1.};
 static const double d[1] = {1.};
 */
+int GSLForceFunc::operator()(double t, const double y[], double f[], void* parms){
+    f[0] = kin_(y[0]);
+    f[1] = pot_(y[1]);
+    return GSL_SUCCESS;
+}
 
 Cpair SimplecticIntStrategy::operator()(Cpair &xin){
     double t(tin_);
@@ -43,14 +48,24 @@ Cpair SimplecticIntStrategy::operator()(Cpair &xin){
 
 Cpair GSLIntStrategy::operator()(Cpair &xin){
 
-    double t = tin_;
+    double t(tin_);
+    int half = xin.first.size()/2;
+
+    Coords x(half), p(half);
+    std::copy(xin.first.begin(),xin.first.begin()+half,x.begin());
+    std::copy(xin.first.begin()+half,xin.first.end(),p.begin());
+    double y[half*2];
+    std::vector<Coords> Cptr(2);
+    Cptr.push_back(x);
+    Cptr.push_back(p);
+
 
     while (t < xin.second)
       {
         int status = gsl_odeiv_evolve_apply (e, c, s,
                                              &sys,
                                              &t, xin.second,
-                                             dt_, xin.first);
+                                             &dt_, y);
 
         if (status != GSL_SUCCESS)
             throw integrator_error() << err_info("status of GSL integrator is error");
@@ -66,6 +81,9 @@ Integrator::Integrator(anyMap &params){
     double tin, dt;
     boost::shared_ptr<Force> pot,kin;
     int strat = any_cast<int>(params["int-type"]);
+    int n = any_cast<int>(params["ndim"]);
+    double abs_error = any_cast<double>(params["relerror"]);
+    double rel_error = any_cast<double>(params["abserror"]);
     switch(strat){
         case 1:
             intStrat_ = boost::shared_ptr<VoidIntStrategy>(new VoidIntStrategy());
@@ -81,7 +99,7 @@ Integrator::Integrator(anyMap &params){
             break;
 #ifdef GSL
         case 3:
-            intStrat_ = boost::shared_ptr<GSLIntStrategy>(new GSLIntStrategy());
+            intStrat_ = boost::shared_ptr<GSLIntStrategy>(new GSLIntStrategy(n, abs_error, rel_error, tin, dt, kin, pot));
             LOG(INFO) << "using GSL supplied Runge-Kutta integrator";
             break;
 #endif

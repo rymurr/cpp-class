@@ -48,7 +48,7 @@ class HAtomPotential: public Potential{
     public:
         HAtomPotential(const double charge,const double alpha): charge_(charge), alpha_(alpha*alpha){};
 
-        virtual double operator()(const Coords &r, const double t = 0){using boost::numeric::ublas::norm_2;double norm=norm_2(r);return -charge_/sqrt(norm*norm+alpha_);};
+        virtual double operator()(const Coords &r, const double t = 0){double norm=square(r);return -charge_/sqrt(norm+alpha_);};
 };
 
 class HMolPotential: public Potential {
@@ -59,10 +59,9 @@ class HMolPotential: public Potential {
     public:
         HMolPotential(const Coords &r1, const double alpha, const double q1, const double q2): r1_(r1), alpha_(alpha*alpha), q1_(q1), q2_(q2){};
         virtual double operator()(const Coords &r, const double t = 0){
-            using boost::numeric::ublas::norm_2;
-            double rleft = norm_2(r-r1_);
-            double rright = norm_2(r+r1_);
-            return -q1_/sqrt(rleft*rleft+alpha_)-q2_/sqrt(rright*rright+alpha_);
+            double rleft = square(r-r1_);
+            double rright = square(r+r1_);
+            return -q1_/sqrt(rleft+alpha_)-q2_/sqrt(rright+alpha_);
         };
 };
 
@@ -96,8 +95,7 @@ class FieldPotential: public Potential{
 class KineticPotential: public Potential{
     public:
         virtual double operator()(const Coords &r, const double t = 0){
-            using boost::numeric::ublas::inner_prod;
-            return 0.5 * inner_prod(r,r);
+            return 0.5 * square(r);
         };
 };
 
