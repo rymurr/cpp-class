@@ -2,6 +2,7 @@ cmake_minimum_required( VERSION 2.6 FATAL_ERROR )
 enable_language ( Fortran )
 
 include_directories (.)
+include_directories ("../include/")
 
 set(EXECUTABLE_OUTPUT_PATH "../")
 
@@ -9,7 +10,7 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     set ( CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -pg -p -Wall -arch i386")
     set ( CMAKE_CXX_FLAGS_RELEASE  "" )
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-    set ( CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -pg -p -Wall -arch i386")
+    set ( CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -pg -p -Wall ")
     set ( CMAKE_CXX_FLAGS_RELEASE  "" )
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "intel")
     set ( CMAKE_CXX_FLAGS_DEBUG "-C -g -O0  -debug all -traceback -Wall")

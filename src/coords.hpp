@@ -17,12 +17,13 @@
 #ifndef COORDS_HPP_
 #define COORDS_HPP_
 
-#include <map>
-#include <string>
+//#include <map>
+//#include <string>
 #include <iterator>
 #include <vector>
 
-#include <gsl/gsl_math.h>
+//#include <gsl/gsl_math.h>
+#include <math.h>
 #include <boost/lambda/lambda.hpp>
 #include <boost/operators.hpp>
 #include <boost/iterator/iterator_facade.hpp>
@@ -44,9 +45,9 @@ template <class T>
 //template <class T=double>
 class Point: boost::arithmetic<Point<T>
               ,boost::arithmetic<Point<T>, T
-//              ,boost::indexable<Point<T>,int,T&
-//              ,boost::dereferenceable<Point<T>, T*>
-//            >
+              ,boost::indexable<Point<T>,std::size_t,T&
+              ,boost::dereferenceable<Point<T>, T*>
+            >
         >
     >
 {
@@ -54,7 +55,41 @@ class Point: boost::arithmetic<Point<T>
         ///the vector which holds the n-d point
         std::vector<T> x_;
     public:
+        Point(){};
+
         Point(int n, T x): x_(n,x){};
+
+        class const_iterator: public boost::iterator_facade<const_iterator, T, boost::random_access_traversal_tag >{
+            private:
+                typename std::vector<T>::iterator iter_;
+
+                friend class boost::iterator_core_access;
+
+                void increment() { ++iter_;}
+
+                void decrement() { --iter_; }
+
+                void advance(std::size_t n){ iter_+=n;};
+
+                bool equal(const_iterator const &other) const{
+                    return this->iter_ == other.iter_;
+                }
+
+                const T& dereference() const {return *iter_;};
+
+                int distance_to(const_iterator const &other) const{
+                    return this->iter_ - other.iter_;
+                }
+
+                public:
+                    const_iterator():iter_(0){};
+
+                    const_iterator(const const_iterator& it):iter_(it.iter_){};
+                    const_iterator(const_iterator& it):iter_(it.iter_){};
+
+                    explicit const_iterator(const typename std::vector<T>::iterator& it):iter_(it){};
+
+        };
 
         class iterator: public boost::iterator_facade<iterator, T, boost::random_access_traversal_tag >{
             private:
@@ -103,6 +138,8 @@ class Point: boost::arithmetic<Point<T>
 */
         Point(const Point &rhs){x_ = rhs.x_;};
 
+        Point(int n): x_(n){};
+
 /**
     norm of vector: sqrt of the sum of all elements squared
 
@@ -112,6 +149,8 @@ class Point: boost::arithmetic<Point<T>
            T norm(this->square());
            return sqrt(norm);
         };
+
+        T abs() const{return this->norm();};
 
 /**
     sum of all elements sqared
@@ -139,7 +178,9 @@ class Point: boost::arithmetic<Point<T>
 
     @return pointer to begining of coordinate vector
 */
-        iterator begin() const {return iterator(x_.begin());};
+
+        iterator begin() {return iterator(x_.begin());};
+        const_iterator begin() const {return const_iterator(x_.begin());};
 
         //typename Coords<T>::iterator begin2() {return x_.begin();};
 
@@ -150,7 +191,8 @@ class Point: boost::arithmetic<Point<T>
 
     @return pointer past the end of coordinate vector
 */
-        iterator end() const {return iterator(x_.end());};
+        iterator end() {return iterator(x_.end());};
+        const_iterator end() const {return const_iterator(x_.end());};
 
 /**
     random access element operator. does the same as vector []
@@ -159,9 +201,10 @@ class Point: boost::arithmetic<Point<T>
 
     @return value of element i in vector
 */
-        T& operator[](std::size_t n){return x_[n];};
+        T& operator[](std::size_t n) const {return const_cast<double&>(x_[n]);};
+        T& operator*() const {return *x_;};
 
-        std::size_t size(){return x_.size();};
+        std::size_t size() const {return x_.size();};
 /**
     dereference operator
 

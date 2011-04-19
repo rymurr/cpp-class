@@ -6,6 +6,8 @@
 
 9) OpenMP integrator and binner, separately. Integrate and bin in one step using OpenMP. map/reduce to integrate and bin in 1 shot on large cluster.
 
+9) need to design a/several parallelization types (map/reduce, MPI, OpenMP) for creation, running and binning of ICs
+
 10) lots of gui connections to make to interface properly with code
 
 11) design plotting schemes and write the interface
@@ -31,3 +33,9 @@
 24) change icgen to use Coords
 
 25) connect error and such to integrators, test error and dt on symplectic and compare two methods. Do some timing comparisons.
+
+26) go through code and update const-ness call to fucntions and methods
+
+27) fix cmakelists.txt in tests section, also remove GSL. also remove .svn stuff in odeint section
+
+28) fix Point<double> to work with iterators properly

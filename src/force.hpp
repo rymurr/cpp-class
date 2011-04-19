@@ -34,7 +34,7 @@ typedef boost::shared_ptr<std::vector<boost::shared_ptr<Force> > > vForce;
 class Force{
     public:
         virtual ~Force(){};
-        virtual Coords operator()(const Coords&, const double t = 0) = 0;
+        virtual void operator()(const Coords&, Coords&, const double t = 0) const = 0;
         static boost::shared_ptr<Force> makeForce(anyMap&);
         static boost::shared_ptr<Force> makeForce(boost::shared_ptr<Field> field);
         static boost::shared_ptr<Force> makeForce(vForce &pots, int n);
@@ -48,7 +48,7 @@ class HAtomForce: public Force{
     public:
         HAtomForce(const double charge,const double alpha): charge_(charge), alpha_(alpha*alpha){};
 
-        virtual Coords operator()(const Coords &r, const double t = 0){using boost::numeric::ublas::norm_2;double norm=norm_2(r);return -charge_*r/sqrt(norm*norm+alpha_);};
+        virtual void operator()(const Coords &r, Coords &x, const double t = 0) const {double norm=square(r);x = -charge_*r/sqrt(norm+alpha_);};
 };
 
 class HMolForce: public Force {
@@ -58,11 +58,10 @@ class HMolForce: public Force {
 
     public:
         HMolForce(const Coords &r1, const double alpha, const double q1, const double q2): r1_(r1), alpha_(alpha*alpha), q1_(q1), q2_(q2){};
-        virtual Coords operator()(const Coords &r, const double t = 0){
-            using boost::numeric::ublas::norm_2;
-            double rleft = norm_2(r-r1_);
-            double rright = norm_2(r+r1_);
-            return -q1_*(r-r1_)/sqrt(rleft*rleft+alpha_)-q2_*(r+r1_)/sqrt(rright*rright+alpha_);
+        virtual void operator()(const Coords &r, Coords &x, const double t = 0) const {
+            double rleft = square(r-r1_);
+            double rright = square(r+r1_);
+            x = -q1_*(r-r1_)/sqrt(rleft*rleft+alpha_)-q2_*(r+r1_)/sqrt(rright*rright+alpha_);
         };
 };
 
@@ -73,10 +72,12 @@ class CombinedForce: public Force{
     public:
         CombinedForce(vForce pots, int n):pots_(pots),n_(n){};
 
-        virtual Coords operator()(const Coords &r, const double t = 0){
-            Coords tot(n_,0);
-            std::for_each(pots_->begin(),pots_->end(),tot+=boost::lambda::bind(&Force::operator(),*boost::lambda::_1,r,t));
-            return tot;
+        virtual void operator()(const Coords &r, Coords &x, const double t = 0) const{
+            Coords temp(n_,0);
+            for(std::size_t i=0;i<pots_->size();++i){
+                pots_->operator [](i)->operator ()(r, temp, t);
+                x += temp;
+            }
         }
 };
 
@@ -85,22 +86,20 @@ class FieldForce: public Force{
         boost::shared_ptr<Field> field_;
     public:
         FieldForce(boost::shared_ptr<Field> field): field_(field){};
-        virtual Coords operator()(const Coords &r, const double t = 0){
+        virtual void operator()(const Coords &r, Coords &x, const double t = 0) const {
             //TODO: VERY IMPORTANT!!! this should be fixed to calculate with proper polarization on fields
-            Coords x(3,0.);
             x[field_->pol()-1] = field_->operator()(t);
-            return x;
         }
 };
 
 class NullForce: public Force{
     public:
-        virtual Coords operator()(const Coords &r, const double t=0){return Coords(r.size(),0);};
+        virtual void operator()(const Coords &r, Coords &x, const double t=0) const {x = Coords(r.size(),0);};
 };
 
 class KineticForce: public Force{
     public:
-        virtual Coords operator()(const Coords &r, const double t=0){return r;};
+        virtual void operator()(const Coords &r, Coords &x, const double t=0) const {x = r;};
 };
 
 inline boost::shared_ptr<Force> Force::makeForce(boost::shared_ptr<Field> field){
