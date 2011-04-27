@@ -151,6 +151,7 @@ class Point: boost::arithmetic<Point<T>
         };
 
         T abs() const{return this->norm();};
+        T max() const{return std::max_element(x_.begin(), x_.end());};
 
 /**
     sum of all elements sqared
@@ -309,6 +310,9 @@ inline T sum(const Point<T>& x){return x.sum();};
 
 template <class T>
 inline T abs(const Point<T>& x){return x.abs();};
+
+template <class T>
+inline T max(const Point<T>& x){return x.max();};
 
 typedef Point<double> Coords;
 }

@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(testSymHatom){
     using namespace classical;
     using boost::any_cast;
     anyMap test;
-    test["int-type"] = 4;
+    test["int-type"] = 3;
     test["tinitial"] = 0.;
     test["dt"] = 1.;
     std::vector<double> xx(1,1.);
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(testOscField){
     using namespace classical;
     using boost::any_cast;
     anyMap test;
-    test["int-type"] = 4;
+    test["int-type"] = 3;
     test["tinitial"] = 0.;
     test["dt"] = 0.01;
     std::vector<double> xx(1,1.);

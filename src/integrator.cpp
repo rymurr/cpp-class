@@ -22,6 +22,8 @@ typedef std::pair< container_type , container_type > state_type;
 typedef boost::numeric::odeint::hamiltonian_stepper_rk<container_type> stepper_type_symp;
 typedef boost::numeric::odeint::stepper_rk5_ck<container_type> stepper_type_rk;
 typedef boost::numeric::odeint::controlled_stepper_standard< stepper_type_rk > controller;
+typedef boost::numeric::odeint::controlled_stepper_bs< container_type > controller2;
+
 
 class DerivClassP {
     private:
@@ -62,12 +64,12 @@ class DerivClassRK {
 
         void operator()(const container_type &pq, container_type &dpqdt, double t) const {
 
-            std::cout << pq.size() << " " << dpqdt.size() << " " << pq[0].size() << " " << pq[1].size() << " " << dpqdt[0].size() << " " << dpqdt[1].size() << std::endl;
+            //std::cout << pq.size() << " " << dpqdt.size() << " " << pq[0].size() << " " << pq[1].size() << " " << dpqdt[0].size() << " " << dpqdt[1].size() << std::endl;
             //kin_->operator()(pq[1], dpqdt[0], t);
             dpqdt[0] = pq[1];
             pot_->operator()(pq[0], dpqdt[1], t);
-            std::cout << "yelp " << dpqdt[0][0] << " " << dpqdt[0][1] << " " << dpqdt[1][0] << " " << dpqdt[1][1] << std::endl;
-            std::cout << pq[0][0] << " " << pq[0][1] << " " << pq[1][0] << " " << pq[1][1] << " " << t << std::endl;
+            //std::cout << "yelp " << dpqdt[0][0] << " " << dpqdt[0][1] << " " << dpqdt[1][0] << " " << dpqdt[1][1] << std::endl;
+            //std::cout << pq[0][0] << " " << pq[0][1] << " " << pq[1][0] << " " << pq[1][1] << " " << t << std::endl;
         }
 };
 
@@ -102,9 +104,10 @@ class DerivClassR {
 class obs{
     public:
         void operator()(double t, container_type &x, DerivClassRK &px){
-            std::cout << x[0][0] << " " << x[0][1] << " " << x[1][0] << " " << x[1][1] << " " << t << std::endl;
+            //std::cout << x[0][0] << " " << x[0][1] << " " << x[1][0] << " " << x[1][1] << " at:  " << t << std::endl;
         }
 };
+
 Cpair OdeIntRKStrategy::operator()(Cpair &xin){
 
     std::size_t half = xin.first.size()/2;
@@ -126,10 +129,10 @@ Cpair OdeIntRKStrategy::operator()(Cpair &xin){
 
 //    do{
 //        t+=dt_;
-        std::cout << xx[0][0] << " " << xx[0][1] << " " << xx[1][0] << " " << xx[1][1] << " " << tin_ << " " << xin.second << std::endl;
+        //std::cout << xx[0][0] << " " << xx[0][1] << " " << xx[1][0] << " " << xx[1][1] << " " << tin_ << " " << xin.second << std::endl;
         obs observ;
         std::size_t steps = boost::numeric::odeint::integrate_adaptive(control, derivs, xx, tin_, xin.second, dt_, observ);
-        std::cout << xx[0][0] << " " << xx[0][1] << " " << xx[1][0] << " " << xx[1][1] << " " << steps << std::endl;
+        //std::cout << xx[0][0] << " " << xx[0][1] << " " << xx[1][0] << " " << xx[1][1] << " " << steps << std::endl;
 
 //    }while(t<=xin.second);
     //tin_ = t;
@@ -174,7 +177,7 @@ Cpair OdeIntSympStrategy::operator()(Cpair &xin){
     do{
         t+=dt_;
         stepper.do_step(derivs, state, t, dt_);
-        std::cout << state.first[0][0] << " " << state.first[0][1] << " " << state.second[0][0] << " " << state.second[0][1] << " " << state.first[1][0] << std::endl;
+        //std::cout << state.first[0][0] << " " << state.first[0][1] << " " << state.second[0][0] << " " << state.second[0][1] << " " << state.first[1][0] << std::endl;
 
     }while(t<=xin.second);
     tin_ = t;
