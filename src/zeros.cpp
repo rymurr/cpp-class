@@ -24,7 +24,7 @@ Coords OneDRootFinder::retZeros(){
     PotDouble f(pots_, ip_, t0_);
     foreach(dPair d, crossPts){
         double retZero = findZero(d, f);
-        if (abs(retZero) >= abs(zero))
+        if (std::abs(retZero) >= std::abs(zero))
             zero = retZero;
     }
     r[2] = zero;

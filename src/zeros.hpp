@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 #include <iterator>
+#include <cmath>
 
 #include <boost/any.hpp>
 #include <boost/shared_ptr.hpp>

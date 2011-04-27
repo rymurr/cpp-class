@@ -4,6 +4,7 @@
 namespace classical {
 
 int Field::tot_ = 0;
+const double Field::h_ = 0.01;
 
 boost::shared_ptr<Field> Field::makeField(anyMap& map){
 

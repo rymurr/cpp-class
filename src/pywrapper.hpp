@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <cmath>
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/python.hpp>
@@ -14,7 +15,7 @@
 
 #include "input_param.hpp"
 #include "icgen.hpp"
-//#include "fields.hpp"
+#include "fields.hpp"
 //#include "potential.hpp"
 #include "zeros.hpp"
 #include "coords.hpp"
@@ -23,7 +24,7 @@
 namespace classical{
 
 class Potential;
-class Field;
+//class Field;
 
 using namespace boost::python;
 

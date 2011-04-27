@@ -10,7 +10,7 @@
 #include <map>
 #include <cmath>
 
-//#include "boost/numeric/odeint.hpp"
+#include "boost/numeric/odeint.hpp"
 
 #include "coords.hpp"
 #include "force.hpp"
@@ -62,22 +62,24 @@ class OdeIntRKStrategy: public IntStrategy{
     private:
         double tin_, dt_;
         boost::shared_ptr<Force> kin_, pot_;
+        double eps_abs_, eps_rel_;
 
     public:
-        OdeIntRKStrategy(double tin, double dt, boost::shared_ptr<Force> kin, boost::shared_ptr<Force> pot): tin_(tin), dt_(dt), kin_(kin), pot_(pot){};
+        OdeIntRKStrategy(double tin, double dt, boost::shared_ptr<Force> kin, boost::shared_ptr<Force> pot, double eps_abs, double eps_rel): tin_(tin), dt_(dt), kin_(kin), pot_(pot), eps_abs_(eps_abs), eps_rel_(eps_rel){};
         virtual ~OdeIntRKStrategy(){};
-        virtual Cpair operator()(Cpair &x){return x;};
+        virtual Cpair operator()(Cpair &x);
 };
 
 class OdeIntSympStrategy: public IntStrategy{
     private:
         double tin_, dt_;
         boost::shared_ptr<Force> kin_, pot_;
+        boost::shared_ptr<Field> dpot_;
 
     public:
-        OdeIntSympStrategy(double tin, double dt, boost::shared_ptr<Force> kin, boost::shared_ptr<Force> pot): tin_(tin), dt_(dt), kin_(kin), pot_(pot){};
+        OdeIntSympStrategy(double tin, double dt, boost::shared_ptr<Force> kin, boost::shared_ptr<Force> pot, boost::shared_ptr<Field> dpot = boost::shared_ptr<Field>()): tin_(tin), dt_(dt), kin_(kin), pot_(pot), dpot_(dpot){};
         virtual ~OdeIntSympStrategy(){};
-        virtual Cpair operator()(Cpair& x){return x;};
+        virtual Cpair operator()(Cpair& x);
 };
 
 class Integrator {

@@ -37,7 +37,8 @@ class Potential{
         virtual double operator()(const Coords&, const double t = 0) = 0;
         static boost::shared_ptr<Potential> makePotential(anyMap&);
         static boost::shared_ptr<Potential> makePotential(boost::shared_ptr<Field> field);
-        static boost::shared_ptr<Potential> makePotential(vPots pots);
+        static boost::shared_ptr<Potential> makePotential(boost::shared_ptr<Field> field, int n);
+        static boost::shared_ptr<Potential> makePotential(vPots &pots);
         static boost::shared_ptr<Potential> makePotential();
 };
 
@@ -92,6 +93,17 @@ class FieldPotential: public Potential{
         }
 };
 
+class DFieldPot: public Potential{
+    private:
+        boost::shared_ptr<Field> field_;
+    public:
+        DFieldPot(boost::shared_ptr<Field> field): field_(field){};
+        virtual ~DFieldPot(){};
+        virtual double operator()(const Coords &r, const double t = 0){
+            return r[field_->pol()-1] * field_->deriv(t);
+        }
+};
+
 class KineticPotential: public Potential{
     public:
         virtual double operator()(const Coords &r, const double t = 0){
@@ -100,11 +112,15 @@ class KineticPotential: public Potential{
 };
 
 
+inline boost::shared_ptr<Potential> Potential::makePotential(boost::shared_ptr<Field> field, int n){
+    return boost::shared_ptr<DFieldPot>(new DFieldPot(field));
+};
+
 inline boost::shared_ptr<Potential> Potential::makePotential(boost::shared_ptr<Field> field){
     return boost::shared_ptr<FieldPotential>(new FieldPotential(field));
 };
 
-inline boost::shared_ptr<Potential> Potential::makePotential(vPots pots){
+inline boost::shared_ptr<Potential> Potential::makePotential(vPots &pots){
     return boost::shared_ptr<CombinedPotential>(new CombinedPotential(pots));
 };
 
@@ -113,8 +129,9 @@ inline boost::shared_ptr<Potential> Potential::makePotential(){
 };
 
 inline boost::shared_ptr<Potential> potentialFactory(anyMap &pMap){return Potential::makePotential(pMap);};
-inline boost::shared_ptr<Potential> potentialFactory(vPots pots){return Potential::makePotential(pots);};
+inline boost::shared_ptr<Potential> potentialFactory(vPots &pots){return Potential::makePotential(pots);};
 inline boost::shared_ptr<Potential> potentialFactory(boost::shared_ptr<Field> field){return Potential::makePotential(field);};
+inline boost::shared_ptr<Potential> potentialFactory(boost::shared_ptr<Field> field, int n){return Potential::makePotential(field, n);};
 inline boost::shared_ptr<Potential> potentialFactory(){return Potential::makePotential();};
 
 }

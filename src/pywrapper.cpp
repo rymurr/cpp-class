@@ -23,7 +23,7 @@ void simulation::ic_gen(){
     means[0] = fz[3];
     (*map_)["means"] = means;
     //TODO: I think i set it up so variance was Tau(tunneling time) must double check!
-    (*map_)["variance"] = static_cast<double>(abs(means[0]/sqrt(2.*boost::any_cast<double>((*map_)["ip"]))));
+    (*map_)["variance"] = static_cast<double>(std::abs(means[0]/sqrt(2.*boost::any_cast<double>((*map_)["ip"]))));
     boost::shared_ptr<std::vector<double> > sigmas = boost::shared_ptr<std::vector<double> >(new std::vector<double>(boost::any_cast<int>((*map_)["ndim"])));
     //TODO: double check that x=1/2tau and p=tau/2
     for (std::size_t i=0;i<sigmas->size();i+=2){

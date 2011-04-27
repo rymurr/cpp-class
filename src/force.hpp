@@ -21,6 +21,7 @@
 
 #include "customGlog.hpp"
 #include "coords.hpp"
+#include "potential.hpp"
 #include "fields.hpp"
 
 namespace classical{
@@ -39,6 +40,7 @@ class Force{
         static boost::shared_ptr<Force> makeForce(boost::shared_ptr<Field> field);
         static boost::shared_ptr<Force> makeForce(vForce &pots, int n);
         static boost::shared_ptr<Force> makeForce(int n);
+        static boost::shared_ptr<Force> makeForce(boost::shared_ptr<Potential> pot);
 };
 
 class HAtomForce: public Force{
@@ -73,8 +75,9 @@ class CombinedForce: public Force{
         CombinedForce(vForce pots, int n):pots_(pots),n_(n){};
 
         virtual void operator()(const Coords &r, Coords &x, const double t = 0) const{
-            Coords temp(n_,0);
+
             for(std::size_t i=0;i<pots_->size();++i){
+                Coords temp(n_,0);
                 pots_->operator [](i)->operator ()(r, temp, t);
                 x += temp;
             }
@@ -87,9 +90,21 @@ class FieldForce: public Force{
     public:
         FieldForce(boost::shared_ptr<Field> field): field_(field){};
         virtual void operator()(const Coords &r, Coords &x, const double t = 0) const {
-            //TODO: VERY IMPORTANT!!! this should be fixed to calculate with proper polarization on fields
-            x[field_->pol()-1] = field_->operator()(t);
+            x = Coords(r.size(),0.);x[field_->pol()-1] = field_->operator()(t);
         }
+        void deriv(const Coords &r, Coords &x, const double t = 0) const {
+            x = Coords(r.size(),0.);x[field_->pol()-1] = r[field_->pol()-1] * field_->deriv(t);
+        }
+};
+
+class PotentialForce: public Force{
+    private:
+        boost::shared_ptr<Potential> pot_;
+    public:
+        PotentialForce(boost::shared_ptr<Potential> pot): pot_(pot){};
+        virtual void operator()(const Coords &r, Coords &x, const double t = 0) const {
+            x[0] = pot_->operator()(r, t);
+        };
 };
 
 class NullForce: public Force{
@@ -100,6 +115,10 @@ class NullForce: public Force{
 class KineticForce: public Force{
     public:
         virtual void operator()(const Coords &r, Coords &x, const double t=0) const {x = r;};
+};
+
+inline boost::shared_ptr<Force> Force::makeForce(boost::shared_ptr<Potential> pot){
+    return boost::shared_ptr<PotentialForce>(new PotentialForce(pot));
 };
 
 inline boost::shared_ptr<Force> Force::makeForce(boost::shared_ptr<Field> field){
@@ -130,6 +149,7 @@ inline boost::shared_ptr<Force> Force::makeForce(int n){
 inline boost::shared_ptr<Force> forceFactory(anyMap &pMap){return Force::makeForce(pMap);};
 inline boost::shared_ptr<Force> forceFactory(vForce pots, int n){return Force::makeForce(pots, n);};
 inline boost::shared_ptr<Force> forceFactory(boost::shared_ptr<Field> field){return Force::makeForce(field);};
+inline boost::shared_ptr<Force> forceFactory(boost::shared_ptr<Potential> pot){return Force::makeForce(pot);};
 inline boost::shared_ptr<Force> forceFactory(int n){return Force::makeForce(n);};
 
 }

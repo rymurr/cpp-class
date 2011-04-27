@@ -15,6 +15,7 @@
 
 BOOST_AUTO_TEST_SUITE(integrate)
 
+
 BOOST_AUTO_TEST_CASE(testVoid){
 
     using namespace classical;
@@ -34,11 +35,13 @@ BOOST_AUTO_TEST_CASE(testSymFieldFree){
     using namespace classical;
     using boost::any_cast;
     anyMap test;
-    test["int-type"] = 2;
+    test["int-type"] = 4;
     test["tinitial"] = 0.;
-    test["dt"] = 1.;
+    test["dt"] = 10.;
     test["potPtr"] = forceFactory(5);
     test["kinPtr"] = forceFactory(6);
+    test["relerr"] = 1.E-8;
+    test["abserr"] = 1.E-6;
 
     Integrator x(test);
     Coords y(4,0),v(4,0);
@@ -46,7 +49,7 @@ BOOST_AUTO_TEST_CASE(testSymFieldFree){
 
     Cpair z=std::make_pair(y,20.);
     z = x(z);
-    BOOST_CHECK_CLOSE(z.first[1],21.,10E-5);
+    BOOST_CHECK_CLOSE(z.first[1],20.,10E-5);
 }
 
 BOOST_AUTO_TEST_CASE(testSymHatom){
@@ -54,12 +57,12 @@ BOOST_AUTO_TEST_CASE(testSymHatom){
     using namespace classical;
     using boost::any_cast;
     anyMap test;
-    test["int-type"] = 2;
+    test["int-type"] = 4;
     test["tinitial"] = 0.;
-    test["dt"] = 0.1;
+    test["dt"] = 1.;
     std::vector<double> xx(1,1.);
     test["charges"] = xx;
-    test["smoothing"] = 1E-8;
+    test["smoothing"] = 1E-5;
     test["rnuc"] = 0.;
     test["theta-nuc"] = 0.;
     test["phi-nuc"] = 0.;
@@ -67,6 +70,8 @@ BOOST_AUTO_TEST_CASE(testSymHatom){
     test["ip"] = 0.5;
     test["potPtr"] = forceFactory(test);
     test["kinPtr"] = forceFactory(6);
+    test["relerr"] = 1.E-1;
+    test["abserr"] = 1.E-1;
     boost::shared_ptr<Potential> potPot = potentialFactory(test);
     boost::shared_ptr<Potential> kinPot = potentialFactory();
     Integrator x(test);
@@ -74,9 +79,9 @@ BOOST_AUTO_TEST_CASE(testSymHatom){
     y[0] = 1.;
     y[3] = 1.;
     double t=0, tfin = 20.;
-    Cpair z=std::make_pair(y,t);
+    Cpair z=std::make_pair(y,tfin);
     Coords xxx(2), pp(2);
-    z.second = tfin;
+    //z.second = tfin;
     z = x(z);
     xxx[0] = z.first[0]; xxx[1] = z.first[1];pp[0] = z.first[2]; pp[1]=z.first[3];
     double energy = potPot->operator()(xxx) + kinPot->operator()(pp);
@@ -122,9 +127,9 @@ BOOST_AUTO_TEST_CASE(testOscField){
     using namespace classical;
     using boost::any_cast;
     anyMap test;
-    test["int-type"] = 2;
+    test["int-type"] = 4;
     test["tinitial"] = 0.;
-    test["dt"] = 0.1;
+    test["dt"] = 0.01;
     std::vector<double> xx(1,1.);
     std::vector<int> yy(1,1);
     xx[0] = 0.057;
@@ -139,9 +144,13 @@ BOOST_AUTO_TEST_CASE(testOscField){
     test["tfinal"] = 100.;
     test["tinitial"] = 1.;
     test["pol"] = yy;
-    test["potPtr"] = forceFactory(fieldFactory(test));
+    boost::shared_ptr<Field> fpot = fieldFactory(test);
+    test["dpotPtr"] = fpot;
+    test["potPtr"] = forceFactory(fpot);
     test["kinPtr"] = forceFactory(6);
-    boost::shared_ptr<Potential> potPot = potentialFactory(fieldFactory(test));
+    test["relerr"] = 1.E-8;
+    test["abserr"] = 1.E-6;
+    boost::shared_ptr<Potential> potPot = potentialFactory(fpot);
     boost::shared_ptr<Potential> kinPot = potentialFactory();
     Integrator x(test);
     Coords y(4,0);

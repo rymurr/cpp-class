@@ -36,6 +36,8 @@
 
 26) go through code and update const-ness call to fucntions and methods
 
-27) fix cmakelists.txt in tests section, also remove GSL. also remove .svn stuff in odeint section
+27) remove GSL from CMakeLists.txt
 
 28) fix Point<double> to work with iterators properly
+
+29) decrease dependencies across modules, IMPL or forward declaraions etc.

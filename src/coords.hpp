@@ -307,6 +307,9 @@ inline T square(const Point<T> &x){return x.square();};
 template <class T>
 inline T sum(const Point<T>& x){return x.sum();};
 
+template <class T>
+inline T abs(const Point<T>& x){return x.abs();};
+
 typedef Point<double> Coords;
 }
 

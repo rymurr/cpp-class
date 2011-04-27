@@ -43,6 +43,10 @@ boost::shared_ptr<Force> Force::makeForce(anyMap& in_param){
             fpick = boost::shared_ptr<KineticForce>(new KineticForce());
             LOG(INFO) << "using force variant for kinetic energy operator";
             break;
+//        case 7:
+//            fpick = boost::shared_ptr<PassForce>(new PassForce());
+//            LOG(INFO) << "pass force is being used";
+//            break;
         default:
             LOG(FATAL) << "the choice of potential" + boost::lexical_cast<std::string>(pot_choice) + "is not valid, the code will exit now";
     }

@@ -29,6 +29,7 @@ class Field {
     
     private:
         static int tot_;
+        static const double h_;
 
     public:
 
@@ -39,6 +40,8 @@ class Field {
         static boost::shared_ptr<Field> makeField(anyMap& params);
 
         virtual int pol() = 0 ;
+
+        double deriv(double t){return (-this->operator()(t+2.*h_)+8.*this->operator()(t+h_)-8.*this->operator()(t-h_)+this->operator()(t-2.*h_))/(12.*h_);};
 };
 
 class ConstField: public Field {
