@@ -1,5 +1,3 @@
-1) figure out how to deal with potentials in 1&2 dimensions...extra functions??
-
 5) docs! should be noted that ndim = 4 is x,px,y,py. lots of documentation of GUI and backend...Doxygen AND Sphinx.
 
 7) Imortant to note that currently program assumes that tinitial is given at the peak of a real ionizatione event and initial conditions are sampled there only.
@@ -16,8 +14,6 @@
 
 13) write SCP module for transfers - send, recieve, schedule, notify.
 
-14) write binning methods, I like the boost library for 1D binners dunno about 2D though.
-
 15) user docs in sphinx
 
 16) distribute on more platforms! need a nicer icon...
@@ -28,16 +24,16 @@
 
 22) add variable for integrator strategy
 
-23) create iterator for icgens class, weights and ICs
-
-24) change icgen to use Coords
-
-25) connect error and such to integrators, test error and dt on symplectic and compare two methods. Do some timing comparisons.
-
 26) go through code and update const-ness call to fucntions and methods
 
-27) remove GSL from CMakeLists.txt
-
-28) fix Point<double> to work with iterators properly
-
 29) decrease dependencies across modules, IMPL or forward declaraions etc.
+
+30) serialize integrator? or at least save all trajectories to file w/o binning
+
+31) add number of cells/dim for binning to parameters and gui
+
+AIRPLANE IDEAS:
+integrator wrapper to store/save results
+several methods: parallel OMP, parallel map/reduce, serial
+need to look into saving/reading to/from disk as I go
+create the whole interface for simulation class and start connecting it to pyqt/boosy python.

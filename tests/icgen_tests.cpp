@@ -46,12 +46,12 @@ BOOST_AUTO_TEST_CASE(initSingleRandIC)
     x.push_back(1.);
     x.push_back(0.);
     double y = 1;
-    boost::shared_ptr<std::vector<double> > z = boost::shared_ptr<std::vector<double> >(new std::vector<double>(x));
+    Coords z(x);
     SingleRandIC testrand(x,y);
     
     for (int i =0;i<10;i++){
         testrand(z);
-        std::cout << (*z)[0] << " " << (*z)[1] << "\n";
+        std::cout << z[0] << " " << z[1] << "\n";
     }
 
 
@@ -74,14 +74,13 @@ BOOST_AUTO_TEST_CASE(initicgen)
     std::cout << "\n" << std::endl;
     test["nobuild"] = true;
     icgenerator gen2(test);
-    boost::shared_ptr<std::vector<double> > vals = boost::shared_ptr<std::vector<double> >(new std::vector<double>(x));
+    Coords vals(2,202);
     std::cout << "\n" << std::endl;
-    for (int i = 0; i < 2; i++)
-            (*vals)[i]= 202;
-    for (int i=0;i<2;i++){
+
+    for (int i=0;i<4;i++){
         gen2.retIC(vals);
-        for (int j=0;j<4;j++){
-            std::cout << (*vals)[j] << " ";
+        for (int j=0;j<2;j++){
+            std::cout << vals[j] << " ";
         }
     }
     std::cout << "\n" << std::endl;
@@ -93,7 +92,6 @@ BOOST_AUTO_TEST_CASE(SingleLinTest)
 {
 	using namespace boost::lambda;
 	using namespace std;
-	typedef vector<double> retVec;
 
 	vector<double> x;
 	vector<int> y;
@@ -104,13 +102,13 @@ BOOST_AUTO_TEST_CASE(SingleLinTest)
     y.push_back(5);
     y.push_back(5);
     SingleLinIC z(x,1,y);
-    boost::shared_ptr<retVec> vals = boost::shared_ptr<retVec>(new retVec(3));
+    Coords vals(3);
     //for (int i=0;i<3;++i)
     //	vals->push_back(std::make_pair(0.,false));
 
     for (int i=0;i<125;++i){
     	z(vals);
-    	for_each(vals->begin(),vals->end(),cout << boost::lambda::_1 << " ");
+    	for_each(vals.begin(),vals.end(),cout << boost::lambda::_1 << " ");
     	cout << "\n";
     }
 
@@ -138,14 +136,14 @@ BOOST_AUTO_TEST_CASE(lineartest)
     std::cout << "\n" << std::endl;
     test["nobuild"] = true;
     icgenerator gen2(test);
-    boost::shared_ptr<std::vector<double> > vals = boost::shared_ptr<std::vector<double> >(new std::vector<double>(x));
+    Coords vals(x);
     std::cout << "\n" << std::endl;
     for (int i = 0; i < 2; i++)
-            (*vals)[i]= 202;
+            vals[i]= 202;
     for (int i=0;i<25;i++){
         gen2.retIC(vals);
         for (int j=0;j<2;j++){
-            std::cout << (*vals)[j] << " ";
+            std::cout << vals[j] << " ";
         }
         std::cout << "\n";
     }
@@ -163,15 +161,15 @@ BOOST_AUTO_TEST_CASE(lineartest2)
     std::cout << "\n" << std::endl;
     test["nobuild"] = true;
     icgenerator gen2(test);
-    boost::shared_ptr<std::vector<double> > vals = boost::shared_ptr<std::vector<double> >(new std::vector<double>(xx));
+    Coords vals(xx);
     std::cout << "\n" << std::endl;
     for (int i = 0; i < 3; i++)
-            (*vals)[i]= 202;
+            vals[i]= 202;
     for (int i=0;i<125;i++){
         std::cout <<"crap"<<std::endl;
         gen2.retIC(vals);
         for (int j=0;j<3;j++){
-            std::cout << (*vals)[j] << " ";
+            std::cout << vals[j] << " ";
         }
         std::cout << "\n";
     }
@@ -188,14 +186,14 @@ BOOST_AUTO_TEST_CASE(lineartest3)
     
     std::cout << "\n" << std::endl;
     icgenerator gen2(test);
-    boost::shared_ptr<std::vector<double> > vals = boost::shared_ptr<std::vector<double> >(new std::vector<double>(xx));
+    Coords vals(xx);
     std::cout << "\n" << std::endl;
     for (int i = 0; i < 3; i++)
-            (*vals)[i]= 202;
+            vals[i]= 202;
     for (int i=0;i<27;i++){
         gen2.retIC(vals);
         for (int j=0;j<3;j++){
-            std::cout << (*vals)[j] << " ";
+            std::cout << vals[j] << " ";
         }
         std::cout << "\n";
     }
@@ -223,17 +221,17 @@ BOOST_AUTO_TEST_CASE(serialize1)
     ia >> gen;
 
 
-    boost::shared_ptr<std::vector<double> > vals = boost::shared_ptr<std::vector<double> >(new std::vector<double>(xx));
-    boost::shared_ptr<std::vector<double> > vals2 = boost::shared_ptr<std::vector<double> >(new std::vector<double>(xx));
+    Coords vals(xx);
+    Coords vals2(xx);
     for (int i = 0; i < 3; i++){
-            (*vals)[i]= 202;
-            (*vals2)[i]= 203;
+            vals[i]= 202;
+            vals2[i]= 203;
     }
     for (int i=0;i<125;i++){
         gen.retIC(vals);
         gen2.retIC(vals2);
         for (int j=0;j<3;j++){
-            BOOST_CHECK_CLOSE((*vals)[j],(*vals2)[j],1E-6);
+            BOOST_CHECK_CLOSE(vals[j],vals2[j],1E-6);
         }
     }
 
@@ -317,7 +315,7 @@ BOOST_AUTO_TEST_CASE(weights1)
     anyMap test2;
     test2["weight-func"] = 1;
 
-    icgenerator gen(test,test2);
+    icgenerator gen(test,&test2);
     boost::shared_ptr<std::vector<double> > retArray=boost::shared_ptr<std::vector<double> >(new std::vector<double>(25));
     gen.retWeights(retArray);
     std::for_each(retArray->begin(),retArray->end(),std::cout << boost::lambda::_1 << " ");
@@ -338,8 +336,8 @@ BOOST_AUTO_TEST_CASE(weights2)
     test2["ip"] = 1.0;
     test2["sigmas"] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(2,1.));
 
-    icgenerator gen(test,test2);
-    boost::shared_ptr<std::vector<double> > vals = boost::shared_ptr<std::vector<double> >(new std::vector<double>(xx));
+    icgenerator gen(test,&test2);
+    Coords vals(xx);
     for(int i=0;i<25;++i){
        gen.retIC(vals);
        std::cout << gen.retWeight(vals) << " ";
@@ -365,8 +363,8 @@ BOOST_AUTO_TEST_CASE(longrun)
     test2["ip"] = 1.0;
     test2["sigmas"] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(4,1.));
 
-    icgenerator gen(test,test2);
-    boost::shared_ptr<std::vector<double> > vals = boost::shared_ptr<std::vector<double> >(new std::vector<double>(xx));
+    icgenerator gen(test,&test2);
+    Coords vals(xx);
     TimerStart("main");
     for(int i=0;i<6250000;++i){
        gen.retIC(vals);
@@ -375,6 +373,7 @@ BOOST_AUTO_TEST_CASE(longrun)
     TimerStop("main");
     TimerReport();
 }
+
 BOOST_AUTO_TEST_SUITE_END()
 
 }

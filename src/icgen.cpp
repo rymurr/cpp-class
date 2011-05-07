@@ -5,7 +5,7 @@ namespace classical {
 
 using boost::any_cast;
 
-icgenerator::icgenerator(anyMap &params, anyMap wParams){
+icgenerator::icgenerator(anyMap &params, anyMap* wParams){
 
     means_ = any_cast<std::vector<double> >(params["means"]);
     trajs_ = any_cast<std::vector<int> >(params["dims"]);
@@ -28,10 +28,10 @@ icgenerator::icgenerator(anyMap &params, anyMap wParams){
     }
 
     this->singleCheck();
-    if (wParams.empty()){
+    if (wParams==NULL){
         LOG(WARNING) << "The weight generator is using the general parameter set to build. This could possibly slow down the program and puts i"
                 << " stronger set of restrictions on what can be in the parameter set. This is fine, but consider using a specialized weight generation parameter set";
-        this->setWeights(params);
+        this->setWeights(&params);
     } else {
         LOG(WARNING) << "The weight generator is using the custom parameter set supplied by the caller.";
         this->setWeights(wParams);
@@ -50,7 +50,7 @@ void icgenerator::genWeights(){
 
 void icgenerator::genICs(){
 
-    vTraj rands = vTraj(new std::vector<double>(means_));
+    Coords rands = means_;
     LOG(INFO) << "Building " << tnumb_ << " ICs";
     //TODO: get progress display to go to LOG(INFO)? also, wrap in a #ifdef or something
     boost::progress_display show_progress(tnumb_, std::clog);
@@ -59,7 +59,7 @@ void icgenerator::genICs(){
     for (int j=0;j<tnumb_;++j){
         icGens_->operator()(rands);
         weights_[j] = wGens_->operator()(rands);
-        std::transform(rands->begin(),rands->end(),initConditions_[j].begin(),boost::lambda::_1);
+        std::transform(rands.begin(),rands.end(),initConditions_[j].begin(),boost::lambda::_1);
         ++show_progress;
     }
 
@@ -135,7 +135,7 @@ void icgenerator::load(std::string sType, std::string fName, anyMap params){
     }
 
     if (!params.empty()){
-        this->setWeights(params);
+        this->setWeights(&params);
         LOG(INFO) << "weights are being rebuilt from parameter set";
     } else {
         if (single_){

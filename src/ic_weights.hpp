@@ -23,6 +23,7 @@
 #include <boost/lambda/casts.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include "coords.hpp"
 #include "customGlog.hpp"
 #include "exceptions.hpp"
 
@@ -30,20 +31,19 @@
 namespace classical{
 
 typedef std::map<std::string,boost::any> anyMap;
-typedef boost::shared_ptr<std::vector<double> > vTraj;
 
 class WeightFunc {
     public:
         virtual ~WeightFunc(){};
 
-        virtual double operator()(vTraj ics) =0;
+        virtual double operator()(Coords& ics) =0;
 };
 
 class UnitWeight: public WeightFunc {
     public:
-        UnitWeight(anyMap&){};
+        UnitWeight(anyMap*){};
 
-        double operator()(vTraj ics){return 1.0;};
+        virtual double operator()(Coords& ics){return 1.0;};
 };
 
 inline double gaussProb(double arg, double tau){
@@ -57,22 +57,24 @@ inline double atomProb(double ef, double ip){
 class AtomWeight: public WeightFunc {
     private:
         double atom_;
-        vTraj sigmas_;
+        std::vector<double> sigmas_;
 
     public:
-        AtomWeight(anyMap &params){
+        AtomWeight(anyMap* params){
             using boost::any_cast;
-            sigmas_ = any_cast<vTraj>(params["sigmas"]);
-            std::vector<double> ef(any_cast<std::vector<double> >(params["ef"]));
-            double efs = std::accumulate(ef.begin(),ef.end(),0,std::plus<double>());
-            double ip(any_cast<double>(params["ip"]));
+            sigmas_ = *any_cast<boost::shared_ptr<std::vector<double> > >((*params)["sigmas"]);
+            std::vector<double> ef = any_cast<std::vector<double> >((*params)["ef"]);
+            double init=0;
+            double efs = std::accumulate(ef.begin(),ef.end(),init,std::plus<double>());
+            double ip(any_cast<double>((*params)["ip"]));
             atom_ = atomProb(efs, ip);
+            //std::cout << ef[0] << ip << atom_ << efs<<std::endl;
         }
 
-        double operator()(vTraj ics){
+        virtual double operator()(Coords &ics){
             double retVal = atom_;
-            for (std::size_t i=0;i<sigmas_->size();++i){
-                retVal *= gaussProb((*ics)[i],(*sigmas_)[i]);
+            for (std::size_t i=0;i<sigmas_.size();++i){
+                retVal *= gaussProb(ics[i],sigmas_[i]);
             }
             return retVal;
         }
@@ -88,9 +90,9 @@ class WeightGen {
 
         ~WeightGen(){};
 
-        WeightGen(anyMap params){
+        WeightGen(anyMap* params){
             using boost::any_cast;
-            int id(any_cast<int>(params["weight-func"]));
+            int id(any_cast<int>((*params)["weight-func"]));
             DLOG(INFO) << "building WeightGen object";
             switch(id){
                 case 1:
@@ -105,7 +107,7 @@ class WeightGen {
             }
         };
 
-        virtual double operator()(vTraj ics){return func_ ->operator()(ics);};
+        virtual double operator()(Coords& ics){return func_ ->operator()(ics);};
 };
 
 }

@@ -45,27 +45,15 @@ class VoidIntStrategy: public IntStrategy{
         virtual Cpair operator()(Cpair& x){return x;};
 };
 
-class SymplecticIntStrategy: public IntStrategy{
-    private:
-        double tin_, dt_;
-        boost::shared_ptr<Force> kin_, pot_;
-
-    public:
-        SymplecticIntStrategy(double tin, double dt, boost::shared_ptr<Force> kin, boost::shared_ptr<Force> pot):tin_(tin), dt_(dt), kin_(kin), pot_(pot){};
-
-        virtual ~SymplecticIntStrategy(){};
-
-        virtual Cpair operator()(Cpair&);
-};
-
 class OdeIntRKStrategy: public IntStrategy{
     private:
         double tin_, dt_;
         boost::shared_ptr<Force> kin_, pot_;
         double eps_abs_, eps_rel_;
+        bool observe_;
 
     public:
-        OdeIntRKStrategy(double tin, double dt, boost::shared_ptr<Force> kin, boost::shared_ptr<Force> pot, double eps_abs, double eps_rel): tin_(tin), dt_(dt), kin_(kin), pot_(pot), eps_abs_(eps_abs), eps_rel_(eps_rel){};
+        OdeIntRKStrategy(double tin, double dt, boost::shared_ptr<Force> kin, boost::shared_ptr<Force> pot, double eps_abs, double eps_rel, bool observe): tin_(tin), dt_(dt), kin_(kin), pot_(pot), eps_abs_(eps_abs), eps_rel_(eps_rel), observe_(observe){};
         virtual ~OdeIntRKStrategy(){};
         virtual Cpair operator()(Cpair &x);
 };

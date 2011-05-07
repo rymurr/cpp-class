@@ -38,79 +38,30 @@ namespace classical {
  * any collection of elements as it is basically a vector with operators added. It was
  * designed to hold a point in an n-d phase space for my classical propagator
  *
- * @todo convert to template class so it can hold more than doubles
  *
 */
+/*
 template <class T>
-//template <class T=double>
-class Point: boost::arithmetic<Point<T>
-              ,boost::arithmetic<Point<T>, T
-              ,boost::indexable<Point<T>,std::size_t,T&
-              ,boost::dereferenceable<Point<T>, T*>
-            >
-        >
-    >
-{
-    private:
-        ///the vector which holds the n-d point
-        std::vector<T> x_;
-    public:
-        Point(){};
-
-        Point(int n, T x): x_(n,x){};
-
-        class const_iterator: public boost::iterator_facade<const_iterator, T, boost::random_access_traversal_tag >{
+class iterator: public boost::iterator_facade<iterator<T>, T, boost::random_access_traversal_tag >{
             private:
                 typename std::vector<T>::iterator iter_;
 
                 friend class boost::iterator_core_access;
 
-                void increment() { ++iter_;}
+                void increment() {iter_++;std::cout << "hello1!" <<std::endl;}
 
-                void decrement() { --iter_; }
+                void decrement() {iter_--;std::cout << "hello2!" <<std::endl;}
 
-                void advance(std::size_t n){ iter_+=n;};
-
-                bool equal(const_iterator const &other) const{
-                    return this->iter_ == other.iter_;
-                }
-
-                const T& dereference() const {return *iter_;};
-
-                int distance_to(const_iterator const &other) const{
-                    return this->iter_ - other.iter_;
-                }
-
-                public:
-                    const_iterator():iter_(0){};
-
-                    const_iterator(const const_iterator& it):iter_(it.iter_){};
-                    const_iterator(const_iterator& it):iter_(it.iter_){};
-
-                    explicit const_iterator(const typename std::vector<T>::iterator& it):iter_(it){};
-
-        };
-
-        class iterator: public boost::iterator_facade<iterator, T, boost::random_access_traversal_tag >{
-            private:
-                typename std::vector<T>::iterator iter_;
-
-                friend class boost::iterator_core_access;
-
-                void increment() { ++iter_;}
-
-                void decrement() { --iter_; }
-
-                void advance(std::size_t n){ iter_+=n;};
+                void advance(std::size_t n){ iter_+=n;std::cout << "hello3!" << " " << iter_ << std::endl;};
 
                 bool equal(iterator const &other) const{
-                    return this->iter_ == other.iter_;
+                    std::cout << "hello4!" <<std::endl;return this->iter_ == other.iter_;
                 }
 
-                T& dereference() const {return *iter_;};
+                T& dereference() const {std::cout << "hello5!" <<std::endl;return *iter_;};
 
-                int distance_to(iterator const &other) const{
-                    return this->iter_ - other.iter_;
+                std::size_t distance_to(iterator const &other) const{
+                    std::cout << "hello6!" << this->iter_ - other.iter_ << std::endl;return this->iter_ - other.iter_;
                 }
 
                 public:
@@ -122,6 +73,68 @@ class Point: boost::arithmetic<Point<T>
                     explicit iterator(const typename std::vector<T>::iterator& it):iter_(it){};
 
             };
+
+template <class T>
+class const_iterator: public boost::iterator_facade<const_iterator<T>, T const, boost::random_access_traversal_tag >{
+    private:
+        typename std::vector<T>::const_iterator iter_;
+
+        friend class boost::iterator_core_access;
+
+        void increment() {iter_++;std::cout << "hello1!" <<std::endl;}
+
+        void decrement() {iter_--;std::cout << "hello2!" <<std::endl;}
+
+        void advance(std::size_t n){ iter_+=n;};
+
+        bool equal(const_iterator const &other) const{
+            return this->iter_ == other.iter_;
+        }
+
+        const T& dereference() const {return *iter_;};
+
+        int distance_to(const_iterator const &other) const{
+            return this->iter_ - other.iter_;
+        }
+
+        public:
+            const_iterator():iter_(0){};
+
+            const_iterator(T const* const it):iter_(it){};
+            const_iterator(const_iterator const& it):iter_(it.iter_){};
+            //const_iterator(const_iterator const& it):iter_(it.iter_){};
+
+            const_iterator(typename std::vector<T>::const_iterator const& it):iter_(it){};
+
+};
+*/
+
+
+//class const_iterator;
+
+template <class T>
+//template <class T=double>
+class Point: boost::arithmetic<Point<T>
+              ,boost::arithmetic<Point<T>, T
+              ,boost::indexable<Point<T>,std::size_t,T&
+              //,boost::dereferenceable<Point<T>, iterator<T> >
+            >
+        >
+    >
+{
+    private:
+        ///the vector which holds the n-d point
+        std::vector<T> x_;
+    public:
+
+        typedef typename std::vector<T>::iterator iterator;
+        typedef typename std::vector<T>::const_iterator const_iterator;
+        typedef T value_type;
+
+        Point(){};
+
+        Point(int n, T x): x_(n,x){};
+
 
 
 /**
@@ -152,6 +165,9 @@ class Point: boost::arithmetic<Point<T>
 
         T abs() const{return this->norm();};
         T max() const{return std::max_element(x_.begin(), x_.end());};
+
+        void resize(std::size_t n) {x_.resize(n);};
+        void resize(std::size_t n, T x) {x_.resize(n, x);};
 
 /**
     sum of all elements sqared
@@ -203,7 +219,7 @@ class Point: boost::arithmetic<Point<T>
     @return value of element i in vector
 */
         T& operator[](std::size_t n) const {return const_cast<double&>(x_[n]);};
-        T& operator*() const {return *x_;};
+        //iterator operator*() const {return x_.begin();};
 
         std::size_t size() const {return x_.size();};
 /**
@@ -279,6 +295,11 @@ class Point: boost::arithmetic<Point<T>
             std::transform(rhs.x_.begin(),rhs.x_.end(),this->x_.begin(),this->x_.begin(), std::divides<T>());
             return *this;
         };
+
+        friend std::ostream& operator <<(std::ostream& out, const Point& x){
+            std::for_each(x.begin(), x.end(), out << boost::lambda::_1);
+            return out;
+        }
 
 };
 

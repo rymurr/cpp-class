@@ -87,13 +87,14 @@ class CombinedForce: public Force{
 class FieldForce: public Force{
     private:
         boost::shared_ptr<Field> field_;
+        int pol_;
     public:
-        FieldForce(boost::shared_ptr<Field> field): field_(field){};
+        FieldForce(boost::shared_ptr<Field> field): field_(field), pol_(field_->pol()-1){};
         virtual void operator()(const Coords &r, Coords &x, const double t = 0) const {
-            x = Coords(r.size(),0.);x[field_->pol()-1] = field_->operator()(t);
+            x = Coords(r.size(),0.);x[pol_] = field_->operator()(t);
         }
         void deriv(const Coords &r, Coords &x, const double t = 0) const {
-            x = Coords(r.size(),0.);x[field_->pol()-1] = r[field_->pol()-1] * field_->deriv(t);
+            x = Coords(r.size(),0.);x[pol_] = r[pol_] * field_->deriv(t);
         }
 };
 

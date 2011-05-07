@@ -126,14 +126,14 @@ class icgenerator{
         
         void singleCheck();
 
-        void setWeights(anyMap params){
+        void setWeights(anyMap* params){
             wGens_ = boost::shared_ptr<WeightGen>(new WeightGen(params));
         };
 
     public:
         icgenerator(){};
 
-        icgenerator(anyMap& params, anyMap wParams=anyMap());
+        icgenerator(anyMap& params, anyMap* wParams=NULL);
 
         ~icgenerator(){};
 
@@ -144,12 +144,12 @@ class icgenerator{
 
         void retWeights(boost::shared_ptr<w_array> wPtr){*wPtr = weights_;};
 
-        void retIC(vTraj ics){
+        void retIC(Coords& ics){
             if (j_ < tnumb_){
                 if (single_) {
                     icGens_->operator()(ics);
                 } else {
-                    std::transform(initConditions_[j_].begin(),initConditions_[j_].end(),ics->begin(),boost::lambda::_1);
+                    std::copy(initConditions_[j_].begin(),initConditions_[j_].end(),ics.begin());
                 }
                 ++j_;
             } else {
@@ -157,7 +157,7 @@ class icgenerator{
             }
         };
 
-        double retWeight(vTraj ics){
+        double retWeight(Coords& ics){
             if (k_ < tnumb_){
                 if (single_) {
                     return wGens_->operator()(ics);

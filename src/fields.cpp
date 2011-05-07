@@ -26,7 +26,6 @@ boost::shared_ptr<Field> Field::makeField(anyMap& map){
     switch( field_type ){
         case 1:
             fpick = boost::shared_ptr<ConstField>(new ConstField(id, ef, omega, phi, pol));
-            LOG(INFO) << "building Constant Field";
             break;
         case 2:
             fpick = boost::shared_ptr<StaticField>(new StaticField(id, ef, pol));
