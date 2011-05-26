@@ -87,22 +87,32 @@ void Trajs::multiOMPNoStore(){
 
     #pragma omp parallel default(shared)
     {
+        #ifdef NDEBUG
         omp_lock_t genlock, binlock;
         omp_init_lock(&genlock);
         omp_init_lock(&binlock);
+        #endif
         ///TODO: change schedule parameters
         #pragma omp for schedule(dynamic)
         for (std::size_t i=0;i<numTrajs_; ++i){
             Integrator Int(*int_);
             std::pair<Coords,double> x = std::make_pair(xx,t_), xo = std::make_pair(xxo,t_);
+#ifdef NDEBUG
             omp_set_lock(&genlock);
+#endif
             gen_->retIC(x.first);
             double w = gen_->retWeight(x.first);
+#ifdef NDEBUG
             omp_unset_lock(&genlock);
+#endif
             xo = Int(x);
+#ifdef NDEBUG
             omp_set_lock(&binlock);
+#endif
             bin_->operator()(xo.first,w);
+#ifdef NDEBUG
             omp_unset_lock(&binlock);
+#endif
         }
     }
 }

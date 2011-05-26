@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(trajsInit){
 
     boost::shared_ptr<std::vector<double> > intX, intZ, intY;
     TimerStart("main1");
-
+    TimerStart("main1a");
     {
     boost::shared_ptr<icgenerator> gen = boost::shared_ptr<icgenerator>(new icgenerator(test,&test2));
     std::vector<int> N(2,128);
@@ -62,6 +62,8 @@ BOOST_AUTO_TEST_CASE(trajsInit){
     trx.runTraj();
     intX = bin->int1D(1);
     }
+    TimerStop("main1a");
+    TimerStart("main1b");
     {
     boost::shared_ptr<icgenerator> gen = boost::shared_ptr<icgenerator>(new icgenerator(test,&test2));
     std::vector<int> N(2,128);
@@ -73,7 +75,8 @@ BOOST_AUTO_TEST_CASE(trajsInit){
     trx.runTraj();
     intY = bin->int1D(1);
     }
-
+    TimerStop("main1b");
+    TimerStart("main1c");
     {
     boost::shared_ptr<icgenerator> gen = boost::shared_ptr<icgenerator>(new icgenerator(test,&test2));
     std::vector<int> N(2,128);
@@ -85,6 +88,7 @@ BOOST_AUTO_TEST_CASE(trajsInit){
     trx.runTraj();
     intZ = bin->int1D(1);
     }
+    TimerStop("main1c");
     TimerStop("main1");
     for(std::size_t i=0;i<intY->size();++i){
         std::cout << intY->operator[](i) << " " << intX->operator[](i) << " " << intZ->operator[](i) << std::endl;
