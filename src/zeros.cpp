@@ -20,7 +20,7 @@ Coords OneDRootFinder::retZeros(){
     zeroPts crossPts;
     crossing(signs, coords, crossPts);
 
-    double zero;
+    double zero=0.;
     PotDouble f(pots_, ip_, t0_);
     foreach(dPair d, crossPts){
         double retZero = findZero(d, f);
@@ -28,6 +28,7 @@ Coords OneDRootFinder::retZeros(){
             zero = retZero;
     }
     r[2] = zero;
+    std::cout << r << std::endl;
     return r;
 }
 

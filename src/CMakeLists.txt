@@ -8,14 +8,14 @@ set(EXECUTABLE_OUTPUT_PATH "../")
 
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     set ( CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -pg -p -Wall -arch i386")
-    set ( CMAKE_CXX_FLAGS_RELEASE  "-NDEBUG" )
+    set ( CMAKE_CXX_FLAGS_RELEASE  "-DNDEBUG" )
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-    set ( CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -pg -p -Wall -arch i386")
-    set ( CMAKE_CXX_FLAGS_RELEASE  "-NDEBUG" )
+    set ( CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -pg -p -Wall")
+    set ( CMAKE_CXX_FLAGS_RELEASE  "-DNDEBUG -DBOOST_DISABLE_ASSERTS -O3 -march=native -mmmx -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -ftree-parallelize-loops=8 -funroll-loops -fopenmp " )
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "intel")
-    set ( CMAKE_CXX_FLAGS_DEBUG "-C -g -O0  -debug all -traceback -Wall")
-    set ( CMAKE_CXX_FLAGS_RELEASE  "-warn -axP -ipo -O3 -no-prec-div -complex_limited_range" )
-#    set ( CMAKE_CXX_FLAGS_PARALLEL "-DPARALLEL -DBOOST_DISABLE_ASSERTS -axSSE4.2 -ipo -O3 -no-prec-div -complex_limited_range -openmp " )
+    set ( CMAKE_CXX_FLAGS_DEBUG "-C -g -O0  -debug all -traceback -Wall -I/usr/include/x86_64-linux-gnu")
+    set ( CMAKE_CXX_FLAGS_RELEASE  "-warn -axP -ipo -O3 -no-prec-div -complex_limited_range -I/usr/include/x86_64-linux-gnu" )
+#    set ( CMAKE_CXX_FLAGS_PARALLEL "-DPARALLEL  -axSSE4.2 -ipo -O3 -no-prec-div -complex_limited_range -openmp " )
 endif()
  
 
@@ -79,7 +79,7 @@ endif(GOOGLE_PERFTOOLS_FOUND)
 
 link_libraries(${LIBS} -lpthread ${Boost_LIBRARIES})
 
-set(classical_lib_src input_param.cpp params.cpp pywrapper.cpp pymodule.cpp fields.cpp potential.cpp icgen.cpp coords.cpp zeros.cpp integrator.cpp force.cpp trajs.cpp)
+set(classical_lib_src input_param.cpp params.cpp pywrapper.cpp pymodule.cpp fields.cpp potential.cpp icgen.cpp zeros.cpp integrator.cpp force.cpp trajs.cpp)
 add_library(classical SHARED ${classical_lib_src})
 
 add_executable (cpp-class main.cpp)

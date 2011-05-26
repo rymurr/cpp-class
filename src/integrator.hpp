@@ -76,7 +76,7 @@ class Integrator {
 
     public:
         Integrator(anyMap&);
-
+        Integrator(){};
         Cpair operator()(Cpair x){return intStrat_->operator()(x);};
 
 };

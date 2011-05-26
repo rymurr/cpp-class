@@ -2,7 +2,7 @@
 
 namespace classical{
 
-
+void simulation::run_trajs(){}
 void simulation::ic_gen(){
     LOG(INFO) << "building potentials and fields";
     int num_fields = any_cast<int>((*map_)["nfield"]);
@@ -17,15 +17,15 @@ void simulation::ic_gen(){
     FindZeros zeros(1,boost::any_cast<double>((*map_)["ip"]),0.,totPot_);
     Coords fz = zeros.retZeros();
     std::vector<double> means(boost::any_cast<int>((*map_)["ndim"]));
-    //TODO: there is ambiguity here about how exactly things are set up wrt ionization direction etc.
+    ///TODO: there is ambiguity here about how exactly things are set up wrt ionization direction etc.
     //The pieces are there but a standard needs to be set up (ionization always along 0 for example)
     //so as to make the choice of the means array unambiguous.
     means[0] = fz[3];
     (*map_)["means"] = means;
-    //TODO: I think i set it up so variance was Tau(tunneling time) must double check!
+    ///TODO: I think i set it up so variance was Tau(tunneling time) must double check!
     (*map_)["variance"] = static_cast<double>(std::abs(means[0]/sqrt(2.*boost::any_cast<double>((*map_)["ip"]))));
     boost::shared_ptr<std::vector<double> > sigmas = boost::shared_ptr<std::vector<double> >(new std::vector<double>(boost::any_cast<int>((*map_)["ndim"])));
-    //TODO: double check that x=1/2tau and p=tau/2
+    ///TODO: double check that x=1/2tau and p=tau/2
     for (std::size_t i=0;i<sigmas->size();i+=2){
         (*sigmas)[i] = 0.5/boost::any_cast<double>((*map_)["variance"]);
     }
@@ -33,7 +33,7 @@ void simulation::ic_gen(){
         (*sigmas)[i] = 0.5*boost::any_cast<double>((*map_)["variance"]);
     }
     (*map_)["sigmas"] = sigmas;
-    //TODO: add weight-func parameter to parameter set
+    ///TODO: add weight-func parameter to parameter set
     (*map_)["weight-func"] = 2;
 
     LOG(INFO) << "building initial conditions";
@@ -41,41 +41,4 @@ void simulation::ic_gen(){
     LOG(INFO) << "initial conditions and potentials have been built";
 }
 
-
-/*
-static bool hasRun = false;
-
-
-int run_main(int argc, std::vector<std::string> argv, std::string fname){
-
-#ifdef Gflags
-    if (!hasRun){
-        google::InitGoogleLogging(argv[0].c_str());
-        google::InstallFailureSignalHandler();
-        hasRun = true;
-    }
-#endif
-
-    pmap params;
-    if (!params.read_params(fname, argc, argv)){return 0;};
-    params.print();
-    anyMap PrMap;
-    params.map_out(PrMap);
-    LOG(INFO) << "Parameters have been built, now proceeding with initial trajectory distribution";
-
-    std::vector<boost::shared_ptr<Field> > field_vec;
-    int num_fields = any_cast<int>(PrMap["nfield"]);
-    for (int i = 0;i < num_fields ; i++) {
-        field_vec.push_back(fieldFactory(PrMap,i));
-    }
-    std::vector<double> dist_center;
-    //find_center(params.map
-
-#ifdef Gflags
-    if (!hasRun)
-        google::ShutdownGoogleLogging();
-#endif
-    return 1;
-}
-*/
 }

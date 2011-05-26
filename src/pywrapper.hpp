@@ -72,6 +72,7 @@ class simulation{
 
         void ic_gen();
 
+        void run_trajs();
 };
 
 

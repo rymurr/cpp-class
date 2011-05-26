@@ -7,6 +7,7 @@
 #include <boost/any.hpp>
 #include <boost/multi_array.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/operators.hpp>
 #include "coords.hpp"
 #include "customGlog.hpp"
 
@@ -18,7 +19,7 @@ typedef boost::shared_ptr<boost::multi_array<double,2> > binSlicePtr;
 typedef std::vector<double> binSlice2;
 typedef boost::shared_ptr<std::vector<double> > binSlice2Ptr;
 
-class Binner {
+class Binner: boost::arithmetic<Binner> {
     private:
         binState bins_;
         Coords ranges_,dxs_;
@@ -46,6 +47,20 @@ class Binner {
             }
             LOG(INFO) << "building binner";
         };
+
+        Binner operator+=(const Binner& x){
+            if (bins_.shape()[0] == x.bins_.shape()[0] && bins_.shape()[1] == x.bins_.shape()[1] && bins_.shape()[2] == x.bins_.shape()[2] ){
+                for (int i=0;i<bins_.shape()[0];++i){
+                    for (int j=0;j<bins_.shape()[1];++j){
+                        for (int k=0;k<bins_.shape()[2];++k){
+                            bins_[i][j][k] = x.bins_[i][j][k];
+                        }
+                    }
+                }
+            } else {
+                LOG(FATAL) << "bins are not the same size and can't be added!";
+            }
+        }
 
         void operator()(Coords& x, double w){
             boost::array<binState::index,3> i = {{binState::index(0),binState::index(0),binState::index(0)}};

@@ -4,9 +4,10 @@ namespace classical{
 
 Trajs::Trajs(int id, anyMap& params, boost::shared_ptr<icgenerator> gen, boost::shared_ptr<Integrator> integrate, boost::shared_ptr<Binner> bin):bin_(bin), int_(integrate), gen_(gen){
     using boost::any_cast;
-    //TODO: check these names!
-    numTrajs_ = any_cast<int>(params["trajs"]);
-    dims_ = any_cast<int>(params["dims"]);
+    ///TODO: check these names!
+    std::vector<int> trajs = any_cast<std::vector<int> >(params["dims"]);
+    numTrajs_ = std::accumulate(trajs.begin(),trajs.end(),1,std::multiplies<int>());
+    dims_ = trajs.size();
     t_ = any_cast<double>(params["tfinal"]);
     switch(id){
         case 1:
@@ -32,7 +33,7 @@ Trajs::Trajs(int id, anyMap& params, boost::shared_ptr<icgenerator> gen, boost::
 }
 
 void Trajs::singleStore(){
-    //TODO: set capacity of vector now so there are no re-allocations.
+    ///TODO: set capacity of vector now so there are no re-allocations.
     std::size_t i = 0;
     Coords xx(dims_,0.), xxo(dims_,0.);
     std::pair<Coords,double> x = std::make_pair(xx,t_), xo = std::make_pair(xxo,t_);
@@ -49,7 +50,7 @@ void Trajs::singleStore(){
 }
 
 void Trajs::singleNoBin(){
-    //TODO: set capacity of vector now so there are no re-allocations.
+    ///TODO: set capacity of vector now so there are no re-allocations.
     std::size_t i = 0;
     Coords xx(dims_,0.), xxo(dims_,0.);
     std::pair<Coords,double> x = std::make_pair(xx,t_), xo = std::make_pair(xxo,t_);
@@ -83,22 +84,27 @@ void Trajs::multiOMPNoStore(){
     
     Coords xx(dims_,0.), xxo(dims_,0.);
     std::pair<Coords,double> x = std::make_pair(xx,t_), xo = std::make_pair(xxo,t_);
-    #pragma omp parallel shared(gen_,bin_,dims_,t_) private(int_,x,xo)
+
+    #pragma omp parallel default(shared)
     {
+        omp_lock_t genlock, binlock;
+        omp_init_lock(&genlock);
+        omp_init_lock(&binlock);
+        ///TODO: change schedule parameters
         #pragma omp for schedule(dynamic)
-        {
-            //TODO: change schedule parameters
-            for (std::size_t i=0;i<numTrajs_; ++i){
-                x.second = t_;
-                gen_->retIC(x.first);
-                double w = gen_->retWeight(x.first);
-                xo = int_->operator()(x);
-                bin_->operator()(xo.first,w);
-            }
+        for (std::size_t i=0;i<numTrajs_; ++i){
+            Integrator Int(*int_);
+            std::pair<Coords,double> x = std::make_pair(xx,t_), xo = std::make_pair(xxo,t_);
+            omp_set_lock(&genlock);
+            gen_->retIC(x.first);
+            double w = gen_->retWeight(x.first);
+            omp_unset_lock(&genlock);
+            xo = Int(x);
+            omp_set_lock(&binlock);
+            bin_->operator()(xo.first,w);
+            omp_unset_lock(&binlock);
         }
     }
-    //TODO: I am very concerned about thread safety...this may need to be extensively changed to make sure the threads don't fuck things up. Must test on the bigger machine.
-
 }
 
 }

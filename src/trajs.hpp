@@ -1,6 +1,8 @@
 #include <vector>
 #include <map>
 
+#include <omp.h>
+
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/any.hpp>

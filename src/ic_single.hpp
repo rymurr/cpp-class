@@ -118,7 +118,6 @@ class SingleLinIC: public SingleIC{
             int i=0;
             bool exit = false;
             while (!exit && i<(*this).size_){
-
                 if (!current_[i].second)
                     exit = true;
                 current_[i] = grids_[i]();

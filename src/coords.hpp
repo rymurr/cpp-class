@@ -17,20 +17,17 @@
 #ifndef COORDS_HPP_
 #define COORDS_HPP_
 
-//#include <map>
-//#include <string>
+
 #include <iterator>
 #include <vector>
 
-//#include <gsl/gsl_math.h>
 #include <math.h>
+
 #include <boost/lambda/lambda.hpp>
 #include <boost/operators.hpp>
 #include <boost/iterator/iterator_facade.hpp>
-//#include <boost/shared_ptr.hpp>
 
-//#include "customGlog.hpp"
-
+///primary namespace for classical propagator code
 namespace classical {
 
 /**
@@ -40,77 +37,6 @@ namespace classical {
  *
  *
 */
-/*
-template <class T>
-class iterator: public boost::iterator_facade<iterator<T>, T, boost::random_access_traversal_tag >{
-            private:
-                typename std::vector<T>::iterator iter_;
-
-                friend class boost::iterator_core_access;
-
-                void increment() {iter_++;std::cout << "hello1!" <<std::endl;}
-
-                void decrement() {iter_--;std::cout << "hello2!" <<std::endl;}
-
-                void advance(std::size_t n){ iter_+=n;std::cout << "hello3!" << " " << iter_ << std::endl;};
-
-                bool equal(iterator const &other) const{
-                    std::cout << "hello4!" <<std::endl;return this->iter_ == other.iter_;
-                }
-
-                T& dereference() const {std::cout << "hello5!" <<std::endl;return *iter_;};
-
-                std::size_t distance_to(iterator const &other) const{
-                    std::cout << "hello6!" << this->iter_ - other.iter_ << std::endl;return this->iter_ - other.iter_;
-                }
-
-                public:
-                    iterator():iter_(0){};
-
-                    iterator(const iterator& it):iter_(it.iter_){};
-                    iterator(iterator& it):iter_(it.iter_){};
-
-                    explicit iterator(const typename std::vector<T>::iterator& it):iter_(it){};
-
-            };
-
-template <class T>
-class const_iterator: public boost::iterator_facade<const_iterator<T>, T const, boost::random_access_traversal_tag >{
-    private:
-        typename std::vector<T>::const_iterator iter_;
-
-        friend class boost::iterator_core_access;
-
-        void increment() {iter_++;std::cout << "hello1!" <<std::endl;}
-
-        void decrement() {iter_--;std::cout << "hello2!" <<std::endl;}
-
-        void advance(std::size_t n){ iter_+=n;};
-
-        bool equal(const_iterator const &other) const{
-            return this->iter_ == other.iter_;
-        }
-
-        const T& dereference() const {return *iter_;};
-
-        int distance_to(const_iterator const &other) const{
-            return this->iter_ - other.iter_;
-        }
-
-        public:
-            const_iterator():iter_(0){};
-
-            const_iterator(T const* const it):iter_(it){};
-            const_iterator(const_iterator const& it):iter_(it.iter_){};
-            //const_iterator(const_iterator const& it):iter_(it.iter_){};
-
-            const_iterator(typename std::vector<T>::const_iterator const& it):iter_(it){};
-
-};
-*/
-
-
-//class const_iterator;
 
 template <class T>
 //template <class T=double>
@@ -127,15 +53,26 @@ class Point: boost::arithmetic<Point<T>
         std::vector<T> x_;
     public:
 
+        ///defines an iterator for the Point class
         typedef typename std::vector<T>::iterator iterator;
+        ///defines a const iterator for the Point class
         typedef typename std::vector<T>::const_iterator const_iterator;
+        ///defines value_type to make it work with certain STL algorithms
         typedef T value_type;
 
+
+/**
+    Default Constructor
+*/
         Point(){};
 
+/**
+    Constructor which takes a default size and initial value
+
+    @param[in] n number of elements to reserve
+    @param[in] x default value for n initial elements
+*/
         Point(int n, T x): x_(n,x){};
-
-
 
 /**
     Constructor which copies an input vector.
@@ -163,10 +100,32 @@ class Point: boost::arithmetic<Point<T>
            return sqrt(norm);
         };
 
+/**
+    norm of vector: sqrt of the sum of all elements squared, different name for use with odeint
+
+    @return returns the norm
+*/
         T abs() const{return this->norm();};
+
+/**
+    max value of vector: sqrt of the sum of all elements squared, different name for use with odeint
+
+    @return returns the max element
+*/
         T max() const{return std::max_element(x_.begin(), x_.end());};
 
+/**
+    resize function. resizes the vector to n
+
+    @param[in] n new size of Point
+*/
         void resize(std::size_t n) {x_.resize(n);};
+/**
+    resize function. resizes the vector to n
+
+    @param[in] n new size of Point
+    @param[in] x default value of new elements
+*/
         void resize(std::size_t n, T x) {x_.resize(n, x);};
 
 /**
@@ -180,55 +139,70 @@ class Point: boost::arithmetic<Point<T>
             return square;
         };
 
+/**
+    sum of all elements
+
+    @return returns square of all elements
+*/
         T sum() const{
             T sum(0);
             std::for_each(x_.begin(),x_.end(),sum+=boost::lambda::_1);
             return sum;
         };
 
-        T dotProd(const Point &rhs){Point x(*this * rhs); return x.sum();}
 /**
-    returns pointer to begining of stored vector. A bit hacky and I want to make
-    a full iterator at some point but dont have time.
+    dot product of this with rhs
 
-    @todo make this better and use iterator class
+    @param[in] rhs 2nd element of dot product
 
-    @return pointer to begining of coordinate vector
+    @return result of dot product
 */
+        T dotProd(const Point &rhs){Point x(*this * rhs); return x.sum();}
 
+
+/**
+    begin returns an iterator to the first element of the internal vector
+
+    @return iterator to first element
+*/
         iterator begin() {return iterator(x_.begin());};
+
+/**
+    begin returns a const iterator to the first element of the internal vector
+
+    @return const iterator to first element
+*/
         const_iterator begin() const {return const_iterator(x_.begin());};
 
-        //typename Coords<T>::iterator begin2() {return x_.begin();};
 
 /**
-    returns pointer past the end of stored vector. See Coords::begin()
+    returns iterator past the end of stored vector. See Coords::begin()
 
-    @todo make this better and use iterator class
-
-    @return pointer past the end of coordinate vector
+    @return iterator past the end of coordinate vector
 */
         iterator end() {return iterator(x_.end());};
+/**
+    returns const iterator past the end of stored vector. See Coords::begin()
+
+    @return const iterator past the end of coordinate vector
+*/
         const_iterator end() const {return const_iterator(x_.end());};
 
 /**
     random access element operator. does the same as vector []
 
-    @param[in] i element to be accessed
+    @param[in] n element to be accessed
 
     @return value of element i in vector
 */
         T& operator[](std::size_t n) const {return const_cast<double&>(x_[n]);};
-        //iterator operator*() const {return x_.begin();};
 
-        std::size_t size() const {return x_.size();};
 /**
-    dereference operator
+    size of internal vector
 
-    @return reference to first element in vector
+    @return returns size of Point
 */
-        //T& operator*() const {return const_cast<T&>(x_.front());};
-
+        std::size_t size() const {return x_.size();};
 
 /**
     addition equals operator, used by boost::operators to build full set.
@@ -242,21 +216,49 @@ class Point: boost::arithmetic<Point<T>
             return *this;
         };
 
+/**
+    addition equals operator, used by boost::operators to build full set.
+    @param[in] rhs the vector to be added to this
+
+    @return returns this after rhs is added to it
+*/
         Point operator+=(const T &rhs){
             std::for_each(this->x_.begin(),this->x_.end(), boost::lambda::_1+=rhs);
             return *this;
         };
 
+
+/**
+    subtration equals operator, used by boost::operators to build full set.
+
+    @param[in] rhs the vector to be subtracted from this
+
+    @return returns this after rhs is subtracted from it
+*/
         Point operator-=(const T &rhs){
             std::for_each(this->x_.begin(),this->x_.end(), boost::lambda::_1-=rhs);
             return *this;
         };
 
+/**
+    multiply equals operator, used by boost::operators to build full set.
+
+    @param[in] rhs the vector to be multiplied by this
+
+    @return returns this after rhs is multiplied by it
+*/
         Point operator*=(const T &rhs){
             std::for_each(this->x_.begin(),this->x_.end(), boost::lambda::_1*=rhs);
             return *this;
         };
 
+/**
+    division equals operator, used by boost::operators to build full set.
+
+    @param[in] rhs the vector to be divided by this
+
+    @return returns this after rhs is divided by it
+*/
         Point operator/=(const T &rhs){
             std::for_each(this->x_.begin(),this->x_.end(), boost::lambda::_1/=rhs);
             return *this;
@@ -296,8 +298,11 @@ class Point: boost::arithmetic<Point<T>
             return *this;
         };
 
+/**
+    ostream operator overload, used to write out Point to file/terminal in one shot. with less writing.
+*/
         friend std::ostream& operator <<(std::ostream& out, const Point& x){
-            std::for_each(x.begin(), x.end(), out << boost::lambda::_1);
+            std::for_each(x.begin(), x.end(), out << " " << boost::lambda::_1);
             return out;
         }
 
@@ -325,16 +330,38 @@ inline T norm(const Point<T> &x){return x.norm();};
 template <class T>
 inline T square(const Point<T> &x){return x.square();};
 
+/**
+    calls sum member function on input, calculates sum of a vector
+
+    @param[in] x performs sum on x
+
+    @return result of sum calculation
+*/
 //template <class T=double>
 template <class T>
 inline T sum(const Point<T>& x){return x.sum();};
 
+/**
+    calls abs member function on input
+
+    @param[in] x input on which abs is done
+
+    @return returns abs of x
+ */
 template <class T>
 inline T abs(const Point<T>& x){return x.abs();};
 
+/**
+    calls max member function on input, calculates max element of input
+
+    @param[in] x input Point on which max is performed
+
+    @return returns max element
+ */
 template <class T>
 inline T max(const Point<T>& x){return x.max();};
 
+///typedef to define explicitly Coords as double specialization of Point
 typedef Point<double> Coords;
 }
 
