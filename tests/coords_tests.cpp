@@ -4,9 +4,12 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/any.hpp>
 #include <boost/lambda/lambda.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include <string>
 #include <map>
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <algorithm>
 #include "coords.hpp"
@@ -156,6 +159,25 @@ BOOST_AUTO_TEST_CASE(iterating){
        BOOST_REQUIRE_EQUAL(*i,100.);
     }
 
+}
 
+BOOST_AUTO_TEST_CASE(serialize){
+    using namespace classical;
+    Coords x(10,10), y;
+
+    {
+        std::ofstream ofs("testC.dat");
+        boost::archive::text_oarchive oa(ofs);
+        oa << x;
+    }
+
+    {
+        std::ifstream ifs("testC.dat");
+        boost::archive::text_iarchive ia(ifs);
+        ia >> y;
+    }
+    for (int i=0;i<10;++i){
+        BOOST_CHECK_CLOSE(x[i],y[i],1E-6);
+    }
 }
 BOOST_AUTO_TEST_SUITE_END()

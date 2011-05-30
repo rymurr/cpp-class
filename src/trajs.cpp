@@ -12,22 +12,23 @@ Trajs::Trajs(int id, anyMap& params, boost::shared_ptr<icgenerator> gen, boost::
     switch(id){
         case 1:
             run_=&Trajs::singleStore;
-            LOG(INFO) << "runing serial trajectories and storing results after binning";
+            LOG(INFO) << "running serial trajectories and storing results after binning";
             break;
         case 2:
             run_=&Trajs::singleNoStore;
-            LOG(INFO) << "runing serial trajectories results are not stored after binning";
+            LOG(INFO) << "running serial trajectories results are not stored after binning";
             break;
         case 3:
             run_=&Trajs::singleNoBin;
-            LOG(INFO) << "runing serial trajectories and storing results without binning";
+            LOG(INFO) << "running serial trajectories and storing results without binning";
             break;
         case 4:
             run_=&Trajs::multiOMPNoStore;
-            LOG(INFO) << "runing OpenMP parallel without storing and with binning";
+            LOG(INFO) << "running OpenMP parallel without storing and with binning";
             break;
         default:
-            LOG(FATAL) << "wrong or currently unimplemented";
+            run_=&Trajs::multiMapReduce;
+            LOG(INFO) << "running MPI parallel without storing and with binning";
     }
             
 }
@@ -80,6 +81,54 @@ void Trajs::singleNoStore(){
     }
 }
 
+void Trajs::multiMapReduce(){
+    int argc; char** argv;
+    namespace mpi = boost::mpi;
+    mpi::environment env(argc, argv);
+    mpi::communicator world;
+    std::size_t numEach = numTrajs_/world.size();
+    gen_->seek(numEach*world.rank());
+    std::size_t i = 0;
+    Coords xx(dims_,0.), xxo(dims_,0.);
+    std::pair<Coords,double> x = std::make_pair(xx,t_), xo = std::make_pair(xxo,t_);
+    double w =0;
+    while(i<numEach){
+        x.second = t_;
+        gen_->retIC(x.first);
+        w = gen_->retWeight(x.first);
+        xo = int_->operator()(x);
+        bin_->operator()(xo.first,w);
+        ++i;
+    }
+    if (world.rank() == 0){
+        gen_->seek(numEach*world.size()-numEach);
+        for(std::size_t i=numEach*world.size();i<numTrajs_;++i){
+            x.second = t_;
+            gen_->retIC(x.first);
+            w = gen_->retWeight(x.first);
+            xo = int_->operator()(x);
+            bin_->operator()(xo.first,w);
+        }
+    }
+    world.barrier();
+    if (world.rank() == 0) {
+        bPtr nB(bin_);
+        //std::vector<int> nBs = nB.shape();
+        //std::for_each(nBs.begin(),nBs.end(),std::cout<< " poo " << boost::lambda::_1); std::cout << std::endl;
+        mpi::all_reduce(world, bin_, nB, binAdd());
+        bin_ = nB;
+      } else {
+        mpi::all_reduce(world, bin_, binAdd());
+    }
+
+
+}
+
+bPtr binAdd::operator()(bPtr rhs, const bPtr lhs){
+    rhs->operator+=(*lhs);
+    return rhs;
+}
+
 void Trajs::multiOMPNoStore(){
     
     Coords xx(dims_,0.), xxo(dims_,0.);
@@ -87,30 +136,30 @@ void Trajs::multiOMPNoStore(){
 
     #pragma omp parallel default(shared)
     {
-        #ifdef NDEBUG
+        #ifdef OPENMP_FOUND
         omp_lock_t genlock, binlock;
         omp_init_lock(&genlock);
         omp_init_lock(&binlock);
         #endif
         ///TODO: change schedule parameters
         #pragma omp for schedule(dynamic)
-        for (std::size_t i=0;i<numTrajs_; ++i){
+        for (int i=0;i<static_cast<int>(numTrajs_); ++i){
             Integrator Int(*int_);
             std::pair<Coords,double> x = std::make_pair(xx,t_), xo = std::make_pair(xxo,t_);
-#ifdef NDEBUG
+#ifdef OPENMP_FOUND
             omp_set_lock(&genlock);
 #endif
             gen_->retIC(x.first);
             double w = gen_->retWeight(x.first);
-#ifdef NDEBUG
+#ifdef OPENMP_FOUND
             omp_unset_lock(&genlock);
 #endif
             xo = Int(x);
-#ifdef NDEBUG
+#ifdef OPENMP_FOUND
             omp_set_lock(&binlock);
 #endif
             bin_->operator()(xo.first,w);
-#ifdef NDEBUG
+#ifdef OPENMP_FOUND
             omp_unset_lock(&binlock);
 #endif
         }

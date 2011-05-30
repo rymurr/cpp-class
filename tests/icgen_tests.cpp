@@ -200,6 +200,72 @@ BOOST_AUTO_TEST_CASE(lineartest3)
     std::cout << "\n" << std::endl;
 }
 
+BOOST_AUTO_TEST_CASE(lineartest4)
+{
+    std::vector<double> xx(3,0.);
+    std::vector<int> yy(3,3);
+    test["dims"] = yy;
+    test["means"] = xx;
+    test["dist-type"] = 1;
+
+    std::cout << "\n" << std::endl;
+    icgenerator gen2(test), gen3(test);
+    Coords vals(xx);
+    std::cout << "\n" << std::endl;
+    for (int i = 0; i < 3; i++)
+            vals[i]= 202;
+    for (int i=0;i<15;i++){
+        gen2.retIC(vals);
+        for (int j=0;j<3;j++){
+            std::cout << vals[j] << " ";
+        }
+        std::cout << "\n";
+    }
+    std::cout << "split here" <<std::endl;
+    gen3.seek(15);
+    for (int i=15;i<27;i++){
+        gen3.retIC(vals);
+        for (int j=0;j<3;j++){
+            std::cout << vals[j] << " ";
+        }
+        std::cout << "\n";
+    }
+    std::cout << "\n" << std::endl;
+}
+
+BOOST_AUTO_TEST_CASE(lineartest5)
+{
+    std::vector<double> xx(3,0.);
+    std::vector<int> yy(3,3);
+    test["dims"] = yy;
+    test["means"] = xx;
+    test["dist-type"] = 2;
+
+    std::cout << "\n" << std::endl;
+    icgenerator gen2(test), gen3(test);
+    Coords vals(xx);
+    std::cout << "\n" << std::endl;
+    for (int i = 0; i < 3; i++)
+            vals[i]= 202;
+    for (int i=0;i<15;i++){
+        gen2.retIC(vals);
+        for (int j=0;j<3;j++){
+            std::cout << vals[j] << " ";
+        }
+        std::cout << "\n";
+    }
+    std::cout << "split here" <<std::endl;
+    gen3.seek(15);
+    for (int i=15;i<27;i++){
+        gen3.retIC(vals);
+        for (int j=0;j<3;j++){
+            std::cout << vals[j] << " ";
+        }
+        std::cout << "\n";
+    }
+    std::cout << "\n" << std::endl;
+}
+
 BOOST_AUTO_TEST_CASE(serialize1)
 {
     std::ofstream ofs("test.dat");

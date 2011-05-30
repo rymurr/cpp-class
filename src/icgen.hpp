@@ -157,6 +157,32 @@ class icgenerator{
             }
         };
 
+        void seekIC(int n){
+            if(j_ < tnumb_ && j_+n < tnumb_){
+                if(single_){
+                    icGens_->seek(n);
+                }else{
+                    j_+=n;
+                }
+            } else {
+                LOG(ERROR) << "can't seek this far, doing nothing";
+            }
+        }
+
+        void seekWeight(int n){
+            if(k_ < tnumb_ && k_+n < tnumb_){
+                if(!single_){
+                    k_+=n;
+                }
+            } else {
+                LOG(ERROR) << "can't seek this far, doing nothing";
+            }
+        }
+
+        void seek(int n){
+            this->seekWeight(n);
+            this->seekIC(n);
+        }
         double retWeight(Coords& ics){
             if (k_ < tnumb_){
                 if (single_) {

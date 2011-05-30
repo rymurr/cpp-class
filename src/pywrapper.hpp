@@ -41,8 +41,10 @@ class simulation{
         boost::shared_ptr<icgenerator> icgen_;
 
         void common_setup(){
+#ifdef GFlags_FOUND
             google::InitGoogleLogging("cpp-class");
             google::InstallFailureSignalHandler();
+#endif
         };
 
     public:
@@ -59,7 +61,9 @@ class simulation{
         };
 
         ~simulation(){
+#ifdef GFlags_FOUND
             google::ShutdownGoogleLogging();
+#endif
         };
 
         void param_init(){

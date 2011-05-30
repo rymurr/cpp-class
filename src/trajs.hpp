@@ -1,7 +1,23 @@
+#ifndef TRAJS_HPP_
+#define TRAJS_HPP_
+
+#include "config.h"
+#ifdef MPI_FOUND
+//#include <mpi.h>
+#include <assert.h>
+#include <boost/mpi.hpp>
+//#include <boost/mpi/communicator.hpp>
+//#include <boost/mpi/operations.hpp>
+//#include <mrmpi/mapreduce.h>
+//#include <mrmpi/keyvalue.h>
+#endif
+
+#ifdef OPENMP_FOUND
+#include <omp.h>
+#endif
+
 #include <vector>
 #include <map>
-
-#include <omp.h>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
@@ -14,6 +30,8 @@
 #include "customGlog.hpp"
 
 namespace classical{
+typedef boost::shared_ptr<Binner> bPtr;
+
 class Trajs {
     private:
         std::vector<Coords> nums_;
@@ -36,7 +54,24 @@ class Trajs {
     void singleNoStore();
     void singleStore();
     void singleNoBin();
-    void mutliMapReduce(){};
+    void multiMapReduce();
 
 };
+
+class binAdd{
+    public:
+    bPtr operator()(bPtr, const bPtr);
+};
+
 }
+
+
+namespace boost { namespace mpi {
+
+  template<>
+  struct is_commutative<classical::binAdd, boost::shared_ptr<classical::Binner> >
+    : mpl::true_ { };
+
+} }
+
+#endif

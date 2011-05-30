@@ -26,6 +26,9 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/operators.hpp>
 #include <boost/iterator/iterator_facade.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/split_member.hpp>
+#include <boost/serialization/version.hpp>
 
 ///primary namespace for classical propagator code
 namespace classical {
@@ -304,6 +307,14 @@ class Point: boost::arithmetic<Point<T>
         friend std::ostream& operator <<(std::ostream& out, const Point& x){
             std::for_each(x.begin(), x.end(), out << " " << boost::lambda::_1);
             return out;
+        }
+
+        friend class boost::serialization::access;
+
+        template<class Archive>
+        void serialize(Archive & ar, const unsigned int version)
+        {
+            ar & x_;
         }
 
 };

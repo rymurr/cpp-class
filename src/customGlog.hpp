@@ -11,8 +11,8 @@
  */
 // $Log$
 
-
-#ifndef Gflags
+#include "config.h"
+#ifndef GFlags_FOUND
     /// macro to print input to custom log file
     #define LOG(X) (std::cout << X << " ")
     /// macro to print input to custom debug log file

@@ -87,6 +87,8 @@ class SingleIC{
 
         void virtual reset(int){};
 
+        void virtual seek(int){};
+
 };
 
 class SingleLinIC: public SingleIC{
@@ -114,7 +116,7 @@ class SingleLinIC: public SingleIC{
             std::transform(grids_.begin()+1,grids_.end(),current_.begin()+1,boost::lambda::bind(&SingleGrid::operator(),boost::lambda::_1));
         };
 
-        void operator()(Coords& retVal){
+        void next(){
             int i=0;
             bool exit = false;
             while (!exit && i<(*this).size_){
@@ -123,8 +125,20 @@ class SingleLinIC: public SingleIC{
                 current_[i] = grids_[i]();
                 ++i;
             }
+        }
+
+        virtual void operator()(Coords& retVal){
+            next();
             std::transform(current_.begin(),current_.end(),retVal.begin(), boost::lambda::bind(&std::pair<double,bool>::first,boost::lambda::_1));
         };
+
+        virtual void seek(int n){
+            ///TODO: parallelize this
+            for (int i=0;i<n;++i){
+                next();
+            }
+        };
+
  };
 
 class SingleRandIC: public SingleIC{
@@ -143,7 +157,17 @@ class SingleRandIC: public SingleIC{
             generators_ = boost::shared_ptr<boost::variate_generator<base_generator_type&, boost::normal_distribution<> > >( new boost::variate_generator<base_generator_type&, boost::normal_distribution<> >(generator_,dist_));
         };
 
-        void operator()(Coords& retVal){std::transform(this->mean_.begin(),this->mean_.end(),retVal.begin(),boost::lambda::_1 + generators_->operator()());};
+        void operator()(Coords& retVal){
+            //std::transform(this->mean_.begin(),this->mean_.end(),retVal.begin(),boost::lambda::_1 + generators_->operator()());
+            for (std::size_t i=0;i<mean_.size();++i){
+                retVal[i] = mean_[i] + generators_->operator()();
+            }
+        };
+
+        virtual void seek(int n){
+            generators_->engine().seed(std::time(0)*n);
+            generators_->distribution().reset();
+        };
 };
 
 
