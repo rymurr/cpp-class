@@ -142,7 +142,10 @@ class Binner: boost::arithmetic<Binner> {
             bins_(i) += w;
         };
 
-       boost::shared_ptr<binSlice> int2D(int x, int y){
+        boost::shared_ptr<binState> int3D(){
+            return boost::shared_ptr<binState>(&bins_);
+        }
+        boost::shared_ptr<binSlice> int2D(int x, int y){
             const binState::size_type* dims = bins_.shape();
             std::size_t dim1;
             if (x+y==3){

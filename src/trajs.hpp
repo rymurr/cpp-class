@@ -34,8 +34,9 @@ typedef boost::shared_ptr<Binner> bPtr;
 
 class Trajs {
     private:
-        std::vector<Coords> nums_;
-        boost::shared_ptr<Binner> bin_;
+        std::vector<Coords> nums_, initNums_;
+        std::vector<double> ws_;
+        boost::shared_ptr<Binner> bin_, initBin_;
         boost::shared_ptr<Integrator> int_;
         boost::shared_ptr<icgenerator> gen_;
         boost::function<void (Trajs&)> run_;
@@ -48,6 +49,12 @@ class Trajs {
     
     void runTraj(){
         run_((*this));
+    }
+
+    void runBins(){
+        for(std::size_t i=0;i<nums_.size();++i){
+            bin_->operator ()(nums_[i], ws_[i]);
+        }
     }
 
     void multiOMPNoStore();

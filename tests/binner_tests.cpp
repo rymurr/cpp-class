@@ -24,6 +24,7 @@
 #include "integrator.hpp"
 #include "multi_array_serial.hpp"
 
+static double escapeRange = 10E8;
 
 BOOST_AUTO_TEST_SUITE(binner)
 

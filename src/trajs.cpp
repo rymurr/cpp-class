@@ -2,7 +2,7 @@
 #include "trajs.hpp"
 namespace classical{
 
-Trajs::Trajs(int id, anyMap& params, boost::shared_ptr<icgenerator> gen, boost::shared_ptr<Integrator> integrate, boost::shared_ptr<Binner> bin):bin_(bin), int_(integrate), gen_(gen){
+Trajs::Trajs(int id, anyMap& params, boost::shared_ptr<icgenerator> gen, boost::shared_ptr<Integrator> integrate, boost::shared_ptr<Binner> bin, boost::shared_ptr<Binner> initBin):bin_(bin), initBin_(initBin), int_(integrate), gen_(gen){
     using boost::any_cast;
     ///TODO: check these names!
     std::vector<int> trajs = any_cast<std::vector<int> >(params["dims"]);
@@ -44,6 +44,9 @@ void Trajs::singleStore(){
         gen_->retIC(x.first);
         w = gen_->retWeight(x.first);
         xo = int_->operator()(x);
+        if (fabs(xo.second - x.second) > 1E-5){
+            initBin_->operator()(x.first,w);
+        }
         bin_->operator()(xo.first,w);
         nums_.push_back(xo.first);
         ++i;
@@ -62,6 +65,10 @@ void Trajs::singleNoBin(){
         w = gen_->retWeight(x.first);
         xo = int_->operator()(x);
         nums_.push_back(xo.first);
+        initNums_.push_back(x.first);
+        //was going through this file to make sure initial bins get filled. Will then add methods to access them from simulation class
+        //after that I have to add params and test C++ side, then serialize stuff, python side, testing and GUI!
+        ws_.push_back(w);
         ++i;
     }
 }

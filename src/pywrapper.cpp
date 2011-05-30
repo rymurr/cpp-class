@@ -2,7 +2,29 @@
 
 namespace classical{
 
-void simulation::run_trajs(){}
+void simulation::initTrajsBins(){
+    using boost::any_cast;
+    int pDim = any_cast<int>(map_->operator[]("plot_dims"));
+    int pNum = any_cast<int>(map_->operator[]("plot_nums"));
+    double pRange = any_cast<double>(map_->operator[]("plot_ranges"));
+    std::vector<int> N(pDim, pNum);
+    std::vector<double> V(pDim, pRange);
+    bins_ = boost::shared_ptr<Binner>(new Binner(N,V));
+    int_ = boost::shared_ptr<Integrator>(new Integrator(*map_));
+    trajs_ = boost::shared_ptr<Trajs>(new Trajs(1, *map_, icgen_, int_, bins_));
+}
+
+void simulation::run_trajs(){
+    this->initTrajsBins();
+    trajs_->runTraj();
+}
+
+void simulation::run_bins(){
+    using boost::any_cast;
+    if (any_cast<bool>(map_->operator[]("separate_bins")))
+        trajs_->runBins();
+}
+
 void simulation::ic_gen(){
     LOG(INFO) << "building potentials and fields";
     int num_fields = any_cast<int>((*map_)["nfield"]);

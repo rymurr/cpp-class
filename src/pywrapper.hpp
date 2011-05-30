@@ -13,12 +13,16 @@
 #include <boost/python/list.hpp>
 
 
+//#include "config.hpp"
 #include "input_param.hpp"
 #include "icgen.hpp"
 #include "fields.hpp"
 //#include "potential.hpp"
 #include "zeros.hpp"
 #include "coords.hpp"
+#include "binner.hpp"
+#include "integrator.hpp"
+#include "trajs.hpp"
 
 
 namespace classical{
@@ -39,6 +43,9 @@ class simulation{
         boost::shared_ptr<std::vector<boost::shared_ptr<Potential> > > pots_;
         boost::shared_ptr<Potential> totPot_;
         boost::shared_ptr<icgenerator> icgen_;
+        boost::shared_ptr<Binner> bins_;
+        boost::shared_ptr<Integrator> int_;
+        boost::shared_ptr<Trajs> trajs_;
 
         void common_setup(){
 #ifdef GFlags_FOUND
@@ -46,6 +53,8 @@ class simulation{
             google::InstallFailureSignalHandler();
 #endif
         };
+
+        void initTrajsBins();
 
     public:
         simulation(int argc, boost::python::list argv, std::string fname): argc_(argc), fname_(fname){
@@ -77,6 +86,8 @@ class simulation{
         void ic_gen();
 
         void run_trajs();
+
+        void run_bins();
 };
 
 

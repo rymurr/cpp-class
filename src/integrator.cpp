@@ -4,12 +4,7 @@
 namespace classical{
 
 
-typedef std::vector<Coords> container_type;
-typedef std::pair< container_type , container_type > state_type;
-typedef boost::numeric::odeint::hamiltonian_stepper_rk<container_type> stepper_type_symp;
-typedef boost::numeric::odeint::stepper_rk5_ck<Coords> stepper_type_rk;
-typedef boost::numeric::odeint::controlled_stepper_standard< stepper_type_rk > controller;
-typedef boost::numeric::odeint::controlled_stepper_bs< Coords > controller2;
+
 
 
 class DerivClassP {
@@ -95,24 +90,37 @@ class obs{
         }
 };
 
-Cpair OdeIntRKStrategy::operator()(Cpair &xin){
+Cpair OdeIntRKStrategy::operator()(const Cpair &x){
 
+    Coords xin(x);
     DerivClassRK derivs(kin_,pot_);
     stepper_type_rk stepper;
     controller2 control(eps_abs_, eps_rel_, 1.0, 1.0);
-    obs observ;
 
     if (observe_){
-        boost::numeric::odeint::integrate_adaptive(control, derivs, xin.first, tin_, xin.second, dt_, observ);
+        obs observ;
+        boost::numeric::odeint::integrate_adaptive(control, derivs, xin.first, tin_, tCheck_, dt_, observ);
+        boost::numeric::odeint::integrate_adaptive(control, derivs, xin.first, tCheck_, xin.second, dt_, observ);
+        if(checkTrapC(xin.first)){
+            boost::numeric::odeint::integrate_adaptive(control, derivs, xin.first, tCheck_, xin.second, dt_);
+        } else {
+            xin.second = tCheck_;
+        }
     } else {
-        boost::numeric::odeint::integrate_adaptive(control, derivs, xin.first, tin_, xin.second, dt_);
+        boost::numeric::odeint::integrate_adaptive(control, derivs, xin.first, tin_, tCheck_, dt_);
+        if(checkTrapC(xin.first)){
+            boost::numeric::odeint::integrate_adaptive(control, derivs, xin.first, tCheck_, xin.second, dt_);
+        } else {
+            xin.second = tCheck_;
+        }
     }
 
     return xin;
 }
 
-Cpair OdeIntSympStrategy::operator()(Cpair &xin){
+Cpair OdeIntSympStrategy::operator()(const Cpair &xx){
 
+    Coords xin(xx);
     std::size_t half = xin.first.size()/2;
     Coords x(half), p(half);
     for (std::size_t i=0;i<half;++i){
@@ -138,12 +146,19 @@ Cpair OdeIntSympStrategy::operator()(Cpair &xin){
     state_type state = std::make_pair(xx, pp);
     stepper_type_symp stepper;
 
-    int steps = xin.second/dt_;
-    for (int i=1;i<=steps;++i){
+    int steps1 = xin.second/dt_;
+    int steps2 = tCheck_/dt_;
+    for (int i=0;i<=steps2;++i){
         t+=dt_;
         stepper.do_step(derivs, state, t, dt_);
     }
-    //TODO: this should probably be changed to make sure that EXACTLY tfinal is done EVERYTIME. Right now we miss on a small fraction <dt
+    if(checkTrapS(state)){
+        for (int i=steps2+1;i<steps1;++i){
+            t+=dt_;
+            stepper.do_step(derivs, state, t, dt_);
+        }
+        stepper.do_step(derivs, state, xin.second, xin.second-steps1*dt_);
+    }
     tin_ = t;
 
     Coords xfin(xin.first.size());
@@ -201,5 +216,7 @@ Integrator::Integrator(anyMap &params){
             LOG(FATAL) << "bad choice for integrator type, exiting...";
     }
 }
+
+
 
 }

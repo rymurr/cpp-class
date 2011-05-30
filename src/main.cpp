@@ -17,9 +17,8 @@
 
 #include "customGlog.hpp"
 
-//#include <gflags/gflags.h>
-
 #include "pywrapper.hpp"
+#include "config.hpp"
 
 
 int main(int argc, char *argv[])
