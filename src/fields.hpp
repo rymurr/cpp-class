@@ -52,7 +52,7 @@ class ConstField: public Field {
     public:
         ConstField(int id, double ef, double omega, double phi, int pol):ef_(ef), omega_(omega), phi_(phi), id_(id), pol_(pol){};
 
-        virtual double operator()(double t){return ef_ * cos(omega_*t+phi_);};
+        virtual double operator()(double t){return -ef_ * cos(omega_*t+phi_);};
 
         virtual int pol(){return pol_;};
 };
@@ -65,7 +65,7 @@ class StaticField: public Field {
     public:
         StaticField(int id, double ef, double pol):ef_(ef) ,id_(id), pol_(pol){};
 
-        virtual double operator()(double t){return ef_;};
+        virtual double operator()(double t){return -ef_;};
 
         virtual int pol(){return pol_;};
 };
@@ -80,7 +80,7 @@ class GaussianField: public Field {
             fwhm_ = -4.0*log(2.0)/(fwhm*fwhm);
         };
 
-        virtual double operator()(double t){return ef_ * cos(omega_*t+phi_) * exp(-fwhm_*(t-tmid_)*(t-tmid_));};
+        virtual double operator()(double t){return -ef_ * cos(omega_*t+phi_) * exp(-fwhm_*(t-tmid_)*(t-tmid_));};
 
         virtual int pol(){return pol_;};
 };
@@ -95,7 +95,7 @@ class SineSquareField: public Field {
             fwhm_ = pi*0.5/fwhm;
         };
 
-        virtual double operator()(double t){return ef_ * cos(omega_*t+phi_) * pow(sin(fwhm_*t),2);};
+        virtual double operator()(double t){return -ef_ * cos(omega_*t+phi_) * pow(sin(fwhm_*t),2);};
 
         virtual int pol(){return pol_;};
 };

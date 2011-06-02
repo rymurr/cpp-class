@@ -4,7 +4,6 @@ namespace classical{
 
 Trajs::Trajs(int id, anyMap& params, boost::shared_ptr<icgenerator> gen, boost::shared_ptr<Integrator> integrate, boost::shared_ptr<Binner> bin, boost::shared_ptr<Binner> initBin):bin_(bin), initBin_(initBin), int_(integrate), gen_(gen){
     using boost::any_cast;
-    ///TODO: check these names!
     std::vector<int> trajs = any_cast<std::vector<int> >(params["dims"]);
     numTrajs_ = std::accumulate(trajs.begin(),trajs.end(),1,std::multiplies<int>());
     dims_ = trajs.size();
@@ -26,74 +25,96 @@ Trajs::Trajs(int id, anyMap& params, boost::shared_ptr<icgenerator> gen, boost::
             run_=&Trajs::multiOMPNoStore;
             LOG(INFO) << "running OpenMP parallel without storing and with binning";
             break;
-        default:
+        case 5:
             run_=&Trajs::multiMapReduce;
             LOG(INFO) << "running MPI parallel without storing and with binning";
+        default:
+            LOG(FATAL) << "bad sim-type, can't continue";
     }
             
 }
 
 void Trajs::singleStore(){
-    ///TODO: set capacity of vector now so there are no re-allocations.
+    LOG(INFO) << "starting trajectories";
+    nums_.reserve(numTrajs_);
+    initNums_.reserve(numTrajs_);
+    int half = dims_/2;
     std::size_t i = 0;
     Coords xx(dims_,0.), xxo(dims_,0.);
     std::pair<Coords,double> x = std::make_pair(xx,t_), xo = std::make_pair(xxo,t_);
     double w =0;
+    boost::progress_display show_progress(numTrajs_, std::clog);
     while(i<numTrajs_){
         x.second = t_;
         gen_->retIC(x.first);
         w = gen_->retWeight(x.first);
         xo = int_->operator()(x);
-        if (fabs(xo.second - x.second) > 1E-5){
-            initBin_->operator()(x.first,w);
+        if (fabs(xo.second - x.second) < 1E-5){
+            initBin_->operator()(x.first,w,half);
+            bin_->operator()(xo.first,w,half);
+            nums_.push_back(xo.first);
+            initNums_.push_back(x.first);
         }
-        bin_->operator()(xo.first,w);
-        nums_.push_back(xo.first);
         ++i;
+        ++show_progress;
     }
 }
 
 void Trajs::singleNoBin(){
-    ///TODO: set capacity of vector now so there are no re-allocations.
+    LOG(INFO) << "starting trajectories";
+    nums_.reserve(numTrajs_);
+    initNums_.reserve(numTrajs_);
     std::size_t i = 0;
     Coords xx(dims_,0.), xxo(dims_,0.);
     std::pair<Coords,double> x = std::make_pair(xx,t_), xo = std::make_pair(xxo,t_);
     double w =0;
+    boost::progress_display show_progress(numTrajs_, std::clog);
     while(i<numTrajs_){
         x.second = t_;
         gen_->retIC(x.first);
         w = gen_->retWeight(x.first);
         xo = int_->operator()(x);
-        nums_.push_back(xo.first);
-        initNums_.push_back(x.first);
-        //was going through this file to make sure initial bins get filled. Will then add methods to access them from simulation class
-        //after that I have to add params and test C++ side, then serialize stuff, python side, testing and GUI!
-        ws_.push_back(w);
+        if (fabs(xo.second - x.second) < 1E-5){
+            nums_.push_back(xo.first);
+            initNums_.push_back(x.first);
+            ws_.push_back(w);
+        }
         ++i;
+        ++show_progress;
     }
 }
 
 void Trajs::singleNoStore(){
+    LOG(INFO) << "starting trajectories";
     std::size_t i = 0;
+    int half = dims_/2;
     Coords xx(dims_,0.), xxo(dims_,0.);
     std::pair<Coords,double> x = std::make_pair(xx,t_), xo = std::make_pair(xxo,t_);
     double w =0;
+    boost::progress_display show_progress(numTrajs_, std::clog);
     while(i<numTrajs_){
         x.second = t_;
         gen_->retIC(x.first);
         w = gen_->retWeight(x.first);
         xo = int_->operator()(x);
-        bin_->operator()(xo.first,w);
+        if (fabs(xo.second - x.second) < 1E-5){
+            initBin_->operator()(x.first,w);
+            bin_->operator()(xo.first,w);
+        }
         ++i;
+        ++show_progress;
     }
 }
 
 void Trajs::multiMapReduce(){
+    LOG(INFO) << "starting trajectories";
+    int half = dims_/2;
     int argc; char** argv;
     namespace mpi = boost::mpi;
     mpi::environment env(argc, argv);
     mpi::communicator world;
     std::size_t numEach = numTrajs_/world.size();
+    boost::progress_display show_progress(numEach, std::clog);
     gen_->seek(numEach*world.rank());
     std::size_t i = 0;
     Coords xx(dims_,0.), xxo(dims_,0.);
@@ -104,8 +125,14 @@ void Trajs::multiMapReduce(){
         gen_->retIC(x.first);
         w = gen_->retWeight(x.first);
         xo = int_->operator()(x);
-        bin_->operator()(xo.first,w);
+        if (fabs(xo.second - x.second) < 1E-5){
+            initBin_->operator()(x.first,w,half);
+            bin_->operator()(xo.first,w,half);
+        }
         ++i;
+        if (world.rank() == 0){
+            ++show_progress;
+        }
     }
     if (world.rank() == 0){
         gen_->seek(numEach*world.size()-numEach);
@@ -114,18 +141,32 @@ void Trajs::multiMapReduce(){
             gen_->retIC(x.first);
             w = gen_->retWeight(x.first);
             xo = int_->operator()(x);
-            bin_->operator()(xo.first,w);
+            if (fabs(xo.second - x.second) < 1E-5){
+                initBin_->operator()(x.first,w,half);
+                bin_->operator()(xo.first,w,half);
+            }
         }
     }
+
     world.barrier();
     if (world.rank() == 0) {
+        LOG(INFO) << "trajectories done, starting reduce";
         bPtr nB(bin_);
-        //std::vector<int> nBs = nB.shape();
-        //std::for_each(nBs.begin(),nBs.end(),std::cout<< " poo " << boost::lambda::_1); std::cout << std::endl;
+
         mpi::all_reduce(world, bin_, nB, binAdd());
         bin_ = nB;
       } else {
         mpi::all_reduce(world, bin_, binAdd());
+    }
+    world.barrier();
+    if (world.rank() == 0) {
+        bPtr nB(initBin_);
+        //std::vector<int> nBs = nB.shape();
+        //std::for_each(nBs.begin(),nBs.end(),std::cout<< " poo " << boost::lambda::_1); std::cout << std::endl;
+        mpi::all_reduce(world, initBin_, nB, binAdd());
+        initBin_ = nB;
+      } else {
+        mpi::all_reduce(world, initBin_, binAdd());
     }
 
 
@@ -137,10 +178,12 @@ bPtr binAdd::operator()(bPtr rhs, const bPtr lhs){
 }
 
 void Trajs::multiOMPNoStore(){
-    
+    LOG(INFO) << "starting trajectories";
+    int half = dims_/2;
     Coords xx(dims_,0.), xxo(dims_,0.);
     std::pair<Coords,double> x = std::make_pair(xx,t_), xo = std::make_pair(xxo,t_);
 
+    boost::progress_display show_progress(numTrajs_, std::clog);
     #pragma omp parallel default(shared)
     {
         #ifdef OPENMP_FOUND
@@ -148,8 +191,8 @@ void Trajs::multiOMPNoStore(){
         omp_init_lock(&genlock);
         omp_init_lock(&binlock);
         #endif
-        ///TODO: change schedule parameters
-        #pragma omp for schedule(dynamic)
+
+        #pragma omp for schedule(dynamic,100)
         for (int i=0;i<static_cast<int>(numTrajs_); ++i){
             Integrator Int(*int_);
             std::pair<Coords,double> x = std::make_pair(xx,t_), xo = std::make_pair(xxo,t_);
@@ -162,13 +205,18 @@ void Trajs::multiOMPNoStore(){
             omp_unset_lock(&genlock);
 #endif
             xo = Int(x);
+            if (fabs(xo.second - x.second) < 1E-5){
 #ifdef OPENMP_FOUND
-            omp_set_lock(&binlock);
+                omp_set_lock(&binlock);
 #endif
-            bin_->operator()(xo.first,w);
+                bin_->operator()(xo.first,w,half);
+                initBin_->operator()(x.first,w,half);
 #ifdef OPENMP_FOUND
-            omp_unset_lock(&binlock);
+                omp_unset_lock(&binlock);
 #endif
+                ++show_progress;
+            }
+
         }
     }
 }

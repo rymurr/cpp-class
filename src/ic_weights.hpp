@@ -57,13 +57,14 @@ inline double atomProb(double ef, double ip){
 class AtomWeight: public WeightFunc {
     private:
         double atom_;
-        std::vector<double> sigmas_;
+        std::vector<double> sigmas_, means_;
 
     public:
         AtomWeight(anyMap* params){
             using boost::any_cast;
             sigmas_ = *any_cast<boost::shared_ptr<std::vector<double> > >((*params)["sigmas"]);
             std::vector<double> ef = any_cast<std::vector<double> >((*params)["ef"]);
+            means_ = any_cast<std::vector<double> >(params->operator []("means"));
             double init=0;
             double efs = std::accumulate(ef.begin(),ef.end(),init,std::plus<double>());
             double ip(any_cast<double>((*params)["ip"]));
@@ -74,7 +75,7 @@ class AtomWeight: public WeightFunc {
         virtual double operator()(Coords &ics){
             double retVal = atom_;
             for (std::size_t i=0;i<sigmas_.size();++i){
-                retVal *= gaussProb(ics[i],sigmas_[i]);
+                retVal *= gaussProb(ics[i]-means_[i],sigmas_[i]);
             }
             return retVal;
         }
@@ -97,9 +98,11 @@ class WeightGen {
             switch(id){
                 case 1:
                     func_ = boost::shared_ptr<UnitWeight>(new UnitWeight(params));
+                    LOG(INFO) << "using unit weights";
                     break;
                 case 2:
                     func_ = boost::shared_ptr<AtomWeight>(new AtomWeight(params));
+                    LOG(INFO) << "using ADK weights";
                     break;
                 default:
                     LOG(ERROR) << "was unable to create WeightFunc object! wrong id";

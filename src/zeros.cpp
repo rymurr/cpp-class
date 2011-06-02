@@ -28,7 +28,7 @@ Coords OneDRootFinder::retZeros(){
             zero = retZero;
     }
     r[2] = zero;
-    std::cout << r << std::endl;
+    //std::cout << r << std::endl;
     return r;
 }
 

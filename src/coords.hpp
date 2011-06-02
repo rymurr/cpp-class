@@ -54,6 +54,15 @@ class Point: boost::arithmetic<Point<T>
     private:
         ///the vector which holds the n-d point
         std::vector<T> x_;
+
+        friend class boost::serialization::access;
+
+        template<class Archive>
+        void serialize(Archive & ar, const unsigned int version)
+        {
+            ar & x_;
+        }
+
     public:
 
         ///defines an iterator for the Point class
@@ -309,13 +318,7 @@ class Point: boost::arithmetic<Point<T>
             return out;
         }
 
-        friend class boost::serialization::access;
 
-        template<class Archive>
-        void serialize(Archive & ar, const unsigned int version)
-        {
-            ar & x_;
-        }
 
 };
 

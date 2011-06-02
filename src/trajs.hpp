@@ -1,7 +1,7 @@
 #ifndef TRAJS_HPP_
 #define TRAJS_HPP_
 
-#include "config.h"
+#include "config.hpp"
 #ifdef MPI_FOUND
 //#include <mpi.h>
 #include <assert.h>
@@ -22,6 +22,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/any.hpp>
+#include <boost/progress.hpp>
 
 #include "icgen.hpp"
 #include "integrator.hpp"
@@ -45,7 +46,7 @@ class Trajs {
         double t_;
 
     public:
-        Trajs(int id, anyMap&, boost::shared_ptr<icgenerator> gen, boost::shared_ptr<Integrator> integrate, boost::shared_ptr<Binner> bin);
+        Trajs(int id, anyMap&, boost::shared_ptr<icgenerator> gen, boost::shared_ptr<Integrator> integrate, boost::shared_ptr<Binner> bin ,boost::shared_ptr<Binner> initBin);
     
     void runTraj(){
         run_((*this));

@@ -1,4 +1,4 @@
-// $Id$
+ // $Id$
 /**
  * @file main.cpp
  * This is the control routine for the rate calculation. it can calculate
@@ -30,7 +30,10 @@ int main(int argc, char *argv[])
         av.push_back(*(argv+i));
     }
     simulation s(argc,av,"poo.cfg");
-    s.param_init();
+    int retVal = s.param_init();
+    if (retVal!=0){
+        return retVal;
+    }
     LOG(INFO) << "building initial conditions";
     s.ic_gen();
     

@@ -1,0 +1,15 @@
+#ifndef _CONFIG_HPP_
+#define _CONFIG_HPP_
+
+#cmakedefine OPENMP_FOUND
+#cmakedefine MPI_FOUND
+#cmakedefine GOOGLE_PERFTOOLS_FOUND
+#cmakedefine GFlags_FOUND
+#cmakedefine PYTHONLIBS_FOUND
+#cmakedefine NDEBUG
+
+#ifdef NDEBUG
+#define BOOST_DISABLE_ASSERTS
+#endif
+
+#endif

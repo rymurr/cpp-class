@@ -92,7 +92,7 @@ class obs{
 
 Cpair OdeIntRKStrategy::operator()(const Cpair &x){
 
-    Coords xin(x);
+    Cpair xin(x);
     DerivClassRK derivs(kin_,pot_);
     stepper_type_rk stepper;
     controller2 control(eps_abs_, eps_rel_, 1.0, 1.0);
@@ -118,9 +118,9 @@ Cpair OdeIntRKStrategy::operator()(const Cpair &x){
     return xin;
 }
 
-Cpair OdeIntSympStrategy::operator()(const Cpair &xx){
+Cpair OdeIntSympStrategy::operator()(const Cpair &xF){
 
-    Coords xin(xx);
+    Cpair xin(xF);
     std::size_t half = xin.first.size()/2;
     Coords x(half), p(half);
     for (std::size_t i=0;i<half;++i){

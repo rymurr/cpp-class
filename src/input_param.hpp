@@ -39,7 +39,7 @@
     #include <gflags/gflags.h>
 #endif
 #include "customGlog.hpp"
-
+#include "config.hpp"
 #include "params.hpp"
 namespace classical{
 
@@ -88,7 +88,7 @@ class pmap {
     
 //        void restore();
 
-        bool read_params(const std::string, const int, std::vector<std::string>&);
+        int read_params(const std::string, const int, std::vector<std::string>&);
 };
 
 }

@@ -13,6 +13,7 @@
 #include <boost/serialization/shared_ptr.hpp>
 //#include <boost/serialization/split_member.hpp>
 #include <boost/serialization/version.hpp>
+
 #include "multi_array_serial.hpp"
 #include "coords.hpp"
 #include "customGlog.hpp"
@@ -33,7 +34,7 @@ typedef boost::multi_array<double,3> binState;
 typedef boost::multi_array<double,2> binSlice;
 typedef boost::shared_ptr<boost::multi_array<double,2> > binSlicePtr;
 typedef std::vector<double> binSlice2;
-typedef boost::shared_ptr<std::vector<double> > binSlice2Ptr;
+typedef boost::shared_ptr<binSlice2 > binSlice2Ptr;
 
 class Binner: boost::arithmetic<Binner> {
     private:
@@ -131,9 +132,9 @@ class Binner: boost::arithmetic<Binner> {
             return *this;
         }
 
-        void operator()(Coords& x, double w){
+        void operator()(Coords& x, double w, int in=0){
             boost::array<binState::index,3> i = {{binState::index(0),binState::index(0),binState::index(0)}};
-            for (int j=0;j<size_;++j){
+            for (int j=in;j<in+size_;++j){
                 if (fabs(x[j])>ranges_[j]) continue;
                 i[j] = floor((x[j]+ranges_[j])/dxs_[j]);
                 //std::cout << i[j] << " " << x[j] << " " << dxs_[j] << " " << ranges_[j] << std::endl;
@@ -143,8 +144,19 @@ class Binner: boost::arithmetic<Binner> {
         };
 
         boost::shared_ptr<binState> int3D(){
-            return boost::shared_ptr<binState>(&bins_);
+            ///TODO: should make this a const pointer or something, no need to copy the whole array!
+            return boost::shared_ptr<binState>(new binState(bins_));
         }
+
+        binSlice2Ptr range(int n){
+            binSlice2Ptr x = binSlice2Ptr(new binSlice2(Ns_[n-1],-ranges_[n-1] + 0.5*dxs_[n-1]));
+
+            for(int i=1;i<Ns_[n-1];++i){
+                x->operator [](i)  += i*dxs_[n-1];
+            }
+            return x;
+        };
+
         boost::shared_ptr<binSlice> int2D(int x, int y){
             const binState::size_type* dims = bins_.shape();
             std::size_t dim1;
@@ -185,7 +197,8 @@ class Binner: boost::arithmetic<Binner> {
             } else {
                 LOG(FATAL) << "bad input for int1D";
             }
-            binSlice2Ptr retArray = binSlice2Ptr(new binSlice2(dims[x-1],0));
+
+            binSlice2Ptr retArray = binSlice2Ptr(new binSlice2(dims[x-1]));
             for (std::size_t k=0;k<dims[x-1];++k){
                 for (std::size_t i=0;i<dim1;++i){
                     for (std::size_t j=0;j<dim2;++j){

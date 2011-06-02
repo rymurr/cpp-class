@@ -63,9 +63,10 @@ BOOST_AUTO_TEST_CASE(trajsInit){
     std::vector<int> N(2,128);
     std::vector<double> V(2,5);
     boost::shared_ptr<Binner> bin = boost::shared_ptr<Binner>(new Binner(N,V));
+    boost::shared_ptr<Binner> initBin = boost::shared_ptr<Binner>(new Binner(N,V));
     boost::shared_ptr<Integrator> x = boost::shared_ptr<Integrator>(new Integrator(test));
     Coords vals(xx);
-    Trajs trx(1, test, gen, x, bin);
+    Trajs trx(1, test, gen, x, bin, initBin);
     trx.runTraj();
     intX = bin->int1D(1);
     }
@@ -76,9 +77,10 @@ BOOST_AUTO_TEST_CASE(trajsInit){
     std::vector<int> N(2,128);
     std::vector<double> V(2,5);
     boost::shared_ptr<Binner> bin = boost::shared_ptr<Binner>(new Binner(N,V));
+    boost::shared_ptr<Binner> initBin = boost::shared_ptr<Binner>(new Binner(N,V));
     boost::shared_ptr<Integrator> x = boost::shared_ptr<Integrator>(new Integrator(test));
     Coords vals(xx);
-    Trajs trx(2, test, gen, x, bin);
+    Trajs trx(2, test, gen, x, bin, initBin);
     trx.runTraj();
     intY = bin->int1D(1);
     }
@@ -89,9 +91,10 @@ BOOST_AUTO_TEST_CASE(trajsInit){
     std::vector<int> N(2,128);
     std::vector<double> V(2,5);
     boost::shared_ptr<Binner> bin = boost::shared_ptr<Binner>(new Binner(N,V));
+    boost::shared_ptr<Binner> initBin = boost::shared_ptr<Binner>(new Binner(N,V));
     boost::shared_ptr<Integrator> x = boost::shared_ptr<Integrator>(new Integrator(test));
     Coords vals(xx);
-    Trajs trx(4, test, gen, x, bin);
+    Trajs trx(4, test, gen, x, bin, initBin);
     trx.runTraj();
     intZ = bin->int1D(1);
     }
@@ -102,9 +105,10 @@ BOOST_AUTO_TEST_CASE(trajsInit){
     std::vector<int> N(2,128);
     std::vector<double> V(2,5);
     boost::shared_ptr<Binner> bin = boost::shared_ptr<Binner>(new Binner(N,V));
+    boost::shared_ptr<Binner> initBin = boost::shared_ptr<Binner>(new Binner(N,V));
     boost::shared_ptr<Integrator> x = boost::shared_ptr<Integrator>(new Integrator(test));
     Coords vals(xx);
-    Trajs trx(5, test, gen, x, bin);
+    Trajs trx(5, test, gen, x, bin, initBin);
     trx.runTraj();
     intW = bin->int1D(1);
     }

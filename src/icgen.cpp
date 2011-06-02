@@ -18,7 +18,7 @@ icgenerator::icgenerator(anyMap &params, anyMap* wParams){
 
 
     try{
-        single_ = any_cast<bool>(params["nobuild"]);
+        single_ = any_cast<bool>(params["no-build"]);
     } catch (boost::bad_any_cast &e) {
         single_ = false;
     }
