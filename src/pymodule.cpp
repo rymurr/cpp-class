@@ -31,7 +31,7 @@ BOOST_PYTHON_MODULE(classical)
         .def("bin3D",&simulation::int3DPython)
         .def("bin3DInit",&simulation::int3DPythonInit)
         .def("range",&simulation::rangePython)
-        .def(rangeInit,&simulation::rangeInitPython)
+        .def("rangeInit",&simulation::rangeInitPython)
     ;
 }
 }

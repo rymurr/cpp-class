@@ -8,6 +8,7 @@ Trajs::Trajs(int id, anyMap& params, boost::shared_ptr<icgenerator> gen, boost::
     numTrajs_ = std::accumulate(trajs.begin(),trajs.end(),1,std::multiplies<int>());
     dims_ = trajs.size();
     t_ = any_cast<double>(params["tfinal"]);
+    std::cout << id << std::endl;
     switch(id){
         case 1:
             run_=&Trajs::singleStore;
@@ -28,6 +29,7 @@ Trajs::Trajs(int id, anyMap& params, boost::shared_ptr<icgenerator> gen, boost::
         case 5:
             run_=&Trajs::multiMapReduce;
             LOG(INFO) << "running MPI parallel without storing and with binning";
+            break;
         default:
             LOG(FATAL) << "bad sim-type, can't continue";
     }
@@ -49,7 +51,7 @@ void Trajs::singleStore(){
         gen_->retIC(x.first);
         w = gen_->retWeight(x.first);
         xo = int_->operator()(x);
-        if (fabs(xo.second - x.second) < 1E-5){
+        if (fabs(xo.second - x.second) > 1E-5){
             initBin_->operator()(x.first,w,half);
             bin_->operator()(xo.first,w,half);
             nums_.push_back(xo.first);
@@ -74,7 +76,8 @@ void Trajs::singleNoBin(){
         gen_->retIC(x.first);
         w = gen_->retWeight(x.first);
         xo = int_->operator()(x);
-        if (fabs(xo.second - x.second) < 1E-5){
+        std::cout << " from trajs singleNoBin: hello!" << std::endl;
+        if (fabs(xo.second - x.second) > 1E-5){
             nums_.push_back(xo.first);
             initNums_.push_back(x.first);
             ws_.push_back(w);
@@ -97,9 +100,9 @@ void Trajs::singleNoStore(){
         gen_->retIC(x.first);
         w = gen_->retWeight(x.first);
         xo = int_->operator()(x);
-        if (fabs(xo.second - x.second) < 1E-5){
-            initBin_->operator()(x.first,w);
-            bin_->operator()(xo.first,w);
+        if (fabs(xo.second - x.second) > 1E-5){
+            initBin_->operator()(x.first,w,half);
+            bin_->operator()(xo.first,w,half);
         }
         ++i;
         ++show_progress;
@@ -107,6 +110,7 @@ void Trajs::singleNoStore(){
 }
 
 void Trajs::multiMapReduce(){
+
     LOG(INFO) << "starting trajectories";
     int half = dims_/2;
     int argc; char** argv;
@@ -125,7 +129,7 @@ void Trajs::multiMapReduce(){
         gen_->retIC(x.first);
         w = gen_->retWeight(x.first);
         xo = int_->operator()(x);
-        if (fabs(xo.second - x.second) < 1E-5){
+        if (fabs(xo.second - x.second) > 1E-5){
             initBin_->operator()(x.first,w,half);
             bin_->operator()(xo.first,w,half);
         }
@@ -141,7 +145,7 @@ void Trajs::multiMapReduce(){
             gen_->retIC(x.first);
             w = gen_->retWeight(x.first);
             xo = int_->operator()(x);
-            if (fabs(xo.second - x.second) < 1E-5){
+            if (fabs(xo.second - x.second) > 1E-5){
                 initBin_->operator()(x.first,w,half);
                 bin_->operator()(xo.first,w,half);
             }
@@ -168,6 +172,7 @@ void Trajs::multiMapReduce(){
       } else {
         mpi::all_reduce(world, initBin_, binAdd());
     }
+
 
 
 }
@@ -205,7 +210,7 @@ void Trajs::multiOMPNoStore(){
             omp_unset_lock(&genlock);
 #endif
             xo = Int(x);
-            if (fabs(xo.second - x.second) < 1E-5){
+            if (fabs(xo.second - x.second) > 1E-5){
 #ifdef OPENMP_FOUND
                 omp_set_lock(&binlock);
 #endif

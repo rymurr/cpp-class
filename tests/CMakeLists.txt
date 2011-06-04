@@ -1,5 +1,9 @@
 include_directories (. ../src/ ../include)
 
+include_directories(${PYTHON_INCLUDE_DIRS})
+include_directories(${NUMPY_INCLUDE_DIR})
+include_directories(${MPI_INCLUDE_PATH})
+
 link_libraries(boost_unit_test_framework classical ${LIBS})
 add_executable(params_tests ${COMMON} params_tests.cpp)
 add_executable(field_tests ${COMMON} field_tests.cpp)

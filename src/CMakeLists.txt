@@ -4,30 +4,13 @@ cmake_minimum_required( VERSION 2.8 FATAL_ERROR )
 include_directories (.)
 include_directories ("../include/")
 
-if (NOT DEFINED Build_MPI)
-    set(Build_MPI false)
-endif(NOT DEFINED Build_MPI)
-
-INCLUDE (CheckIncludeFiles)
-if (${Build_MPI})
-   find_package(Boost COMPONENTS mpi)
-    if(Boost_FOUND)
-        find_package(MPI)
-        if(MPI_FOUND)
-            include_directories(${MPI_INCLUDE_PATHS})
-            set(LIBS ${LIBS} ${MPI_LIBRARIES})
-        endif(MPI_FOUND)
-     endif(Boost_FOUND)
-endif()
-
-find_package(OpenMP)
-if(OPENMP_FOUND)
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${OpenMP_CXX_FLAGS}")
-endif(OPENMP_FOUND)
+include_directories(${PYTHON_INCLUDE_DIRS})
+include_directories(${NUMPY_INCLUDE_DIR})
 
 find_package(Boost 1.45.0 COMPONENTS program_options date_time serialization filesystem system prg_exec_monitor REQUIRED)
 link_directories ( ${Boost_LIBRARY_DIRS} )
 include_directories ( ${Boost_INCLUDE_DIRS} )
+include_directories(${MPI_INCLUDE_PATH})
 
 #find_package(GSL)
 #if(GSL_FOUND)
@@ -41,7 +24,8 @@ configure_file (
     "${PROJECT_BINARY_DIR}/include/config.hpp"
 )
 
-link_libraries(${LIBS} -lpthread ${Boost_LIBRARIES})
+link_libraries(${LIBS} -lpthread ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
+message("${LIBS}")
 
 set(classical_lib_src input_param.cpp params.cpp pywrapper.cpp pymodule.cpp fields.cpp potential.cpp icgen.cpp zeros.cpp integrator.cpp force.cpp trajs.cpp)
 add_library(classical SHARED ${classical_lib_src})

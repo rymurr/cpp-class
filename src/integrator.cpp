@@ -101,14 +101,14 @@ Cpair OdeIntRKStrategy::operator()(const Cpair &x){
         obs observ;
         boost::numeric::odeint::integrate_adaptive(control, derivs, xin.first, tin_, tCheck_, dt_, observ);
         boost::numeric::odeint::integrate_adaptive(control, derivs, xin.first, tCheck_, xin.second, dt_, observ);
-        if(checkTrapC(xin.first)){
+        if(dCheck_(xin.first)){
             boost::numeric::odeint::integrate_adaptive(control, derivs, xin.first, tCheck_, xin.second, dt_);
         } else {
             xin.second = tCheck_;
         }
     } else {
         boost::numeric::odeint::integrate_adaptive(control, derivs, xin.first, tin_, tCheck_, dt_);
-        if(checkTrapC(xin.first)){
+        if(dCheck_(xin.first)){
             boost::numeric::odeint::integrate_adaptive(control, derivs, xin.first, tCheck_, xin.second, dt_);
         } else {
             xin.second = tCheck_;
@@ -152,7 +152,7 @@ Cpair OdeIntSympStrategy::operator()(const Cpair &xF){
         t+=dt_;
         stepper.do_step(derivs, state, t, dt_);
     }
-    if(checkTrapS(state)){
+    if(dCheck_(state)){
         for (int i=steps2+1;i<steps1;++i){
             t+=dt_;
             stepper.do_step(derivs, state, t, dt_);
@@ -173,15 +173,21 @@ Cpair OdeIntSympStrategy::operator()(const Cpair &xF){
 Integrator::Integrator(anyMap &params){
 
     using boost::any_cast;
-    double tin, dt, eps_abs, eps_rel;
+    double tin, dt, eps_abs, eps_rel, tCheck;
     boost::shared_ptr<Force> pot,kin;
     boost::shared_ptr<Field> dpot;
     int strat = any_cast<int>(params["int-type"]);
-    bool observe;
+    bool observe, dCheck(true);
     try{
         observe = any_cast<bool>(params["watch"]);
     } catch (boost::bad_any_cast &e) {
         observe = false;
+    }
+    try{
+        tCheck = any_cast<bool>(params["tcheck"]);
+    } catch (boost::bad_any_cast &e) {
+        dCheck = false;
+        tCheck = 0;
     }
 
     switch(strat){
@@ -199,7 +205,7 @@ Integrator::Integrator(anyMap &params){
             } catch(boost::bad_any_cast &e) {
                 dpot = boost::shared_ptr<Field>();
             }
-            intStrat_ = boost::shared_ptr<OdeIntSympStrategy>(new OdeIntSympStrategy(tin, dt, kin, pot, dpot));
+            intStrat_ = boost::shared_ptr<OdeIntSympStrategy>(new OdeIntSympStrategy(tin, dt, kin, pot, dpot, tCheck, dCheck));
             LOG(INFO) << "using ODEINT simplectic integrator";
             break;
         case 4:
@@ -209,7 +215,7 @@ Integrator::Integrator(anyMap &params){
             kin = any_cast<boost::shared_ptr<Force> >(params["kinPtr"]);
             eps_rel = any_cast<double>(params["relerr"]);
             eps_abs = any_cast<double>(params["abserr"]);
-            intStrat_ = boost::shared_ptr<OdeIntRKStrategy>(new OdeIntRKStrategy(tin, dt, kin, pot, eps_abs, eps_rel, observe));
+            intStrat_ = boost::shared_ptr<OdeIntRKStrategy>(new OdeIntRKStrategy(tin, dt, kin, pot, eps_abs, eps_rel, observe, tCheck, dCheck));
             LOG(INFO) << "using odeint RK integrator";
             break;
         default:

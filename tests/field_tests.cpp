@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(initparams)
     test["tinitial"] = 1.;
     test["pol"] = z;
     boost::shared_ptr<Field> efield(fieldFactory(test));
-    BOOST_CHECK_CLOSE(efield->operator()(0.),1.,1E-6);
+    BOOST_CHECK_CLOSE(efield->operator()(0.),-1.,1E-6);
 
 
 }

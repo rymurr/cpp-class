@@ -24,7 +24,7 @@
 #include "integrator.hpp"
 #include "multi_array_serial.hpp"
 
-static double escapeRange = 10E8;
+static double escapeRange = 1E-80;
 
 BOOST_AUTO_TEST_SUITE(binner)
 
@@ -37,6 +37,7 @@ BOOST_AUTO_TEST_CASE(trajsInit){
     anyMap test;
 
     test["variance"] = 1.;
+    test["no-build"] = true;
     std::vector<double> xx(4,0.);
     std::vector<int> yy(4,5);
     test["dims"] = yy;
@@ -48,6 +49,7 @@ BOOST_AUTO_TEST_CASE(trajsInit){
     test2["ef"] = std::vector<double>(1,0.6666666666);
     test2["ip"] = 1.0;
     test2["sigmas"] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(4,1.));
+    test2["means"] = xx;
     test["int-type"] = 3;
     test["tinitial"] = 0.;
     test["tfinal"] = 100.;
@@ -99,6 +101,7 @@ BOOST_AUTO_TEST_CASE(trajsInit){
     intZ = bin->int1D(1);
     }
     TimerStop("main1c");
+
     TimerStart("main1d");
     {
     boost::shared_ptr<icgenerator> gen = boost::shared_ptr<icgenerator>(new icgenerator(test,&test2));
@@ -113,11 +116,13 @@ BOOST_AUTO_TEST_CASE(trajsInit){
     intW = bin->int1D(1);
     }
     TimerStop("main1d");
+
     TimerStop("main1");
-    for(std::size_t i=0;i<intY->size();++i){
-        BOOST_CHECK_CLOSE(intY->operator[](i), intX->operator[](i),1E-5);
-        BOOST_CHECK_CLOSE(intZ->operator[](i), intX->operator[](i),1E-5);
-        std::cout << intW->operator[](i) << " " << intX->operator[](i) << std::endl;
+
+    for(std::size_t i=0;i<intX->size();++i){
+        BOOST_CHECK_CLOSE(intY->operator[](i), intX->operator[](i),1E-4);
+        BOOST_CHECK_CLOSE(intZ->operator[](i), intX->operator[](i),1E-4);
+        std::cout << intX->operator[](i) << " " << intW->operator[](i) << std::endl;
         BOOST_CHECK_CLOSE(intW->operator[](i), intX->operator[](i),1E-5);
     }
 
@@ -145,6 +150,7 @@ BOOST_AUTO_TEST_CASE(nullSample){
     test2["ef"] = std::vector<double>(1,0.6666666666);
     test2["ip"] = 1.0;
     test2["sigmas"] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(4,1.));
+    test2["means"] = xx;
 
     icgenerator gen(test,&test2);
     std::vector<int> N(2,128);

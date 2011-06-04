@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_SUITE(zeroes)
         BOOST_CHECK_CLOSE(comboPot->operator()(z,0), -0.5,1E-5);
         FindZeros zeros(1,boost::any_cast<double>(test["ip"]),0.,comboPot);
         Coords fz = zeros.retZeros();
-        BOOST_CHECK_CLOSE(fz[2],-47.9129,1E-4);
+        BOOST_CHECK_CLOSE(fz[2],47.9129,1E-4);
     }
 
 BOOST_AUTO_TEST_SUITE_END()

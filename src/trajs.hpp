@@ -29,6 +29,7 @@
 #include "binner.hpp"
 #include "coords.hpp"
 #include "customGlog.hpp"
+#include "config.hpp"
 
 namespace classical{
 typedef boost::shared_ptr<Binner> bPtr;
@@ -81,5 +82,6 @@ namespace boost { namespace mpi {
     : mpl::true_ { };
 
 } }
+
 
 #endif

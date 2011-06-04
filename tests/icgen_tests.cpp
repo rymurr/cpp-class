@@ -401,6 +401,7 @@ BOOST_AUTO_TEST_CASE(weights2)
     test2["ef"] = std::vector<double>(1,0.6666666666);
     test2["ip"] = 1.0;
     test2["sigmas"] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(2,1.));
+    test2["means"] = xx;
 
     icgenerator gen(test,&test2);
     Coords vals(xx);
@@ -428,6 +429,7 @@ BOOST_AUTO_TEST_CASE(longrun)
     test2["ef"] = std::vector<double>(1,0.6666666666);
     test2["ip"] = 1.0;
     test2["sigmas"] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(4,1.));
+    test2["means"] = xx;
 
     icgenerator gen(test,&test2);
     Coords vals(xx);

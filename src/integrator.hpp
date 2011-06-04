@@ -34,6 +34,33 @@ typedef int (*ptr_to_func)(double, const double[], double[], double[], void*);
 
 static double escapeRange;
 
+
+class checkTrap {
+    private:
+        bool check_;
+    public:
+        checkTrap(bool check):check_(check){};
+
+        bool operator()(Coords x){
+            if (!check_) return true;
+            if (abs(x)<escapeRange){
+                return false;
+            } else {
+                return true;
+            }
+        };
+
+        bool operator()(state_type state){
+            if (!check_) return true;
+            Coords x(state.first[0].size());
+            for (std::size_t i=0;i<x.size();++i){
+                x[i] = state.first[0][i];
+            }
+            return this->operator()(x);
+        };
+};
+
+
 class IntStrategy {
     public:
         virtual ~IntStrategy(){};
@@ -57,9 +84,10 @@ class OdeIntRKStrategy: public IntStrategy{
         boost::shared_ptr<Force> kin_, pot_;
         double eps_abs_, eps_rel_;
         bool observe_;
+        checkTrap dCheck_;
 
     public:
-        OdeIntRKStrategy(double tin, double dt, boost::shared_ptr<Force> kin, boost::shared_ptr<Force> pot, double eps_abs, double eps_rel, bool observe, double tCheck=0): tin_(tin), dt_(dt), tCheck_(tCheck), kin_(kin), pot_(pot), eps_abs_(eps_abs), eps_rel_(eps_rel), observe_(observe){};
+        OdeIntRKStrategy(double tin, double dt, boost::shared_ptr<Force> kin, boost::shared_ptr<Force> pot, double eps_abs, double eps_rel, bool observe, double tCheck=0, checkTrap dCheck = checkTrap(false)): tin_(tin), dt_(dt), tCheck_(tCheck), kin_(kin), pot_(pot), eps_abs_(eps_abs), eps_rel_(eps_rel), observe_(observe), dCheck_(checkTrap(dCheck)){};
         virtual ~OdeIntRKStrategy(){};
         virtual Cpair operator()(const Cpair &x);
 };
@@ -69,9 +97,10 @@ class OdeIntSympStrategy: public IntStrategy{
         double tin_, dt_, tCheck_;
         boost::shared_ptr<Force> kin_, pot_;
         boost::shared_ptr<Field> dpot_;
+        checkTrap dCheck_;
 
     public:
-        OdeIntSympStrategy(double tin, double dt, boost::shared_ptr<Force> kin, boost::shared_ptr<Force> pot, boost::shared_ptr<Field> dpot = boost::shared_ptr<Field>(), double tCheck=0): tin_(tin), dt_(dt), tCheck_(tCheck), kin_(kin), pot_(pot), dpot_(dpot){};
+        OdeIntSympStrategy(double tin, double dt, boost::shared_ptr<Force> kin, boost::shared_ptr<Force> pot, boost::shared_ptr<Field> dpot = boost::shared_ptr<Field>(), double tCheck=0, checkTrap dCheck = checkTrap(false)): tin_(tin), dt_(dt), tCheck_(tCheck), kin_(kin), pot_(pot), dpot_(dpot), dCheck_(checkTrap(dCheck)){};
         virtual ~OdeIntSympStrategy(){};
         virtual Cpair operator()(const Cpair& x);
 };
@@ -87,22 +116,7 @@ class Integrator {
 
 };
 
-inline bool checkTrapC(Coords x){
-    if (abs(x)<escapeRange){
-        return false;
-    } else {
-        return true;
-    }
-}
 
-inline bool checkTrapS(state_type state){
-
-    Coords x(state.first[0].size());
-    for (std::size_t i=0;i<x.size();++i){
-        x[i] = state.first[0][i];
-    }
-    return checkTrapC(x);
-}
 }
 
 

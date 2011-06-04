@@ -134,9 +134,9 @@ class Binner: boost::arithmetic<Binner> {
 
         void operator()(Coords& x, double w, int in=0){
             boost::array<binState::index,3> i = {{binState::index(0),binState::index(0),binState::index(0)}};
-            for (int j=in;j<in+size_;++j){
-                if (fabs(x[j])>ranges_[j]) continue;
-                i[j] = floor((x[j]+ranges_[j])/dxs_[j]);
+            for (int j=0;j<size_;++j){
+                if (fabs(x[j+in])>ranges_[j]) continue;
+                i[j] = floor((x[j+in]+ranges_[j])/dxs_[j]);
                 //std::cout << i[j] << " " << x[j] << " " << dxs_[j] << " " << ranges_[j] << std::endl;
             }
             //std::cout << i[0] << i[1] << i[2] << std::endl;
