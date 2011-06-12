@@ -8,7 +8,7 @@
 #include <iterator>
 #include <vector>
 #include <typeinfo>
-#include <gsl/gsl_math.h>
+#include <math.h>
 
 #include <boost/any.hpp>
 #include <boost/lexical_cast.hpp>

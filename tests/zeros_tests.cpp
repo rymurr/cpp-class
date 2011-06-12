@@ -47,10 +47,10 @@ BOOST_AUTO_TEST_SUITE(zeroes)
         test["env"] = 1;
         test["tfinal"] = 100.;
         test["tinitial"] = 1.;
-        test["pol"] = std::vector<int>(1,3);
+        test["pol"] = std::vector<int>(1,1);
         y[0] = 2.;
         Coords z(3,0.);
-        z[0] =2.;
+        z[2] =2.;
  
         boost::shared_ptr<Potential> hatom(potentialFactory(test));
         boost::shared_ptr<Field> constant(fieldFactory(test));
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_SUITE(zeroes)
         BOOST_CHECK_CLOSE(comboPot->operator()(z,0), -0.5,1E-5);
         FindZeros zeros(1,boost::any_cast<double>(test["ip"]),0.,comboPot);
         Coords fz = zeros.retZeros();
-        BOOST_CHECK_CLOSE(fz[2],47.9129,1E-4);
+        BOOST_CHECK_CLOSE(fz[0],47.9129,1E-4);
     }
 
 BOOST_AUTO_TEST_SUITE_END()

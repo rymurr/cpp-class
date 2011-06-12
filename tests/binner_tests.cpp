@@ -23,13 +23,16 @@
 #include "trajs.hpp"
 #include "integrator.hpp"
 #include "multi_array_serial.hpp"
+#include "config.hpp"
 
 static double escapeRange = 1E-80;
 
 BOOST_AUTO_TEST_SUITE(binner)
 
 BOOST_AUTO_TEST_CASE(trajsInit){
+#ifdef GFlags_FOUND
     google::InstallFailureSignalHandler();
+#endif
     using namespace timer;
     using namespace classical;
     Timer::create();

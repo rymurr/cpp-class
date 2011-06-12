@@ -64,18 +64,16 @@ void simulation::potsNFields(){
     ///The pieces are there but a standard needs to be set up (ionization always along 2 for example)
     ///so as to make the choice of the means array unambiguous.
     ///The handling of this part of the code is also pretty embarassing, will need to make it more general
-    means.back() = fz[2];
+    means.front() = fz[0];
     (*map_)["means"] = means;
-    ///TODO: I think i set it up so variance was Tau(tunneling time) must double check!
-    (*map_)["variance"] = static_cast<double>(1/std::abs(means.back()/sqrt(2.*boost::any_cast<double>((*map_)["ip"]))));
-    //std::cout << boost::any_cast<double>(map_->operator[]("variance")) << std::endl;
+    (*map_)["variance"] = static_cast<double>(1/sqrt(std::abs(means.front()/sqrt(2.*boost::any_cast<double>((*map_)["ip"])))));
+    LOG(INFO) << "Variance (tau) is: " << boost::any_cast<double>(map_->operator[]("variance")) << std::endl;
     boost::shared_ptr<std::vector<double> > sigmas = boost::shared_ptr<std::vector<double> >(new std::vector<double>(boost::any_cast<int>((*map_)["ndim"])));
-    ///TODO: double check that x=1/2tau and p=tau/2
     for (std::size_t i=0;i<sigmas->size()/2;++i){
-        (*sigmas)[i] = 0.5*boost::any_cast<double>((*map_)["variance"]);
+        (*sigmas)[i] = 0.5*boost::any_cast<double>((*map_)["variance"])*boost::any_cast<double>((*map_)["variance"]);
     }
     for (std::size_t i=sigmas->size()/2;i<sigmas->size();++i){
-        (*sigmas)[i] = 0.5/boost::any_cast<double>((*map_)["variance"]);
+        (*sigmas)[i] = 0.5/boost::any_cast<double>((*map_)["variance"])/boost::any_cast<double>((*map_)["variance"]);
     }
     (*map_)["sigmas"] = sigmas;
     LOG(INFO) << "exit found and potentials built";

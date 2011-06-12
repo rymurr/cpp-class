@@ -91,7 +91,7 @@ ELSE(GFlags_ROOT_DIR)
         src
     )
     MARK_AS_ADVANCED(GFlags_ROOT_DIR)
-    MESSAGE(SEND_ERROR "Cannot find Root directory of Google Flags")
+    MESSAGE("Cannot find Root directory of Google Flags")
     SET(GFlags_FOUND false)
 ENDIF(GFlags_ROOT_DIR)
 

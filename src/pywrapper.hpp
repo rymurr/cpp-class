@@ -1,19 +1,23 @@
 #ifndef PYWRAPPER_HPP_
 #define PYWRAPPER_HPP_
 
+#include "config.hpp"
+#ifdef PYTHONLIBS_FOUND
 #include <Python.h>
-#include <string>
-#include <vector>
-#include <iostream>
-#include <cmath>
-
-#include <boost/lambda/lambda.hpp>
 #include <boost/python.hpp>
 #include <boost/python/extract.hpp>
 #include <boost/python/list.hpp>
 #include <boost/python/def.hpp>
 #include <boost/python/detail/wrap_python.hpp>
 #include <numpy/arrayobject.h>
+#endif
+
+#include <string>
+#include <vector>
+#include <iostream>
+#include <cmath>
+
+#include <boost/lambda/lambda.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/split_member.hpp>
@@ -24,7 +28,6 @@
 #include <boost/archive/binary_iarchive.hpp>
 
 
-//#include "config.hpp"
 #include "input_param.hpp"
 #include "icgen.hpp"
 #include "fields.hpp"
@@ -39,9 +42,12 @@
 
 namespace classical{
 
+static bool googInit = false;
+
 class Potential;
 //class Field;
 
+#ifdef PYTHONLIBS_FOUND
 template <class tPtr>
 PyObject* pyConvert(tPtr& data){
     const binState::size_type* dims = data->shape();
@@ -65,8 +71,12 @@ inline PyObject* pyConvert(binSlice2Ptr& data){
 
     return PyArray_Return(retval);
 }
+#endif
 
+
+#ifdef PYTHONLIBS_FOUND
 using namespace boost::python;
+#endif
 
 class simulation{
     private:
@@ -116,8 +126,11 @@ class simulation{
 
         void common_setup(){
 #ifdef GFlags_FOUND
-            google::InitGoogleLogging("cpp-class");
-            google::InstallFailureSignalHandler();
+            if (!googInit){
+                google::InitGoogleLogging("cpp-class");
+                google::InstallFailureSignalHandler();
+                googInit = true;
+            }
 #endif
         };
 
@@ -126,6 +139,7 @@ class simulation{
         void potsNFields();
 
     public:
+#ifdef PYTHONLIBS_FOUND
         simulation(int argc, boost::python::list argv, std::string fname): argc_(argc), fname_(fname){
             std::size_t n = boost::python::len(argv);
             for (unsigned int i = 0; i < n; i++) {
@@ -133,10 +147,15 @@ class simulation{
             }
             common_setup();
         };
+#endif
 
         simulation(int argc, std::vector<std::string> argv, std::string fname): argc_(argc), argv_(argv), fname_(fname){
             common_setup();
         };
+
+        simulation(std::string sType, std::string fName){
+            this->load(sType, fName);
+        }
 
         ~simulation(){
 #ifdef GFlags_FOUND
@@ -197,6 +216,7 @@ class simulation{
         binSlice2Ptr int1Dinit(int x){return initBins_->int1D(x);};
         boost::shared_ptr<binState> int3DInit(){return initBins_->int3D();};
 
+#ifdef PYTHONLIBS_FOUND
         PyObject* rangePython(int n){
             binSlice2Ptr x = bins_->range(n);
             return pyConvert(x);
@@ -236,6 +256,7 @@ class simulation{
             boost::shared_ptr<binState> x = initBins_->int3D();
             return pyConvert(x);
         }
+#endif
 
         void save(std::string sType, std::string fName){
 

@@ -1,6 +1,8 @@
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 cmake_minimum_required( VERSION 2.8 FATAL_ERROR )
 project(cpp-class)
+SITE_NAME(host)
+
 
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
@@ -8,14 +10,25 @@ if (DOXYGEN_FOUND)
     add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${DOXY_CFG})
 endif()
 
+SET( CMAKE_EXE_LINKER_FLAGS_CLUSTER " $ENV{MPI_LIBS} -Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING "Flags used for linking binaries during cluster builds." FORCE )
+SET( CMAKE_EXE_LINKER_FLAGS_WORKSTATION " -Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING "Flags used for linking binaries during workstation builds." FORCE )
+SET( CMAKE_SHARED_LINKER_FLAGS_CLUSTER "$ENV{MPI_LIBS} -Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING "Flags used by the shared libraries linker during cluster builds." FORCE)
+SET( CMAKE_SHARED_LINKER_FLAGS_WORKSTATION  "-Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING "Flags used by the shared libraries linker during workstation builds." FORCE)
+
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     set ( CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -pg -p -Wall ")
     set ( CMAKE_CXX_FLAGS_RELEASE  " " )
+    set ( CMAKE_CXX_FLAGS_CLUSTER " " CACHE STRING "Flags used for running on a cluster, specific to CX1 at IC" FORCE)
+    set ( CMAKE_CXX_FLAGS_WORKSTATION " " CACHE STRING "Flags for running on a workstation, particularly mine ;-)" FORCE)  
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
     set ( CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -pg -p -Wall  ")
+    set ( CMAKE_CXX_FLAGS_CLUSTER " " CACHE STRING "Flags used for running on a cluster, specific to CX1 at IC" FORCE)
+    set ( CMAKE_CXX_FLAGS_WORKSTATION " " CACHE STRING "Flags for running on a workstation, particularly mine ;-)" FORCE)  
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "intel")
     set ( CMAKE_CXX_FLAGS_DEBUG "-C -g -O0  -debug all -traceback -Wall -I/usr/include/x86_64-linux-gnu")
-    set ( CMAKE_CXX_FLAGS_RELEASE  "-xSSE4.1 -warn -axP -ipo -O3 -no-prec-div -complex_limited_range -I/usr/include/x86_64-linux-gnu" )
+    set ( CMAKE_CXX_FLAGS_RELEASE  "-warn -axP -ipo -O3 -no-prec-div -complex_limited_range -I/usr/include/x86_64-linux-gnu" )
+    set ( CMAKE_CXX_FLAGS_CLUSTER "-xSSE4.1 -warn -axP -ipo -O3 -no-prec-div -complex_limited_range -I/usr/include/x86_64-linux-gnu -I$ENV{MPI_INCLUDE} " CACHE STRING "Flags used for running on a cluster, specific to CX1 at IC" FORCE)
+    set ( CMAKE_CXX_FLAGS_WORKSTATION "-xSSE4.1 -warn -axP -ipo -O3 -no-prec-div -complex_limited_range -I/usr/include/x86_64-linux-gnu " CACHE STRING "Flags for running on a workstation, particularly mine ;-)" FORCE)  
 endif()
 
 IF(APPLE)
@@ -36,9 +49,24 @@ IF("${CMAKE_SYSTEM}" MATCHES "Linux")
 #   include_directories(${BLAS_INCLUDE_DIRS})
 #   set(LIBS ${LIBS} ${BLAS_LIBRARIES} ) 
    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-       set ( CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -mmmx -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -ftree-parallelize-loops=8 -funroll-loops  " )
+       set ( CMAKE_CXX_FLAGS_RELEASE "-O3 -ftree-parallelize-loops=8 -funroll-loops  " )
+       set ( CMAKE_CXX_FLAGS_CLUSTER "-O3 -march=native -mmmx -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -ftree-parallelize-loops=8 -funroll-loops  " CACHE STRING "Flags used for running on a cluster, specific to CX1 at IC" FORCE)
+       set ( CMAKE_CXX_FLAGS_WORKSTATION " -I$ENV{MPI_INCLUDE} -O3 -march=native -mmmx -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -ftree-parallelize-loops=8 -funroll-loops  " CACHE STRING "Flags for running on a workstation, particularly mine ;-)" FORCE)
    endif()
 ENDIF ("${CMAKE_SYSTEM}" MATCHES "Linux")
+
+MARK_AS_ADVANCED(
+    CMAKE_CXX_FLAGS_CLUSTER
+    CMAKE_C_FLAGS_CLUSTER
+    CMAKE_EXE_LINKER_FLAGS_CLUSTER
+    CMAKE_SHARED_LINKER_FLAGS_CLUSTER )
+MARK_AS_ADVANCED(
+    CMAKE_CXX_FLAGS_WORKSTATION
+    CMAKE_C_FLAGS_WORKSTATION
+    CMAKE_EXE_LINKER_FLAGS_WORKSTATION
+    CMAKE_SHARED_LINKER_FLAGS_WORKSTATION)
+SET( CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}" CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel Cluster Workstation." FORCE)
+
 
 if (NOT DEFINED Build_MPI)
     set(Build_MPI false)
@@ -60,10 +88,12 @@ endif()
 find_package(OpenMP)
 if(OPENMP_FOUND)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS_WORKSTATION "${CMAKE_CXX_FLAGS_RELEASE} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS_CLUSTER "${CMAKE_CXX_FLAGS_RELEASE} ${OpenMP_CXX_FLAGS}")
 endif(OPENMP_FOUND)
 
 SET(Boost_USE_MULTITHREADED "ON")
-SET(Boost_ADDITIONAL_VERSIONS "0.99" "0.99.0" "1.78" "1.78.0" "1.41.0" "1.40.0" "1.42.0" "1.36.0" "1.45.0" "1.46.0" "1.46.1")
+SET(Boost_ADDITIONAL_VERSIONS "1.45.0" "1.46.0" "1.46.1")
 
 find_package(Boost COMPONENTS python)
 if(Boost_FOUND)
@@ -99,6 +129,12 @@ if(GFlags_FOUND)
         set(LIBS ${LIBS} ${Glog_LIBRARIES} -lglog)
     endif(Glog_FOUND)
 endif(GFlags_FOUND)
+
+if(host MATCHES "[l][o][g][i][n][-].")
+    set(PYTHONLIBS_FOUND false)
+    set(MPI_FOUND true)
+endif()
+
 
 add_subdirectory(src)
 add_subdirectory(tests)

@@ -86,7 +86,7 @@ class DerivClassR {
 class obs{
     public:
         void operator()(double t, Coords &x, DerivClassRK &px){
-            LOG(INFO) << x[0] << " " << x[1] << " " << x[2] << " " << x[3] << " at:  " << t << std::endl;
+            std::cout << x[0] << " " << x[1] << " " << x[2] << " " << x[3] << " " << t << std::endl;
         }
 };
 

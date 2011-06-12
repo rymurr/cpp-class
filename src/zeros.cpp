@@ -6,17 +6,17 @@ namespace classical{
 Coords OneDRootFinder::retZeros(){
     std::vector<double> signs,coords;
     Coords r(3,0);
-    r[2] = -100000.;
+    r[0] = -100000.;
     signs.push_back(pots_->operator()(r,t0_));
-    coords.push_back(r[2]);
+    coords.push_back(r[0]);
     for (int i=0;i<100;++i){
-        r[2]=-50. + i;
+        r[0]=-50. + i;
         signs.push_back(ip_+pots_->operator()(r,t0_));
-        coords.push_back(r[2]);
+        coords.push_back(r[0]);
     }
-    r[2] = 100000;
+    r[0] = 100000;
     signs.push_back(ip_+pots_->operator()(r,t0_));
-    coords.push_back(r[2]);
+    coords.push_back(r[0]);
     zeroPts crossPts;
     crossing(signs, coords, crossPts);
 
@@ -27,7 +27,7 @@ Coords OneDRootFinder::retZeros(){
         if (std::abs(retZero) >= std::abs(zero))
             zero = retZero;
     }
-    r[2] = zero;
+    r[0] = zero;
     //std::cout << r << std::endl;
     return r;
 }

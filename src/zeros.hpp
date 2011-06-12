@@ -39,7 +39,7 @@ class PotDouble {
 
         double operator()(double x){
             Coords r(3,0);
-            r[2] = x;
+            r[0] = x;
             return ip_ + pots_->operator()(r,t0_);
         }
 };

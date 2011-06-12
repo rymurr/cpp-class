@@ -76,6 +76,7 @@ int pmap::read_params(const std::string fname, const int argc, std::vector<std::
         (2,"Hydrogen molecule like")
         (3,"GAMESS checkpoint file")
         (4,"anything on a grid")
+        (5,"null potential")
         ;
     boost::assign::insert(field_map)
         (1,"constant cosine field")
@@ -147,6 +148,8 @@ int pmap::read_params(const std::string fname, const int argc, std::vector<std::
             ("no-store", "do not store trajectories separately just add them to the distribution(mutually exclusive with no-bin, this takes precedence)");
     opts_desc[5]->add_options()
             ("binary", "serialize in binary(OS-dependent), if not set serializes to text(default)");
+    opts_desc[5]->add_options()
+            ("watch", "turns on observer for RK integrator...lots of output!");
     std::vector<paramVec> opts;
     opts.push_back(general_opts);
     opts.push_back(time_opts);
@@ -288,6 +291,10 @@ int pmap::read_params(const std::string fname, const int argc, std::vector<std::
             map["sim-type"] = 1;
         }
     }
+
+    if(vm.count("watch")){
+        map["watch"] = true;
+    }
     return 0;
 }
 
@@ -348,7 +355,7 @@ void pmap::print() const {
     {
         std::string front = "The value of " + boost::lexical_cast<std::string>(m.first) + " is: " ;
         std::string back;
-        if (typeid(float) == m.second.type()){
+        if (typeid(double) == m.second.type()){
             back =  boost::lexical_cast<std::string>(any_cast<double>(m.second));
         } else if (typeid(int) == m.second.type()){
             back = boost::lexical_cast<std::string>(any_cast<int>(m.second));

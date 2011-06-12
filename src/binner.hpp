@@ -74,17 +74,6 @@ class Binner: boost::arithmetic<Binner> {
         };
 
     public:
-        //Binner(){LOG(ERROR) << "I shouldn't be called!"; };
-
-        /*Binner(const Binner &x){
-            size_ = x.size_;
-            dxs_ = x.dxs_;
-            ranges_ = x.ranges_;
-            Ns_ = x.Ns_;
-            this->resize();
-            ///TODO: need to copy data here
-            LOG(INFO) << "copy building binner";
-        }*/
 
         Binner(std::vector<int>& Ns, std::vector<double>& xs):ranges_(xs), Ns_(Ns){
             size_ = Ns.size();
@@ -106,18 +95,12 @@ class Binner: boost::arithmetic<Binner> {
             LOG(INFO) << "building binner";
         };
 
-        /*
-        Binner& operator=(const Binner& rhs){
-            return rhs;
-        };*/
-
         int size(){return size_;};
 
         std::vector<int> shape(){return Ns_;};
 
         Binner operator+=(const Binner& x){
             ///TODO: change if to assert or glog assert
-            std::cout << bins_.shape()[0] << x.bins_.shape()[0] << bins_.shape()[1] << x.bins_.shape()[1] << bins_.shape()[2] << x.bins_.shape()[2] << std::endl;
             if (bins_.shape()[0] == x.bins_.shape()[0] && bins_.shape()[1] == x.bins_.shape()[1] && bins_.shape()[2] == x.bins_.shape()[2] ){
                 for (int i=0;i<bins_.shape()[0];++i){
                     for (int j=0;j<bins_.shape()[1];++j){
@@ -169,7 +152,7 @@ class Binner: boost::arithmetic<Binner> {
             } else {
                 LOG(FATAL) << "bad input for int1D";
             }
-            binSlicePtr retArray = binSlicePtr(new binSlice(boost::extents[x-1][y-1]) );
+            binSlicePtr retArray = binSlicePtr(new binSlice(boost::extents[dims[x-1]][dims[y-1]]) );
 
             for (std::size_t k=0;k<dims[x-1];++k){
                 for (std::size_t i=0;i<dims[y-1];++i){
