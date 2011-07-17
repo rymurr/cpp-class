@@ -1,3 +1,17 @@
+// $Id$
+/**
+ * @file binner.hpp
+ *
+ * binner class. This class stores a 3D array which is a histogram of
+ * incoming data points. It uses an O(1) algorithm to place incoming data in its proper bin
+ *
+ * @brief definition and implementation of binner class
+ *
+ * @author Ryan Murray
+ * @version 1.00
+ */
+// $Log$
+
 #ifndef _BINNER_HPP_
 #define _BINNER_HPP_
 
@@ -18,7 +32,7 @@
 #include "coords.hpp"
 #include "customGlog.hpp"
 
-
+///primary namespace for classical propagator code
 namespace classical {
     class Binner;
 }
@@ -27,36 +41,63 @@ template<class Archive>
 inline void save_construct_data(Archive & ar, const classical::Binner * t, const unsigned int file_version);
 }}
 
-
+///primary namespace for classical propagator code
 namespace classical{
+///defines map of any containers
 typedef std::map<std::string,boost::any> anyMap;
+///3D array for histogram
 typedef boost::multi_array<double,3> binState;
+///2d view of histogram
 typedef boost::multi_array<double,2> binSlice;
+///pointer to 2d view
 typedef boost::shared_ptr<boost::multi_array<double,2> > binSlicePtr;
+///1d view of histogram
 typedef std::vector<double> binSlice2;
+///pointer to 1d view
 typedef boost::shared_ptr<binSlice2 > binSlice2Ptr;
 
+
+/**
+ * This is the primary class in the binner algorithm.
+ */
 class Binner: boost::arithmetic<Binner> {
     private:
+        ///The 3D array which holds the histogram
         binState bins_;
-        Coords ranges_,dxs_;
+        ///The range in each dimension from -x to x
+        Coords ranges_;
+        ///The spacing between the bins
+        Coords dxs_;
+        ///The number of bins per dimension
         std::vector<int> Ns_;
+        ///number of dimensions being considered (in case simulation is <3D)
         int size_;
 
+        ///grants access to private data for serialization
         friend class boost::serialization::access;
+        ///grants access to private data to method which constructs binner upon save/load
         template<class Archive> friend void boost::serialization::save_construct_data(Archive & ar, const Binner * t, const unsigned int file_version);
 
-
+/**
+ * Serialization method needed by boost::serialization.
+ * This method serialises the binner using boost.
+ *
+ * @param[in-out] ar archive into which the class is serialized or from where it is deserialized
+ * @param[in] version used to serialize class depending on version (not used)
+ */
         template<class Archive>
         void serialize(Archive & ar, const unsigned int version)
         {
-            ar & Ns_;
-            ar & size_;
+            //ar & Ns_;
+            //ar & size_;
             ar & ranges_;
             ar & dxs_;
             ar & bins_;
         }
 
+        /**
+         * resizes internal array, used on copy and construction
+         */
         void resize() {
             switch(size_){
                 case 3:
@@ -75,6 +116,12 @@ class Binner: boost::arithmetic<Binner> {
 
     public:
 
+        /**
+         * The primary constructor, should be the only one called. This sets internal variables and resizes array
+         *
+         * @param[in] Ns number of bins per dimension
+         * @param[in] xs range of histogram in each direction
+         */
         Binner(std::vector<int>& Ns, std::vector<double>& xs):ranges_(xs), Ns_(Ns){
             size_ = Ns.size();
             dxs_ = Coords(size_);
@@ -85,6 +132,12 @@ class Binner: boost::arithmetic<Binner> {
             LOG(INFO) << "building binner";
         };
 
+        /**
+         * Same as primary constructor but with a different signature to allow for xs to be vector or Coords
+         *
+         * @param[in] Ns number of bins per dimension
+         * @param[in] xs range of histogram in each direction
+         */
         Binner(std::vector<int>& Ns, Coords& xs):ranges_(xs), Ns_(Ns){
             size_ = Ns.size();
             dxs_ = Coords(size_);
@@ -95,10 +148,23 @@ class Binner: boost::arithmetic<Binner> {
             LOG(INFO) << "building binner";
         };
 
+        /**
+         * getter for size_ internal variable
+         * @return number of dimensions being used
+         */
         int size(){return size_;};
 
+        /**
+         * getter for Ns_
+         * @return number of bins per dimension
+         */
         std::vector<int> shape(){return Ns_;};
 
+        /**
+         * assign addition operator, adds two bins together. used in conjunction with boost::operators::adable
+         * @param[in] x Binner to be added to this
+         * @return returns this, binner after addition
+         */
         Binner operator+=(const Binner& x){
             ///TODO: change if to assert or glog assert
             if (bins_.shape()[0] == x.bins_.shape()[0] && bins_.shape()[1] == x.bins_.shape()[1] && bins_.shape()[2] == x.bins_.shape()[2] ){
@@ -115,22 +181,37 @@ class Binner: boost::arithmetic<Binner> {
             return *this;
         }
 
+        /**
+         * method which performs the histogram binning. Inputs are used to find weight and position of input and added to rest of histogram in O(1) time
+         *
+         * @param[in] x input trajectory
+         * @param[in] w weight
+         * @param[in] in offset in x which should be binned. in classical propagator this accesses either position 0:n or momentum n+1:N elements for binning
+         */
         void operator()(Coords& x, double w, int in=0){
             boost::array<binState::index,3> i = {{binState::index(0),binState::index(0),binState::index(0)}};
             for (int j=0;j<size_;++j){
                 if (fabs(x[j+in])>ranges_[j]) continue;
                 i[j] = floor((x[j+in]+ranges_[j])/dxs_[j]);
-                //std::cout << i[j] << " " << x[j] << " " << dxs_[j] << " " << ranges_[j] << std::endl;
             }
-            //std::cout << i[0] << i[1] << i[2] << std::endl;
             bins_(i) += w;
         };
 
+        /**
+         * returns new copy of internal array for manipulation by other programs
+         * @return 3D array of internal data
+         */
         boost::shared_ptr<binState> int3D(){
             ///TODO: should make this a const pointer or something, no need to copy the whole array!
             return boost::shared_ptr<binState>(new binState(bins_));
         }
 
+
+        /**
+         * returns range in dimension n. an array from -ranges[n] to ranges[n]
+         * @param[in] n dimension along which to create range
+         * @return 1d array of range from -x to x
+         */
         binSlice2Ptr range(int n){
             binSlice2Ptr x = binSlice2Ptr(new binSlice2(Ns_[n-1],-ranges_[n-1] + 0.5*dxs_[n-1]));
 
@@ -140,6 +221,12 @@ class Binner: boost::arithmetic<Binner> {
             return x;
         };
 
+        /**
+         * returns 2d array of data after integrating out 1 dimension
+         * @param[in] x first dimension to keep
+         * @param[in] y second dimension to keep
+         * @return 2d array of resultant data
+         */
         boost::shared_ptr<binSlice> int2D(int x, int y){
             const binState::size_type* dims = bins_.shape();
             std::size_t dim1;
@@ -165,6 +252,11 @@ class Binner: boost::arithmetic<Binner> {
             return retArray;
         };
 
+        /**
+         * returns 1d array of data after integrating out 2 dimensions.
+         * @param[in] n dimension to keep after integrating
+         * @return 1d array of integrated data
+         */
         binSlice2Ptr int1D(int x){
             const binState::size_type* dims = bins_.shape();
             std::size_t dim1, dim2;
@@ -196,6 +288,12 @@ class Binner: boost::arithmetic<Binner> {
 
 
 namespace boost { namespace serialization {
+/**
+ * archives binner
+ * @param[out] ar archive to load from
+ * @param[in] t binner to construct and fill
+ * @param[in] optional version parameter
+ */
 template<class Archive>
 inline void save_construct_data(
     Archive & ar, const classical::Binner * t, const unsigned int file_version
@@ -207,7 +305,18 @@ inline void save_construct_data(
     ar << t->ranges_;
 }}}
 
-namespace boost { namespace serialization {
+///boost namespace
+namespace boost {
+///serialization namespace
+namespace serialization {
+
+
+/**
+ * constructs binner while loading it from Archive
+ * @param[in] ar archive to load from
+ * @param[out] t binner to construct and fill
+ * @param[in] optional version parameter
+ */
 template<class Archive>
 inline void load_construct_data(
     Archive & ar, classical::Binner * t, const unsigned int file_version

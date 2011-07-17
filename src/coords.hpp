@@ -55,8 +55,15 @@ class Point: boost::arithmetic<Point<T>
         ///the vector which holds the n-d point
         std::vector<T> x_;
 
+        ///grants access to private data
         friend class boost::serialization::access;
 
+        /**
+         * simple serialization function for boost::serialization
+         *
+         * @param[out] ar archive to load from
+         * @param[in] optional version parameter
+         */
         template<class Archive>
         void serialize(Archive & ar, const unsigned int version)
         {
@@ -99,6 +106,11 @@ class Point: boost::arithmetic<Point<T>
     @param[in] rhs Coord to be copied
 */
         Point(const Point &rhs){x_ = rhs.x_;};
+
+        /**
+         * Constructs n-length point
+         * @param[in] n initial size of array
+         */
 
         Point(int n): x_(n){};
 
